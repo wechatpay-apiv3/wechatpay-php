@@ -6,6 +6,8 @@
     "keywords": [
         "wechatpay"
     ],
+    "homepage": "https://wechatpay-api.gitbook.io/wechatpay-api-v3/",
+    "license": "Apache-2.0",
     "require": {
         "php": ">=5.5",
         "ext-openssl": "*",

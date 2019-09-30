@@ -19,22 +19,26 @@
 
 ## 安装
 
-目前，我们暂时仅提供压缩包形式的SDK，请商户开发者下载后手工解压，然后按照下面的方法使用composer引入SDK到项目中：
+可以使用PHP包管理工具composer引入SDK到项目中：
 
 #### Composer
 
-在项目的composer.json中加入以下配置：
+方式一：在项目目录中，通过composer命令行添加：
+```shell
+composer require wechatpay/wechatpay-guzzle-middleware
+```
+
+
+方式二：在项目的composer.json中加入以下配置：
 
 ```json
-    "repositories": [
-        {
-            "type": "path",
-            "url": "此处填写SDK解压后的路径"
-        }
-    ],
     "require": {
         "wechatpay/wechatpay-guzzle-middleware": "*"
     }
+```
+添加配置后，执行安装
+```shell
+composer install
 ```
 
 
