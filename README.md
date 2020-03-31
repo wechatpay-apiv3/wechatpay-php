@@ -8,6 +8,12 @@
 
 
 
+## 项目状态
+
+当前版本为`0.1.1`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+
+
+
 ## 环境要求
 
 我们开发和测试使用的环境如下：
@@ -33,7 +39,7 @@ composer require wechatpay/wechatpay-guzzle-middleware
 
 ```json
     "require": {
-        "wechatpay/wechatpay-guzzle-middleware": "*"
+        "wechatpay/wechatpay-guzzle-middleware": "^0.1.1"
     }
 ```
 添加配置后，执行安装
@@ -51,15 +57,16 @@ composer install
 use WechatPay\GuzzleMiddleware\WechatPayMiddleware;
 use WechatPay\GuzzleMiddleware\Util\PemUtil;
 
-// 商户配置
-$merchantId = '1000100';
-$merchantSerialNumber = 'XXXXXXXXXX';
-$merchantPrivateKey = PemUtil::loadPrivateKey('/path/to/mch/private/key.pem');
-$wechatpayCertificate = PemUtil::loadCertificate('/path/to/wechatpay/cert.pem');
+// 商户相关配置
+$merchantId = '1000100'; // 商户号
+$merchantSerialNumber = 'XXXXXXXXXX'; // 商户API证书序列号
+$merchantPrivateKey = PemUtil::loadPrivateKey('/path/to/mch/private/key.pem'); // 商户私钥
+// 微信支付平台配置
+$wechatpayCertificate = PemUtil::loadCertificate('/path/to/wechatpay/cert.pem'); // 微信支付平台证书
 
 // 构造一个WechatPayMiddleware
 $wechatpayMiddleware = WechatPayMiddleware::builder()
-    ->withMerchant($merchantId, $merchantSerialNumber, $merchantPrivateKey)
+    ->withMerchant($merchantId, $merchantSerialNumber, $merchantPrivateKey) // 传入商户相关配置
     ->withWechatPay([ $wechatpayCertificate ]) // 可传入多个微信支付平台证书，参数类型为array
     ->build();
 
@@ -70,10 +77,29 @@ $stack->push($wechatpayMiddleware, 'wechatpay');
 // 创建Guzzle HTTP Client时，将HandlerStack传入
 $client = new GuzzleHttp\Client(['handler' => $stack]);
 
+
 // 接下来，正常使用Guzzle发起API请求，WechatPayMiddleware会自动地处理签名和验签
-$resp = $client->request('GET', 'https://api.mch.weixin.qq.com/v3/...', [
-    'headers' => [ 'Accept' => 'application/json' ]
-]);
+try {
+    $resp = $client->request('GET', 'https://api.mch.weixin.qq.com/v3/...', [
+        'headers' => [ 'Accept' => 'application/json' ]
+    ]);
+
+    $resp = $client->request('POST', 'https://api.mch.weixin.qq.com/v3/...', [
+        'json' => [ // JSON请求体
+            'field1' => 'value1',
+            'field2' => 'value2'
+        ],
+        'headers' => [ 'Accept' => 'application/json' ]
+    ]);
+} catch (RequestException $e) {
+    // 进行错误处理
+    echo $e->getMessage()."\n";
+    if ($e->hasResponse()) {
+        echo $e->getResponse()->getStatusCode().' '.$e->getResponse()->getReasonPhrase()."\n";
+        echo $e->getResponse()->getBody();
+    }
+    return;
+}
 ```
 
 
@@ -131,8 +157,14 @@ $wechatpayMiddleware = WechatPayMiddleware::builder()
 
 **注意**：业务请求请使用标准的初始化流程，务必验证应答签名。
 
+### 证书和回调解密需要的AesGcm解密在哪里？
+
+请参考[AesUtil.php](src/Util/AesUtil.php)。
+
 
 
 ## 联系我们
 
-如果你有任何疑问，欢迎访问我们的[开发者社区](https://developers.weixin.qq.com/community/pay)进行反馈。
+如果你发现了**BUG**或者有任何疑问、建议，请通过issue进行反馈。
+
+也欢迎访问我们的[开发者社区](https://developers.weixin.qq.com/community/pay)。
