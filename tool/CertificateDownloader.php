@@ -10,6 +10,8 @@ use WechatPay\GuzzleMiddleware\WechatPayMiddleware;
 use WechatPay\GuzzleMiddleware\Validator;
 use WechatPay\GuzzleMiddleware\Util\PemUtil;
 use WechatPay\GuzzleMiddleware\Util\AesUtil;
+use WechatPay\GuzzleMiddleware\Auth\CertificateVerifier;
+use WechatPay\GuzzleMiddleware\Auth\WechatPay2Validator;
 
 class CertificateDownloader
 {
@@ -64,24 +66,47 @@ class CertificateDownloader
                 echo "download failed, code={$resp->getStatusCode()}, body=[{$resp->getBody()}]\n";
                 return;
             }
-            
-            $list = json_decode($resp->getBody(), TRUE);
+
+            $list = json_decode($resp->getBody(), true);
+
+            $plainCerts = [];
+            $x509Certs = [];
 
             $decrypter = new AesUtil($opts['key']);
             foreach ($list['data'] as $item) {
                 $encCert = $item['encrypt_certificate'];
                 $plain = $decrypter->decryptToString($encCert['associated_data'],
                     $encCert['nonce'], $encCert['ciphertext']);
-
+                if (!$plain) {
+                    echo "encrypted certificate decrypt fail!\n";
+                    exit(1);
+                }
+                // 通过加载对证书进行简单合法性检验
+                $cert = \openssl_x509_read($plain); // 从字符串中加载证书
+                if (!$cert) {
+                    echo "downloaded certificate check fail!\n";
+                    exit(1);
+                }
+                $plainCerts[] = $plain;
+                $x509Certs[] = $cert;
+            }
+            // 使用下载的证书再来验证一次应答的签名
+            $validator = new WechatPay2Validator(new CertificateVerifier($x509Certs));
+            if (!$validator->validate($resp)) {
+                echo "validate response fail using downloaded certificates!";
+                exit(1);
+            }
+            // 输出证书信息，并保存到文件
+            foreach ($list['data'] as $index => $item) {
                 echo "Certificate {\n";
                 echo "    Serial Number: ".$item['serial_no']."\n";
                 echo "    Not Before: ".(new DateTime($item['effective_time']))->format('Y-m-d H:i:s')."\n";
                 echo "    Not After: ".(new DateTime($item['expire_time']))->format('Y-m-d H:i:s')."\n";
-                echo "    Text: \n    ".str_replace("\n", "\n    ", $plain)."\n";
+                echo "    Text: \n    ".str_replace("\n", "\n    ", $plainCerts[$index])."\n";
                 echo "}\n";
 
                 $outpath = $opts['output'].DIRECTORY_SEPARATOR.'wechatpay_'.$item['serial_no'].'.pem';
-                file_put_contents($outpath, $plain);
+                file_put_contents($outpath, $plainCerts[$index]);
             }
         }
         catch (RequestException $e) {
@@ -101,12 +126,12 @@ class CertificateDownloader
     private function parseOpts()
     {
         $opts = [
-            [ 'key', 'k', TRUE ],
-            [ 'mchid', 'm', TRUE ],
-            [ 'privatekey', 'f', TRUE ],
-            [ 'serialno', 's', TRUE ],
-            [ 'output', 'o', TRUE ],
-            [ 'wechatpay-cert', 'c', FALSE ],
+            [ 'key', 'k', true ],
+            [ 'mchid', 'm', true ],
+            [ 'privatekey', 'f', true ],
+            [ 'serialno', 's', true ],
+            [ 'output', 'o', true ],
+            [ 'wechatpay-cert', 'c', false ],
         ];
 
         $shortopts = 'hV';
@@ -117,7 +142,7 @@ class CertificateDownloader
         }
         $parsed = getopt($shortopts, $longopts);
         if (!$parsed) {
-            return FALSE;
+            return false;
         }
 
         $args = [];
@@ -129,15 +154,15 @@ class CertificateDownloader
                 $args[$opt[0]] = $parsed[$opt[1]];
             }
             else if ($opt[2]) {
-                return FALSE;
+                return false;
             }
         }
 
         if (isset($parsed['h']) || isset($parsed['help'])) {
-            $args['help'] = TRUE;
+            $args['help'] = true;
         }
         if (isset($parsed['V']) || isset($parsed['version'])) {
-            $args['version'] = TRUE;
+            $args['version'] = true;
         }
         return $args;
     }
