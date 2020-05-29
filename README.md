@@ -102,7 +102,40 @@ try {
 }
 ```
 
+### 上传媒体文件
 
+```php
+// 参考上述说明，引入 `MediaUtil` 正常初始化，无额外条件
+use WechatPay\GuzzleMiddleware\Util\MediaUtil;
+// 实例化一个媒体文件流，注意文件后缀名需符合接口要求
+$media = new MediaUtil('/your/file/path/with.extension');
+
+// 正常使用Guzzle发起API请求
+try {
+    $resp = $client->request('POST', 'https://api.mch.weixin.qq.com/v3/[merchant/media/video_upload|marketing/favor/media/image-upload]', [
+        'body'    => $media->getStream(),
+        'headers' => [
+            'Accept'       => 'application/json',
+            'content-type' => $media->getContentType(),
+        ]
+    ]);
+    // POST 语法糖
+    $resp = $client->post('merchant/media/upload', [
+        'body'    => $media->getStream(),
+        'headers' => [
+            'Accept'       => 'application/json',
+            'content-type' => $media->getContentType(),
+        ]
+    ]);
+} catch (Exception $e) {
+    echo $e->getMessage()."\n";
+    if ($e->hasResponse()) {
+        echo $e->getResponse()->getStatusCode().' '.$e->getResponse()->getReasonPhrase()."\n";
+        echo $e->getResponse()->getBody();
+    }
+    return;
+}
+```
 
 ## 定制
 
