@@ -19,7 +19,6 @@ use GuzzleHttp\Psr7\FnStream;
  * Util for Media(image or video) uploading.
  *
  * @package  WechatPay
- * @author   James Zhang(https://github.com/TheNorthMemory)
  */
 class MediaUtil {
 

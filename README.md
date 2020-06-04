@@ -137,6 +137,50 @@ try {
 }
 ```
 
+### 敏感信息加/解密
+
+```php
+// 参考上上述说明，引入 `SensitiveInfoCrypto`
+use WechatPay\GuzzleMiddleware\Util\SensitiveInfoCrypto;
+// 上行加密API 多于 下行解密，默认为加密，实例后直接当方法用即可
+$encryptor = new SensitiveInfoCrypto(PemUtil::loadCertificate('/downloaded/public.pem'));
+
+// 正常使用Guzzle发起API请求
+try {
+    // POST 语法糖
+    $resp = $client->post('/v3/applyment4sub/applyment/', [
+        'json' => [
+            'business_code' => 'APL_98761234',
+            'contact_info'  => [
+                'contact_name'      => $encryptor('value of `contact_name`'),
+                'contact_id_number' => $encryptor('value of `contact_id_number'),
+                'mobile_phone'      => $encryptor('value of `mobile_phone`'),
+                'contact_email'     => $encryptor('value of `contact_email`'),
+            ],
+            //...
+        ],
+        'headers' => [
+            // 命令行获取证书序列号
+            // openssl x509 -in /downloaded/public.pem -noout -serial | awk -F= '{print $2}'
+            'Wechatpay-Serial' => 'must be the serial number via the downloaded pem file of `/v3/certificates`',
+            'Accept'           => 'application/json',
+        ],
+    ]);
+} catch (Exception $e) {
+    echo $e->getMessage()."\n";
+    if ($e->hasResponse()) {
+        echo $e->getResponse()->getStatusCode().' '.$e->getResponse()->getReasonPhrase()."\n";
+        echo $e->getResponse()->getBody();
+    }
+    return;
+}
+
+// 单例加解密示例如下
+$crypto = new SensitiveInfoCrypto($wechatpayCertificate, $merchantPrivateKey);
+$encrypted = $crypto('Alice');
+$decrypted = $crypto->setStage('decrypt')($encrypted);
+```
+
 ## 定制
 
 当默认的本地签名和验签方式不适合你的系统时，你可以通过实现`Signer`或者`Verifier`来定制签名和验签。比如，你的系统把商户私钥集中存储，业务系统需通过远程调用进行签名，你可以这样做。
