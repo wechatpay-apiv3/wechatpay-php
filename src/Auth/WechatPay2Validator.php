@@ -93,8 +93,8 @@ class WechatPay2Validator implements Validator
      */
     protected function checkTimestamp($timestamp)
     {
-        // TODO: change timestamp limit to empirical value
-        return \abs((int)$timestamp - \time()) <= 120;
+        // reject responses beyond 5 minutes
+        return \abs((int)$timestamp - \time()) <= 300;
     }
 
     /**
@@ -110,7 +110,7 @@ class WechatPay2Validator implements Validator
     {
         $body = '';
         $bodyStream = $response->getBody();
-        // TODO: handle non-seekable stream
+        // non-seekable stream need to be handled by the caller
         if ($bodyStream->isSeekable()) {
             $body = (string)$bodyStream;
             $bodyStream->rewind();

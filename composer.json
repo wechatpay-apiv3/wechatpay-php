@@ -18,6 +18,9 @@
     "autoload": {
         "psr-4": { "WechatPay\\GuzzleMiddleware\\" : "src/" }
     },
+    "bin": [
+        "tool/CertificateDownloader.php"
+    ],
     "suggest": {
         "ext-bcmath": "Require bcmath in php 5.* version.",
         "guzzlehttp/guzzle": "For using wechatpay guzzle middleware."

@@ -51,14 +51,14 @@ class SensitiveInfoCrypto implements \JsonSerializable {
     private $publicCert;
 
     /**
-     * @var resource|null $privateKeyCert The private certificate
+     * @var resource|null $privateKey The private key
      */
-    private $privateKeyCert;
+    private $privateKey;
 
     /**
      * @var string $message The encryped or decrypted content
      */
-    private $message;
+    private $message = '';
 
     /**
      * @var string $stage The crypto working scenario, default is `encrypt`.
@@ -76,16 +76,11 @@ class SensitiveInfoCrypto implements \JsonSerializable {
      * Constructor
      *
      * @param resource|null $publicCert The public certificate resource
-     * @param resource|null $privateKeyCert The private key certificate resource
+     * @param resource|null $privateKey The private key resource
      */
-    public function __construct($publicCert, $privateKeyCert = null) {
-        if (!(is_resource($publicCert) || is_resource($privateKeyCert))) {
-            throw new \InvalidArgumentException(
-                'The `publicCert`, `privateKeyCert` must be one resource at least.'
-            );
-        }
+    public function __construct($publicCert, $privateKey = null) {
         $this->publicCert = $publicCert;
-        $this->privateKeyCert = $privateKeyCert;
+        $this->privateKey = $privateKey;
     }
 
     /**
@@ -96,6 +91,9 @@ class SensitiveInfoCrypto implements \JsonSerializable {
      * @return SensitiveInfoCrypto
      */
     private function encrypt($str) {
+        if (!is_resource($this->publicCert)) {
+            throw new \InvalidArgumentException('The publicCert must be resource.');
+        }
         openssl_public_encrypt($str, $encrypted,
             $this->publicCert, \OPENSSL_PKCS1_OAEP_PADDING);
         $this->message = \base64_encode($encrypted);
@@ -111,8 +109,11 @@ class SensitiveInfoCrypto implements \JsonSerializable {
      * @return SensitiveInfoCrypto
      */
     private function decrypt($str) {
+        if (!is_resource($this->privateKey)) {
+            throw new \InvalidArgumentException('The privateKey must be resource.');
+        }
         openssl_private_decrypt(\base64_decode($str), $decrypted,
-            $this->privateKeyCert, \OPENSSL_PKCS1_OAEP_PADDING);
+            $this->privateKey, \OPENSSL_PKCS1_OAEP_PADDING);
         $this->message = $decrypted;
 
         return $this;
@@ -150,7 +151,8 @@ class SensitiveInfoCrypto implements \JsonSerializable {
     }
 
     public function __invoke($str) {
-        return (clone $this)->{$this->stage}($str);
+        $copy = clone $this;
+        return $copy->{$this->stage}($str);
     }
 
     public function __toString() {

@@ -1,6 +1,22 @@
+#!/usr/bin/env php
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
+// load autoload.php
+$possibleFiles = [__DIR__.'/../vendor/autoload.php', __DIR__.'/../../../autoload.php', __DIR__.'/../../autoload.php'];
+$file = null;
+foreach ($possibleFiles as $possibleFile) {
+    if (file_exists($possibleFile)) {
+        $file = $possibleFile;
+        break;
+    }
+}
+if (null === $file) {
+    throw new RuntimeException('Unable to locate autoload.php file.');
+}
+
+require_once $file;
+unset($possibleFiles, $possibleFile, $file);
+
 
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Handler\CurlHandler;

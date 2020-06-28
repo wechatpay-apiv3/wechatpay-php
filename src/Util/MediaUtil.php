@@ -11,9 +11,10 @@
 
 namespace WechatPay\GuzzleMiddleware\Util;
 
-use GuzzleHttp\Psr7\UploadedFile;
+use GuzzleHttp\Psr7\LazyOpenStream;
 use GuzzleHttp\Psr7\MultipartStream;
 use GuzzleHttp\Psr7\FnStream;
+use GuzzleHttp\Psr7\CachingStream;
 
 /**
  * Util for Media(image or video) uploading.
@@ -28,6 +29,12 @@ class MediaUtil {
      * @var string
      */
     private $filepath;
+
+    /**
+     * file content stream to upload
+     * @var string
+     */
+    private $fileStream;
 
     /**
      * upload meta json
@@ -54,15 +61,17 @@ class MediaUtil {
     /**
      * Constructor
      *
-     * @param string $filepath The media file path,
+     * @param string $filepath The media file path or file name,
      *                         should be one of the
      *                         images(jpg|bmp|png)
      *                         or
      *                         video(avi|wmv|mpeg|mp4|mov|mkv|flv|f4v|m4v|rmvb)
+     * @param StreamInterface $fileStream  File content stream, optional
      */
-    public function __construct($filepath)
+    public function __construct($filepath, $fileStream = null)
     {
         $this->filepath = $filepath;
+        $this->fileStream = $fileStream;
         $this->composeStream();
     }
 
@@ -72,14 +81,10 @@ class MediaUtil {
     private function composeStream()
     {
         $basename = \basename($this->filepath);
-        $uploader = new UploadedFile(
-            $this->filepath,
-            0,
-            UPLOAD_ERR_OK,
-            $basename,
-            \GuzzleHttp\Psr7\mimetype_from_filename($this->filepath)
-        );
-        $stream = $uploader->getStream();
+        $stream = isset($this->fileStream) ? $this->fileStream : new LazyOpenStream($this->filepath, 'r');
+        if (!$stream->isSeekable()) {
+            $stream = new CachingStream($stream);
+        }
 
         $json = \GuzzleHttp\json_encode([
             'filename' => $basename,

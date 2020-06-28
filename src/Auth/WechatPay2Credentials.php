@@ -132,7 +132,7 @@ class WechatPay2Credentials implements Credentials
     {
         $body = '';
         $bodyStream = $request->getBody();
-        // TODO: handle non-seekable stream
+        // non-seekable stream need to be handled by the caller
         if ($bodyStream->isSeekable()) {
             $body = (string)$bodyStream;
             $bodyStream->rewind();

@@ -91,6 +91,9 @@ class WechatPayMiddleware
             if (!self::isWechatPayApiUrl($request->getUri())) {
                 return $handler($request, $options);
             }
+            if (!$request->getBody()->isSeekable() && \class_exists("\\GuzzleHttp\\Psr7\\CachingStream")) {
+                $request = $request->withBody(new \GuzzleHttp\Psr7\CachingStream($request->getBody()));
+            }
             $schema = $this->credentials->getSchema();
             $token = $this->credentials->getToken($request);
             $request = $request->withHeader("Authorization", $schema.' '.$token);
@@ -101,12 +104,17 @@ class WechatPayMiddleware
             return $handler($request, $options)->then(
                 function (ResponseInterface $response) use ($request) {
                     $code = $response->getStatusCode();
-                    if ($code >= 200 && $code < 300 && !$this->validator->validate($response)) {
-                        if (\class_exists('\\GuzzleHttp\\Exception\\ServerException')) {
-                            throw new \GuzzleHttp\Exception\ServerException(
-                                "应答的微信支付签名验证失败", $request, $response);
-                        } else {
-                            throw new \RuntimeException("应答的微信支付签名验证失败", $code);
+                    if ($code >= 200 && $code < 300) {
+                        if (!$response->getBody()->isSeekable() && \class_exists("\\GuzzleHttp\\Psr7\\CachingStream")) {
+                            $response = $response->withBody(new \GuzzleHttp\Psr7\CachingStream($response->getBody()));
+                        }
+                        if (!$this->validator->validate($response)) {
+                            if (\class_exists('\\GuzzleHttp\\Exception\\ServerException')) {
+                                throw new \GuzzleHttp\Exception\ServerException(
+                                    "应答的微信支付签名验证失败", $request, $response);
+                            } else {
+                                throw new \RuntimeException("应答的微信支付签名验证失败", $code);
+                            }
                         }
                     }
                     return $response;
