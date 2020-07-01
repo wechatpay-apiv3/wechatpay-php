@@ -10,7 +10,7 @@
 
 ## 项目状态
 
-当前版本为`0.1.1`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`0.2.0`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 
 
@@ -39,7 +39,7 @@ composer require wechatpay/wechatpay-guzzle-middleware
 
 ```json
     "require": {
-        "wechatpay/wechatpay-guzzle-middleware": "^0.1.1"
+        "wechatpay/wechatpay-guzzle-middleware": "^0.2.0"
     }
 ```
 添加配置后，执行安装
