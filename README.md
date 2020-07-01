@@ -143,7 +143,7 @@ try {
 // 参考上上述说明，引入 `SensitiveInfoCrypto`
 use WechatPay\GuzzleMiddleware\Util\SensitiveInfoCrypto;
 // 上行加密API 多于 下行解密，默认为加密，实例后直接当方法用即可
-$encryptor = new SensitiveInfoCrypto(PemUtil::loadCertificate('/downloaded/public.pem'));
+$encryptor = new SensitiveInfoCrypto(PemUtil::loadCertificate('/path/to/wechatpay/cert.pem'));
 
 // 正常使用Guzzle发起API请求
 try {
@@ -161,7 +161,8 @@ try {
         ],
         'headers' => [
             // 命令行获取证书序列号
-            // openssl x509 -in /downloaded/public.pem -noout -serial | awk -F= '{print $2}'
+            // openssl x509 -in /path/to/wechatpay/cert.pem -noout -serial | awk -F= '{print $2}'
+            // 或者使用工具类获取证书序列号 `PemUtil::parseCertificateSerialNo($certificate)`
             'Wechatpay-Serial' => 'must be the serial number via the downloaded pem file of `/v3/certificates`',
             'Accept'           => 'application/json',
         ],

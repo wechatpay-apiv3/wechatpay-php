@@ -66,4 +66,43 @@ class PemUtil
     {
         return \openssl_x509_read($content);
     }
+
+    /**
+     * Parse Serial Number from Certificate
+     *
+     * @param string|resource   $certifcates   Certificates (string - PEM formatted certificate, \
+     * or resource - X.509 certificate resource returned by loadCertificate or openssl_x509_read)
+     *
+     * @return string
+     */
+    public static function parseCertificateSerialNo($certificate)
+    {
+        $info = \openssl_x509_parse($certificate);
+        if (!isset($info['serialNumber']) && !isset($info['serialNumberHex'])) {
+            throw new \InvalidArgumentException('证书格式错误');
+        }
+
+        $serialNo = '';
+        // PHP 7.0+ provides serialNumberHex field
+        if (isset($info['serialNumberHex'])) {
+            $serialNo = $info['serialNumberHex'];
+        } else {
+            // PHP use i2s_ASN1_INTEGER in openssl to convert serial number to string,
+            // i2s_ASN1_INTEGER may produce decimal or hexadecimal format,
+            // depending on the version of openssl and length of data.
+            if (\strtolower(\substr($info['serialNumber'], 0, 2)) == '0x') { // HEX format
+                $serialNo = \substr($info['serialNumber'], 2);
+            } else { // DEC format
+                $value = $info['serialNumber'];
+                $hexvalues = ['0','1','2','3','4','5','6','7',
+                    '8','9','A','B','C','D','E','F'];
+                while ($value != '0') {
+                    $serialNo = $hexvalues[\bcmod($value, '16')].$serialNo;
+                    $value = \bcdiv($value, '16', 0);
+                }
+            }
+        }
+
+        return \strtoupper($serialNo);
+    }
 }
