@@ -134,7 +134,7 @@ try {
         ]
     ]);
     echo $resp->getStatusCode().' '.$resp->getReasonPhrase()."\n";
-    echo $resp->getBody()."\
+    echo $resp->getBody()."\n";
 } catch (Exception $e) {
     echo $e->getMessage()."\n";
     if ($e->hasResponse()) {
@@ -175,6 +175,8 @@ try {
             'Accept'           => 'application/json',
         ],
     ]);
+    echo $resp->getStatusCode().' '.$resp->getReasonPhrase()."\n";
+    echo $resp->getBody()."\n";
 } catch (Exception $e) {
     echo $e->getMessage()."\n";
     if ($e->hasResponse()) {
