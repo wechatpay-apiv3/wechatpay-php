@@ -84,6 +84,9 @@ try {
         'headers' => [ 'Accept' => 'application/json' ]
     ]);
 
+    echo $resp->getStatusCode().' '.$resp->getReasonPhrase()."\n";
+    echo $resp->getBody()."\n";
+
     $resp = $client->request('POST', 'https://api.mch.weixin.qq.com/v3/...', [
         'json' => [ // JSON请求体
             'field1' => 'value1',
@@ -91,6 +94,9 @@ try {
         ],
         'headers' => [ 'Accept' => 'application/json' ]
     ]);
+
+    echo $resp->getStatusCode().' '.$resp->getReasonPhrase()."\n";
+    echo $resp->getBody()."\n";
 } catch (RequestException $e) {
     // 进行错误处理
     echo $e->getMessage()."\n";
@@ -127,6 +133,8 @@ try {
             'content-type' => $media->getContentType(),
         ]
     ]);
+    echo $resp->getStatusCode().' '.$resp->getReasonPhrase()."\n";
+    echo $resp->getBody()."\
 } catch (Exception $e) {
     echo $e->getMessage()."\n";
     if ($e->hasResponse()) {
