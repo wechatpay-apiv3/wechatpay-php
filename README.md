@@ -54,6 +54,7 @@ composer install
 首先，通过`WechatPayMiddlewareBuilder`构建一个`WechatPayMiddleware`，然后将其加入`GuzzleHttp\Client`的`HandlerStack`中。我们提供相应的方法，可以方便的传入商户私钥和微信支付平台证书等信息。
 
 ```php
+use GuzzleHttp\Exception\RequestException;
 use WechatPay\GuzzleMiddleware\WechatPayMiddleware;
 use WechatPay\GuzzleMiddleware\Util\PemUtil;
 
@@ -71,7 +72,7 @@ $wechatpayMiddleware = WechatPayMiddleware::builder()
     ->build();
 
 // 将WechatPayMiddleware添加到Guzzle的HandlerStack中
-$stack = HandlerStack::create();
+$stack = GuzzleHttp\HandlerStack::create();
 $stack->push($wechatpayMiddleware, 'wechatpay');
 
 // 创建Guzzle HTTP Client时，将HandlerStack传入
@@ -80,7 +81,7 @@ $client = new GuzzleHttp\Client(['handler' => $stack]);
 
 // 接下来，正常使用Guzzle发起API请求，WechatPayMiddleware会自动地处理签名和验签
 try {
-    $resp = $client->request('GET', 'https://api.mch.weixin.qq.com/v3/...', [
+    $resp = $client->request('GET', 'https://api.mch.weixin.qq.com/v3/...', [ // 注意替换为实际URL
         'headers' => [ 'Accept' => 'application/json' ]
     ]);
 
@@ -111,7 +112,7 @@ try {
 ### 上传媒体文件
 
 ```php
-// 参考上述说明，引入 `MediaUtil` 正常初始化，无额外条件
+// 参考上述指引说明，并引入 `MediaUtil` 正常初始化，无额外条件
 use WechatPay\GuzzleMiddleware\Util\MediaUtil;
 // 实例化一个媒体文件流，注意文件后缀名需符合接口要求
 $media = new MediaUtil('/your/file/path/with.extension');
