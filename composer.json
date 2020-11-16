@@ -1,6 +1,6 @@
 {
     "name": "wechatpay/wechatpay-guzzle-middleware",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "WechatPay API V3 Guzzle Middleware",
     "type": "library",
     "keywords": [
