@@ -55,7 +55,7 @@ class WechatPayMiddleware
     protected static $BASE_URLS = [
         '/v3/',
         '/sandbox/v3/',
-        '/hk/v3'
+        '/hk/v3/'
     ];
 
     /**
