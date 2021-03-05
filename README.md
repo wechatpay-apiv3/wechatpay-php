@@ -250,7 +250,10 @@ $wechatpayMiddleware = WechatPayMiddleware::builder()
 
 请参考[AesUtil.php](src/Util/AesUtil.php)。
 
+### 配合swoole使用时，上传文件接口报错
 
+建议升级至swoole4.6.0，增加了native-curl([swoole/swoole-src#3863](https://github.com/swoole/swoole-src/pull/3863))支持，我们测试能正常使用了。
+更详细的信息，请参考[#36](https://github.com/wechatpay-apiv3/wechatpay-guzzle-middleware/issues/36)。
 
 ## 联系我们
 
