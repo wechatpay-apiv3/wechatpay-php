@@ -42,7 +42,9 @@ class WechatPayMiddleware
      */
     protected static $API_DOMAINS = [
         'api.mch.weixin.qq.com',
-        'api2.mch.weixin.qq.com'
+        'api2.mch.weixin.qq.com',
+        'apius.mch.weixin.qq.com',
+        'apihk.mch.weixin.qq.com'
     ];
 
     /**
@@ -52,7 +54,8 @@ class WechatPayMiddleware
      */
     protected static $BASE_URLS = [
         '/v3/',
-        '/sandbox/v3/'
+        '/sandbox/v3/',
+        '/hk/v3'
     ];
 
     /**
