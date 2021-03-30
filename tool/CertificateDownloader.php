@@ -109,7 +109,7 @@ class CertificateDownloader
             // 使用下载的证书再来验证一次应答的签名
             $validator = new WechatPay2Validator(new CertificateVerifier($x509Certs));
             if (!$validator->validate($resp)) {
-                echo "validate response fail using downloaded certificates!";
+                echo "validate response fail using downloaded certificates!\n";
                 exit(1);
             }
             // 输出证书信息，并保存到文件
@@ -129,6 +129,8 @@ class CertificateDownloader
             echo "download failed, message=[{$e->getMessage()}] ";
             if ($e->hasResponse()) {
                 echo "code={$e->getResponse()->getStatusCode()}, body=[{$e->getResponse()->getBody()}]\n";
+            } else {
+                echo "\n";
             }
             exit(1);
         }

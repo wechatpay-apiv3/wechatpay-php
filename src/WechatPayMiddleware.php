@@ -33,12 +33,12 @@ class WechatPayMiddleware
      *
      * @var string
      */
-    const VERSION = "0.2.0";
+    const VERSION = '0.2.0';
 
     /**
      * WechatPay API domain
      *
-     * @var string
+     * @var array
      */
     protected static $API_DOMAINS = [
         'api.mch.weixin.qq.com',
@@ -94,12 +94,12 @@ class WechatPayMiddleware
             if (!self::isWechatPayApiUrl($request->getUri())) {
                 return $handler($request, $options);
             }
-            if (!$request->getBody()->isSeekable() && \class_exists("\\GuzzleHttp\\Psr7\\CachingStream")) {
+            if (!$request->getBody()->isSeekable() && \class_exists('\\GuzzleHttp\\Psr7\\CachingStream')) {
                 $request = $request->withBody(new \GuzzleHttp\Psr7\CachingStream($request->getBody()));
             }
             $schema = $this->credentials->getSchema();
             $token = $this->credentials->getToken($request);
-            $request = $request->withHeader("Authorization", $schema.' '.$token);
+            $request = $request->withHeader('Authorization', $schema.' '.$token);
             if (self::isUserAgentOverwritable($request)) {
                 $request = $request->withHeader('User-Agent', self::getUserAgent());
             }
@@ -108,15 +108,15 @@ class WechatPayMiddleware
                 function (ResponseInterface $response) use ($request) {
                     $code = $response->getStatusCode();
                     if ($code >= 200 && $code < 300) {
-                        if (!$response->getBody()->isSeekable() && \class_exists("\\GuzzleHttp\\Psr7\\CachingStream")) {
+                        if (!$response->getBody()->isSeekable() && \class_exists('\\GuzzleHttp\\Psr7\\CachingStream')) {
                             $response = $response->withBody(new \GuzzleHttp\Psr7\CachingStream($response->getBody()));
                         }
                         if (!$this->validator->validate($response)) {
                             if (\class_exists('\\GuzzleHttp\\Exception\\ServerException')) {
                                 throw new \GuzzleHttp\Exception\ServerException(
-                                    "应答的微信支付签名验证失败", $request, $response);
+                                    '应答的微信支付签名验证失败', $request, $response);
                             } else {
-                                throw new \RuntimeException("应答的微信支付签名验证失败", $code);
+                                throw new \RuntimeException('应答的微信支付签名验证失败', $code);
                             }
                         }
                     }
@@ -169,7 +169,7 @@ class WechatPayMiddleware
             if (extension_loaded('curl') && function_exists('curl_version')) {
                 $agent .= ' curl/'.\curl_version()['version'];
             }
-            $agent .= \sprintf(" (%s/%s) PHP/%s", PHP_OS, \php_uname('r'), PHP_VERSION);
+            $agent .= \sprintf(' (%s/%s) PHP/%s', PHP_OS, \php_uname('r'), PHP_VERSION);
             $userAgent = $agent;
         }
         return $userAgent;

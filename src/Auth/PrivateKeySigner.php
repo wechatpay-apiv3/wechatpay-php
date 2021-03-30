@@ -61,11 +61,11 @@ class PrivateKeySigner implements Signer
     public function sign($message)
     {
         if (!in_array('sha256WithRSAEncryption', \openssl_get_md_methods(true))) {
-            throw new \RuntimeException("当前PHP环境不支持SHA256withRSA");
+            throw new \RuntimeException('当前PHP环境不支持SHA256withRSA');
         }
 
         if (!\openssl_sign($message, $sign, $this->privateKey, 'sha256WithRSAEncryption')) {
-            throw new \UnexpectedValueException("签名验证过程发生了错误");
+            throw new \UnexpectedValueException('签名验证过程发生了错误');
         }
         return new SignatureResult(\base64_encode($sign), $this->certificateSerialNumber);
     }
