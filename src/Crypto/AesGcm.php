@@ -37,7 +37,7 @@ class AesGcm implements AesInterface
             throw new \RuntimeException('It looks like the ext-openssl extension missing the `aes-256-gcm` cipher method.');
         }
 
-        $ciphertext = openssl_encrypt($plaintext, static::ALGO_AES_256_GCM, $key, \OPENSSL_RAW_DATA, $iv, $tag, $aad, static::BLOCK_SIZE);
+        $ciphertext = \openssl_encrypt($plaintext, static::ALGO_AES_256_GCM, $key, \OPENSSL_RAW_DATA, $iv, $tag, $aad, static::BLOCK_SIZE);
 
         return \base64_encode($ciphertext . $tag);
     }
