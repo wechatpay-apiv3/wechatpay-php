@@ -4,8 +4,6 @@ namespace WechatPay\GuzzleMiddleware;
 use GuzzleHttp\Client;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Promise\PromiseInterface;
-use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -66,25 +64,6 @@ trait ClientJsonTrait
     }
 
     /**
-     * Taken body string
-     *
-     * @param MessageInterface $message - The message
-     *
-     * @return string
-     */
-    protected static function body(MessageInterface $message): string
-    {
-        $body = '';
-        $bodyStream = $message->getBody();
-        if ($bodyStream->isSeekable()) {
-            $body = (string)$bodyStream;
-            $bodyStream->rewind();
-        }
-
-        return $body;
-    }
-
-    /**
      * APIv3's verifier
      *
      * @param array $certs The wechatpay platform serial and certificate(s), `[serial => certificate]` pair
@@ -95,7 +74,6 @@ trait ClientJsonTrait
     public static function verifier(array $certs): callable
     {
         return static function (ResponseInterface $response) use ($certs) {
-
             \assert($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
                 && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp),
                 new \InvalidArgumentException('The response\'s Headers incomplete.')
@@ -151,7 +129,7 @@ trait ClientJsonTrait
         );
 
         \assert(
-            isset($config['privateKey']) && (\is_string($config['privateKey']) || \is_resource($config['privateKey'])),
+            isset($config['privateKey']) && (\is_string($config['privateKey']) || \is_resource($config['privateKey']) || \is_object($config['privateKey'])),
             new \InvalidArgumentException('The merchant\'s private key aka `privateKey` is required, usual as pem format.')
         );
 

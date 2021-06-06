@@ -12,7 +12,7 @@ class Rsa
      * Encrypts text with `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @param string $plaintext - Cleartext to encode.
-     * @param resource|array|string $publicKey - A PEM encoded public key.
+     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $publicKey - A PEM encoded public key.
      *
      * @return string - The base64-encoded ciphertext.
      */
@@ -30,7 +30,7 @@ class Rsa
      *
      * @param string $message - Content will be `openssl_verify`.
      * @param string $signature - The base64-encoded ciphertext.
-     * @param resource|array|string $publicKey - A PEM encoded public key.
+     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $publicKey - A PEM encoded public key.
      *
      * @return boolean - True is passed, false is failed.
      */
@@ -51,7 +51,7 @@ class Rsa
      * Creates and returns a `base64_encode` string that uses `sha256WithRSAEncryption`.
      *
      * @param string $message - Content will be `openssl_sign`.
-     * @param resource|array|string $privateKey - A PEM encoded private key.
+     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $privateKey - A PEM encoded private key.
      *
      * @return string - The base64-encoded signature.
      */
@@ -72,7 +72,7 @@ class Rsa
      * Decrypts base64 encoded string with `privateKey` with `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @param string $ciphertext - Was previously encrypted string using the corresponding public key.
-     * @param resource|array|string $privateKey - A PEM encoded private key.
+     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $privateKey - A PEM encoded private key.
      *
      * @return string - The utf-8 plaintext.
      */

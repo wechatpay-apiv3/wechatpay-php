@@ -2,6 +2,9 @@
 namespace WechatPay\GuzzleMiddleware;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Promise\PromiseInterface;
+use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Decorate the `\GuzzleHttp\Client` instance
@@ -46,6 +49,25 @@ final class ClientDecorator
     }
 
     /**
+     * Taken body string
+     *
+     * @param MessageInterface $message - The message
+     *
+     * @return string
+     */
+    protected static function body(MessageInterface $message): string
+    {
+        $body = '';
+        $bodyStream = $message->getBody();
+        if ($bodyStream->isSeekable()) {
+            $body = (string)$bodyStream;
+            $bodyStream->rewind();
+        }
+
+        return $body;
+    }
+
+    /**
      * Decorate the `\GuzzleHttp\Client` factory
      *
      * @param array $config - configuration
@@ -68,10 +90,24 @@ final class ClientDecorator
      * @param string $method - The method string.
      * @param array $options - The options.
      *
+     * @return \Psr\Http\Message\ResponseInterface - The `\Psr\Http\Message\ResponseInterface` instance
+     */
+    public function request(string $method, string $pathname, array $options = []): ResponseInterface
+    {
+        return $this->v3->request(\strtoupper($method), $pathname, $options);
+    }
+
+    /**
+     * Async request the remote `$pathname` by a HTTP `$method` verb
+     *
+     * @param string $pathname - The pathname string.
+     * @param string $method - The method string.
+     * @param array $options - The options.
+     *
      * @return \GuzzleHttp\Promise\PromiseInterface - The `\GuzzleHttp\Promise` instance
      */
-    public function request(string $method, string $pathname, array $options = [])
+    public function requestAsync(string $method, string $pathname, array $options = []): PromiseInterface
     {
-        return $this->v3->requestAsync(strtoupper($method), $pathname, $options);
+        return $this->v3->requestAsync(\strtoupper($method), $pathname, $options);
     }
 }
