@@ -71,9 +71,9 @@ trait ClientJsonTrait
      * @return callable
      * @throws \InvalidArgumentException
      */
-    public static function verifier(array $certs): callable
+    public static function verifier(array &$certs): callable
     {
-        return static function (ResponseInterface $response) use ($certs): ResponseInterface {
+        return static function (ResponseInterface $response) use (&$certs): ResponseInterface {
             \assert($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
                 && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp),
                 new \InvalidArgumentException('The response\'s Headers incomplete.')

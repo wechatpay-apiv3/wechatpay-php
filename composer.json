@@ -1,10 +1,16 @@
 {
     "name": "wechatpay/wechatpay-guzzle-middleware",
-    "version": "0.2.2",
+    "version": "1.0.0",
     "description": "WechatPay API V3 Guzzle Middleware",
     "type": "library",
     "keywords": [
-        "wechatpay"
+        "wechatpay", "chainable requests client", "aes-gcm", "rsa-oaep"
+    ],
+    "authors": [
+        {
+            "name": "WeChatPay Community",
+            "homepage": "https://developers.weixin.qq.com/community/pay"
+        }
     ],
     "homepage": "https://wechatpay-api.gitbook.io/wechatpay-api-v3/",
     "license": "Apache-2.0",
@@ -21,7 +27,7 @@
         "psr-4": { "WechatPay\\GuzzleMiddleware\\" : "src/" }
     },
     "bin": [
-        "tool/CertificateDownloader.php"
+        "bin/CertificateDownloader.php"
     ],
     "suggest": {
         "ext-bcmath": "Require bcmath in php 5.* version.",

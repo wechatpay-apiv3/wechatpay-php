@@ -15,8 +15,6 @@ Usage: 微信支付平台证书下载工具 [-hV] [-c=<wechatpayCertificatePath>
   -f, --privatekey=<privateKeyFilePath>
                              商户的私钥文件
   -k, --key=<apiV3key>       ApiV3Key
-  -c, --wechatpay-cert=<wechatpayCertificatePath>
-                             微信支付平台证书，验证签名
   -o, --output=<outputFilePath>
                              下载成功后保存证书的路径
   -V, --version              Print version information and exit.
