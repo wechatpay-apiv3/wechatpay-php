@@ -15,14 +15,15 @@ use GuzzleHttp\Psr7\LazyOpenStream;
 use GuzzleHttp\Psr7\MultipartStream;
 use GuzzleHttp\Psr7\FnStream;
 use GuzzleHttp\Psr7\CachingStream;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Util for Media(image or video) uploading.
  *
  * @package  WechatPay
  */
-class MediaUtil {
-
+class MediaUtil
+{
     /**
      * local file path
      *
@@ -68,7 +69,7 @@ class MediaUtil {
      *                         video(avi|wmv|mpeg|mp4|mov|mkv|flv|f4v|m4v|rmvb)
      * @param StreamInterface $fileStream  File content stream, optional
      */
-    public function __construct($filepath, $fileStream = null)
+    public function __construct(string $filepath, ?StreamInterface $fileStream = null)
     {
         $this->filepath = $filepath;
         $this->fileStream = $fileStream;
@@ -78,10 +79,10 @@ class MediaUtil {
     /**
      * Compose the GuzzleHttp\Psr7\FnStream
      */
-    private function composeStream()
+    private function composeStream(): void
     {
         $basename = \basename($this->filepath);
-        $stream = isset($this->fileStream) ? $this->fileStream : new LazyOpenStream($this->filepath, 'r');
+        $stream = $this->fileStream ?? new LazyOpenStream($this->filepath, 'r');
         if (!$stream->isSeekable()) {
             $stream = new CachingStream($stream);
         }
@@ -123,7 +124,7 @@ class MediaUtil {
     /**
      * Get the `meta` of the multipart data string
      */
-    public function getMeta()
+    public function getMeta(): string
     {
         return $this->meta;
     }
@@ -131,7 +132,7 @@ class MediaUtil {
     /**
      * Get the `GuzzleHttp\Psr7\FnStream` context
      */
-    public function getStream()
+    public function getStream(): StreamInterface
     {
         return $this->stream;
     }
@@ -139,7 +140,7 @@ class MediaUtil {
     /**
      * Get the `Content-Type` of the `GuzzleHttp\Psr7\MultipartStream`
      */
-    public function getContentType()
+    public function getContentType(): string
     {
         return 'multipart/form-data; boundary=' . $this->multipart->getBoundary();
     }
