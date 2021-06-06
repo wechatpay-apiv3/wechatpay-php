@@ -73,7 +73,7 @@ final class ClientDecorator
      * @param array $config - configuration
      * @param string|int $config[mchid] - The merchant ID
      * @param string $config[serial] - The serial number of the merchant certificate
-     * @param resource|array|string $config[privateKey] - The merchant private key.
+     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $config[privateKey] - The merchant private key.
      * @param array $config[certs] - The WeChatPay platform serial and certificate(s), `[serial => certificate]` pair
      *
      * @return ClientDecorator - The `ClientDecorator` instance

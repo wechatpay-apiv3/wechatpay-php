@@ -37,20 +37,20 @@ trait ClientJsonTrait
     ];
 
     /**
-     * APIv3's signer
+     * APIv3's signer middleware stack
      *
      * @param array $config - configuration
      * @param string|int $config[mchid] - The merchant ID
      * @param string $config[serial] - The serial number of the merchant certificate
-     * @param resource|array|string $config[privateKey] - The merchant private key.
+     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $config[privateKey] - The merchant private key.
      * @param array $config[certs] - The WeChatPay platform serial and certificate(s), `[serial => certificate]` pair
      *
      * @return callable
      * @throws \InvalidArgumentException
      */
-    public static function signer($config): callable
+    public static function signer(array $config): callable
     {
-        return static function (RequestInterface $request) use ($config) {
+        return static function (RequestInterface $request) use ($config): RequestInterface {
             $nonce = Formatter::nonce();
             $timestamp = Formatter::timestamp();
             $signature = Rsa::sign(Formatter::request(
@@ -64,7 +64,7 @@ trait ClientJsonTrait
     }
 
     /**
-     * APIv3's verifier
+     * APIv3's verifier middleware stack
      *
      * @param array $certs The wechatpay platform serial and certificate(s), `[serial => certificate]` pair
      *
@@ -73,7 +73,7 @@ trait ClientJsonTrait
      */
     public static function verifier(array $certs): callable
     {
-        return static function (ResponseInterface $response) use ($certs) {
+        return static function (ResponseInterface $response) use ($certs): ResponseInterface {
             \assert($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
                 && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp),
                 new \InvalidArgumentException('The response\'s Headers incomplete.')
@@ -110,7 +110,7 @@ trait ClientJsonTrait
      * @param array $config - configuration
      * @param string|int $config[mchid] - The merchant ID
      * @param string $config[serial] - The serial number of the merchant certificate
-     * @param resource|array|string $config[privateKey] - The merchant private key.
+     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $config[privateKey] - The merchant private key.
      * @param array $config[certs] - The wechatpay platform serial and certificate(s), `[serial => certificate]` pair
      *
      * @return \GuzzleHttp\Client - The `\GuzzleHttp\Client` instance
