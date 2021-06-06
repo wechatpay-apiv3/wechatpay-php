@@ -3,6 +3,7 @@ namespace WechatPay\GuzzleMiddleware;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\UriTemplate\UriTemplate;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -84,6 +85,30 @@ final class ClientDecorator
     }
 
     /**
+     * Expands a URI template
+     *
+     * @param string $template  URI template
+     * @param array  $variables Template variables
+     *
+     * @return string
+    */
+    protected function withUriTemplate(string $template, array $variables = []): string
+    {
+        if (\extension_loaded('uri_template')) {
+            // @codeCoverageIgnoreStart
+            return \uri_template($template, $variables);
+            // @codeCoverageIgnoreEnd
+        }
+
+        static $uriTemplate;
+        if (!$uriTemplate) {
+            $uriTemplate = new UriTemplate();
+        }
+
+        return $uriTemplate->expand($template, $variables);
+    }
+
+    /**
      * Request the remote `$pathname` by a HTTP `$method` verb
      *
      * @param string $pathname - The pathname string.
@@ -94,7 +119,7 @@ final class ClientDecorator
      */
     public function request(string $method, string $pathname, array $options = []): ResponseInterface
     {
-        return $this->v3->request(\strtoupper($method), $pathname, $options);
+        return $this->v3->request(\strtoupper($method), $this->withUriTemplate($pathname, $options), $options);
     }
 
     /**
@@ -108,6 +133,6 @@ final class ClientDecorator
      */
     public function requestAsync(string $method, string $pathname, array $options = []): PromiseInterface
     {
-        return $this->v3->requestAsync(\strtoupper($method), $pathname, $options);
+        return $this->v3->requestAsync(\strtoupper($method), $this->withUriTemplate($pathname, $options), $options);
     }
 }

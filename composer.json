@@ -9,12 +9,13 @@
     "homepage": "https://wechatpay-api.gitbook.io/wechatpay-api-v3/",
     "license": "Apache-2.0",
     "require": {
+        "guzzlehttp/uri-template": "*",
+        "guzzlehttp/guzzle": ">=7.0",
         "php": ">=7.2",
         "ext-openssl": "*"
     },
     "require-dev": {
-        "guzzlehttp/uri-template": "*",
-        "guzzlehttp/guzzle": ">=7.0"
+        "phpunit/phpunit": "*"
     },
     "autoload": {
         "psr-4": { "WechatPay\\GuzzleMiddleware\\" : "src/" }
@@ -24,6 +25,7 @@
     ],
     "suggest": {
         "ext-bcmath": "Require bcmath in php 5.* version.",
+        "guzzlehttp/uri-template": "For using wechatpay guzzle url-template(RFC6570) feature.",
         "guzzlehttp/guzzle": "For using wechatpay guzzle middleware."
     }
 }
