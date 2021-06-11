@@ -6,10 +6,11 @@ Certificate Downloader 是 PHP版 微信支付 APIv3 平台证书的命令行下
 使用方法与 [Java版Certificate Downloader](https://github.com/wechatpay-apiv3/CertificateDownloader) 一致，参数与常见问题请参考[其文档](https://github.com/wechatpay-apiv3/CertificateDownloader/blob/master/README.md)。
 
 ```shell
-> php tool/CertificateDownloader.php
+> php bin/CertificateDownloader.php
+
 Usage: 微信支付平台证书下载工具 [-hV] [-c=<wechatpayCertificatePath>]
                     -f=<privateKeyFilePath> -k=<apiV3key> -m=<merchantId>
-                    -o=<outputFilePath> -s=<serialNo>
+                    -o=[outputFilePath] -s=<serialNo>
   -m, --mchid=<merchantId>   商户号
   -s, --serialno=<serialNo>  商户证书的序列号
   -f, --privatekey=<privateKeyFilePath>
@@ -24,7 +25,7 @@ Usage: 微信支付平台证书下载工具 [-hV] [-c=<wechatpayCertificatePath>
 完整命令示例：
 
 ```shell
-./bin/CertificateDownloader.php -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath} -c ${wechatpayCertificateFilePath}
+./bin/CertificateDownloader.php -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
 ```
 
 
