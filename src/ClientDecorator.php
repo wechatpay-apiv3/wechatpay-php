@@ -10,14 +10,9 @@ use Psr\Http\Message\ResponseInterface;
 /**
  * Decorate the `\GuzzleHttp\Client` instance
  */
-final class ClientDecorator
+final class ClientDecorator implements ClientDecoratorInterface
 {
     use ClientJsonTrait;
-
-    /**
-     * @var string - The WechatPayMiddleware version
-     */
-    const VERSION = '1.0.0';
 
     /**
      * Deep merge the input with the defaults

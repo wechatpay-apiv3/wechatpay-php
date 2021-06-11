@@ -7,7 +7,6 @@ use GuzzleHttp\HandlerStack;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-use WechatPay\GuzzleMiddleware\Formatter;
 use WechatPay\GuzzleMiddleware\Crypto\Rsa;
 
 const WechatpayNonce = 'Wechatpay-Nonce';
@@ -35,6 +34,15 @@ trait ClientJsonTrait
             'Content-Type' => 'application/json',
         ],
     ];
+
+    /**
+     * Deep merge the input with the defaults
+     *
+     * @param array $config - The configuration.
+     *
+     * @return array - With the built-in configuration.
+     */
+    abstract protected static function withDefaults(array $config = []): array;
 
     /**
      * APIv3's signer middleware stack

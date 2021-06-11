@@ -1,8 +1,6 @@
 <?php
 namespace WechatPay\GuzzleMiddleware;
 
-use WechatPay\GuzzleMiddleware\ClientDecorator;
-
 /**
  * Chainable the client for sending HTTP requests.
  */
@@ -24,34 +22,35 @@ class Builder
      * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $config[privateKey] - The merchant private key.
      * @param array $config[certs] - The WeChatPay platform serial and certificate(s), `[serial => certificate]` pair
      *
-     * @return \ArrayIterator - The chainable client
+     * @return BuilderChainable - The chainable client
      */
     public static function factory(array $config = [])
     {
-        return new class([], new ClientDecorator($config)) extends \ArrayIterator {
+        return new class([], new ClientDecorator($config)) extends \ArrayIterator implements BuilderChainable
+        {
             use BuilderTrait;
 
             /**
              * Compose the chainable `ClientDecorator` instance, most starter with the tree root point
              */
-            public function __construct(array $input = [], ?ClientDecorator $instance = null) {
+            public function __construct(array $input = [], ?ClientDecoratorInterface $instance = null) {
                 parent::__construct($input, self::STD_PROP_LIST | self::ARRAY_AS_PROPS);
 
                 $this->setDriver($instance);
             }
 
             /**
-             * @var ClientDecorator $driver - The `ClientDecorator` instance
+             * @var ClientDecoratorInterface $driver - The `ClientDecorator` instance
              */
             protected $driver;
 
             /**
              * `$driver` setter
-             * @param ClientDecorator $instance - The `ClientDecorator` instance
+             * @param ClientDecoratorInterface $instance - The `ClientDecorator` instance
              *
-             * @return self
+             * @return BuilderChainable
              */
-            public function setDriver(ClientDecorator &$instance)
+            public function setDriver(ClientDecoratorInterface &$instance)
             {
                 $this->driver = $instance;
 
@@ -61,9 +60,9 @@ class Builder
             /**
              * `$driver` getter
              *
-             * @return ClientDecorator - The `ClientDecorator` instance
+             * @return ClientDecoratorInterface - The `ClientDecorator` instance
              */
-            public function getDriver(): ClientDecorator
+            public function getDriver(): ClientDecoratorInterface
             {
                 return $this->driver;
             }
@@ -105,17 +104,17 @@ class Builder
              */
             protected function simplized(): array
             {
-                return \array_filter($this->getArrayCopy(), function($v) { return !($v instanceof self); });
+                return \array_filter($this->getArrayCopy(), function($v) { return !($v instanceof BuilderChainable); });
             }
 
             /**
-             * Chainable the given `$key` with the `ClientDecorator` instance
+             * Chainable the given `$key` with the `ClientDecoratorInterface` instance
              *
              * @param string|int $key - The key
              *
-             * @return self
+             * @return BuilderChainable
              */
-            public function offsetGet($key)
+            public function offsetGet($key): BuilderChainable
             {
                 if (!$this->offsetExists($key)) {
                   $index = $this->simplized();

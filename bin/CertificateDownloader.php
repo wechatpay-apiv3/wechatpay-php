@@ -20,7 +20,7 @@ unset($possibleFiles, $possibleFile, $file);
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Utils;
 use WechatPay\GuzzleMiddleware\Builder;
-use WechatPay\GuzzleMiddleware\ClientDecorator;
+use WechatPay\GuzzleMiddleware\ClientDecoratorInterface;
 use WechatPay\GuzzleMiddleware\Crypto\AesGcm;
 
 class CertificateDownloader
@@ -39,7 +39,7 @@ class CertificateDownloader
             exit(0);
         }
         if (isset($opts['version'])) {
-            echo ClientDecorator::VERSION, PHP_EOL;
+            echo ClientDecoratorInterface::VERSION, PHP_EOL;
             exit(0);
         }
 

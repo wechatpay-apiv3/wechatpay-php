@@ -10,6 +10,22 @@ use Psr\Http\Message\ResponseInterface;
 trait BuilderTrait
 {
     /**
+     * `$driver` getter
+     *
+     * @return ClientDecoratorInterface - The `ClientDecorator` instance
+     */
+    abstract public function getDriver(): ClientDecoratorInterface;
+
+    /**
+     * URI pathname
+     *
+     * @param string [$seperator = '/'] - The URI seperator
+     *
+     * @return string - The URI string
+     */
+    abstract protected function pathname(string $seperator = '/'): string;
+
+    /**
      * Create and send an HTTP GET request.
      *
      * @param array $options Request options to apply.
