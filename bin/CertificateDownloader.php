@@ -152,8 +152,8 @@ Usage: 微信支付平台证书下载工具 [-hV]
   -f, --privatekey=<privateKeyFilePath>
                              商户的私钥文件
   -k, --key=<apiV3key>       ApiV3Key
-  -o, --output=<outputFilePath>
-                             下载成功后保存证书的路径
+  -o, --output=[outputFilePath]
+                             下载成功后保存证书的路径，可选参数，默认为临时文件目录夹
   -V, --version              Print version information and exit.
   -h, --help                 Show this help message and exit.
 

@@ -11,8 +11,6 @@
 
 namespace WechatPay\GuzzleMiddleware\Crypto;
 
-use WechatPay\GuzzleMiddleware\Crypto\AesInterface;
-
 /**
  * Util for AEAD_AES_256_GCM.
  *
