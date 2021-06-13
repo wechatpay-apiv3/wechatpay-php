@@ -20,6 +20,19 @@ namespace WechatPay\GuzzleMiddleware\Crypto;
 class AesGcm implements AesInterface
 {
     /**
+     * Detect the ext-openssl whether or nor including the `aes-256-gcm` algorithm
+     *
+     * @return void
+     * @throws \RuntimeException
+     */
+    private static function preCondition(): void
+    {
+        if (!\in_array(static::ALGO_AES_256_GCM, \openssl_get_cipher_methods())) {
+            throw new \RuntimeException('It looks like the ext-openssl extension missing the `aes-256-gcm` cipher method.');
+        }
+    }
+
+    /**
      * Encrypts given data with given method and key, returns a base64 encoded string.
      *
      * @param string $plaintext - Text to encode.
@@ -31,9 +44,7 @@ class AesGcm implements AesInterface
      */
     public static function encrypt(string $plaintext, string $key, string $iv = '', string $aad = ''): string
     {
-        if (!in_array(static::ALGO_AES_256_GCM, \openssl_get_cipher_methods())) {
-            throw new \RuntimeException('It looks like the ext-openssl extension missing the `aes-256-gcm` cipher method.');
-        }
+        static::preCondition();
 
         $ciphertext = \openssl_encrypt($plaintext, static::ALGO_AES_256_GCM, $key, \OPENSSL_RAW_DATA, $iv, $tag, $aad, static::BLOCK_SIZE);
 
@@ -52,9 +63,7 @@ class AesGcm implements AesInterface
      */
     public static function decrypt(string $ciphertext, string $key, string $iv = '', string $aad = ''): string
     {
-        if (!in_array(static::ALGO_AES_256_GCM, \openssl_get_cipher_methods())) {
-            throw new \RuntimeException('It looks like the ext-openssl extension missing the `aes-256-gcm` cipher method.');
-        }
+        static::preCondition();
 
         $ciphertext = \base64_decode($ciphertext);
         $authTag = \substr($ciphertext, -static::BLOCK_SIZE);

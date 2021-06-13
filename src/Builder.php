@@ -78,9 +78,9 @@ class Builder
              */
             protected function normalize(string $thing = ''): string
             {
-                return \preg_replace('/^_(.*)_$/', '{\1}', \preg_replace_callback('/[A-Z]/', function($piece) {
+                return \preg_replace('/^_(.*)_$/', '{\1}', \preg_replace_callback('/[A-Z]/', static function($piece) {
                     return '-' . \strtolower($piece[0]);
-                }, \preg_replace_callback('/^[A-Z]/', function($piece) {
+                }, \preg_replace_callback('/^[A-Z]/', static function($piece) {
                     return \strtolower($piece);
                 }, $thing)));
             }
@@ -104,7 +104,7 @@ class Builder
              */
             protected function simplized(): array
             {
-                return \array_filter($this->getArrayCopy(), function($v) { return !($v instanceof BuilderChainable); });
+                return \array_filter($this->getArrayCopy(), static function($v) { return !($v instanceof BuilderChainable); });
             }
 
             /**

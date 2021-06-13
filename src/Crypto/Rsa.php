@@ -9,6 +9,19 @@ const sha256WithRSAEncryption = 'sha256WithRSAEncryption';
 class Rsa
 {
     /**
+     * Detect the ext-openssl whether or nor including the `sha256WithRSAEncryption` cipher method
+     *
+     * @return void
+     * @throws \RuntimeException
+     */
+    private static function preCondition(): void
+    {
+        if (!\in_array(sha256WithRSAEncryption, \openssl_get_md_methods(true))) {
+            throw new \RuntimeException('It looks like the ext-openssl extension missing the `sha256WithRSAEncryption` digest method.');
+        }
+    }
+
+    /**
      * Encrypts text with `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @param string $plaintext - Cleartext to encode.
@@ -36,9 +49,7 @@ class Rsa
      */
     public static function verify(string $message, string $signature, $publicKey): bool
     {
-        if (!\in_array(sha256WithRSAEncryption, \openssl_get_md_methods(true))) {
-            throw new \RuntimeException('It looks like the ext-openssl extension missing the `sha256WithRSAEncryption` digest method.');
-        }
+        static::preCondition();
 
         if (($result = \openssl_verify($message, \base64_decode($signature), $publicKey, sha256WithRSAEncryption)) === false) {
             throw new \UnexpectedValueException('Verified the input $message failed, please checking your $publicKey whether or nor correct.');
@@ -57,9 +68,7 @@ class Rsa
      */
     public static function sign(string $message, $privateKey): string
     {
-        if (!\in_array(sha256WithRSAEncryption, \openssl_get_md_methods(true))) {
-            throw new \RuntimeException('It looks like the ext-openssl extension missing the `sha256WithRSAEncryption` digest method.');
-        }
+        static::preCondition();
 
         if (!\openssl_sign($message, $signature, $privateKey, sha256WithRSAEncryption)) {
             throw new \UnexpectedValueException('Signing the input $message failed, please checking your $privateKey whether or nor correct.');

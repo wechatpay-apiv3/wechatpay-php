@@ -61,7 +61,7 @@ class CertificateDownloader
         ]);
 
         $handler = $wxpay->getDriver()->v3->getConfig('handler');
-        $handler->after('verifier', Middleware::mapResponse(function($response) use ($apiv3Secret, &$certs) {
+        $handler->after('verifier', Middleware::mapResponse(static function($response) use ($apiv3Secret, &$certs) {
             $body = $response->getBody()->getContents();
             $body = Utils::jsonDecode($body);
             \array_map(function($row) use ($apiv3Secret, &$certs) {
@@ -72,19 +72,23 @@ class CertificateDownloader
             return $response;
         }), 'injector');
 
-        $wxpay->v3->certificates->getAsync(['debug' => true])->then(function($response) use ($outputDir, &$certs) {
+        $wxpay->v3->certificates->getAsync(['debug' => true])->then(static function($response) use ($outputDir, &$certs) {
             $body = $response->getBody()->getContents();
             $body = Utils::jsonDecode($body);
             \array_walk($body->data, function($row, $index, $certs) use ($outputDir) {
                 $serialNo = $row->serial_no;
+                $outpath = $outputDir . DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
+
+                $timeZone = new \DateTimeZone('Asia/Shanghai');
+
                 echo 'Certificate #', $index, ' {', PHP_EOL;
                 echo '    Serial Number: ', $serialNo, PHP_EOL;
-                echo '    Not Before: ', (new \DateTime($row->effective_time))->format('Y-m-d H:i:s'), PHP_EOL;
-                echo '    Not After: ', (new \DateTime($row->expire_time))->format('Y-m-d H:i:s'), PHP_EOL;
+                echo '    Not Before: ', (new \DateTime($row->effective_time, $timeZone))->format('Y-m-d H:i:s'), PHP_EOL;
+                echo '    Not After: ', (new \DateTime($row->expire_time, $timeZone))->format('Y-m-d H:i:s'), PHP_EOL;
+                echo '    Saved to: ', $outpath, PHP_EOL;
                 echo '    Content: ', PHP_EOL, PHP_EOL, $certs[$serialNo], PHP_EOL, PHP_EOL;
                 echo '}', PHP_EOL;
 
-                $outpath = $outputDir . DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
                 \file_put_contents($outpath, $certs[$serialNo]);
             }, $certs);
 
