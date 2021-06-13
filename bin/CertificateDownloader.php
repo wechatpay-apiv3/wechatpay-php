@@ -75,11 +75,10 @@ class CertificateDownloader
         $wxpay->v3->certificates->getAsync(['debug' => true])->then(static function($response) use ($outputDir, &$certs) {
             $body = $response->getBody()->getContents();
             $body = Utils::jsonDecode($body);
-            \array_walk($body->data, function($row, $index, $certs) use ($outputDir) {
+            $timeZone = new \DateTimeZone('Asia/Shanghai');
+            \array_walk($body->data, static function($row, $index, $certs) use ($outputDir, $timeZone) {
                 $serialNo = $row->serial_no;
                 $outpath = $outputDir . DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
-
-                $timeZone = new \DateTimeZone('Asia/Shanghai');
 
                 echo 'Certificate #', $index, ' {', PHP_EOL;
                 echo '    Serial Number: ', $serialNo, PHP_EOL;
