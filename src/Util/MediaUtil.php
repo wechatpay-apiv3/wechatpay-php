@@ -1,16 +1,11 @@
 <?php
-/**
- * MediaUtil
- * PHP version 5
- *
- * @category Class
- * @package  WechatPay
- * @author   WeChatPay Team
- * @link     https://pay.weixin.qq.com
- */
 
 namespace WechatPay\GuzzleMiddleware\Util;
 
+use function basename;
+
+use GuzzleHttp\Utils as GHU;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Psr7\LazyOpenStream;
 use GuzzleHttp\Psr7\MultipartStream;
 use GuzzleHttp\Psr7\FnStream;
@@ -19,8 +14,6 @@ use Psr\Http\Message\StreamInterface;
 
 /**
  * Util for Media(image or video) uploading.
- *
- * @package  WechatPay
  */
 class MediaUtil
 {
@@ -38,11 +31,11 @@ class MediaUtil
     private $fileStream;
 
     /**
-     * upload meta json
+     * upload meta json string
      *
      * @var string
      */
-    private $json;
+    private $meta;
 
     /**
      * upload contents stream
@@ -55,7 +48,7 @@ class MediaUtil
     /**
      * multipart stream wrapper
      *
-     * @var FnStream
+     * @var StreamInterface
      */
     private $stream;
 
@@ -81,15 +74,15 @@ class MediaUtil
      */
     private function composeStream(): void
     {
-        $basename = \basename($this->filepath);
+        $basename = basename($this->filepath);
         $stream = $this->fileStream ?? new LazyOpenStream($this->filepath, 'r');
         if (!$stream->isSeekable()) {
             $stream = new CachingStream($stream);
         }
 
-        $json = \GuzzleHttp\json_encode([
+        $json = GHU::jsonEncode([
             'filename' => $basename,
-            'sha256'   => \GuzzleHttp\Psr7\hash($stream, 'sha256'),
+            'sha256'   => Utils::hash($stream, 'sha256'),
         ]);
         $this->meta = $json;
 

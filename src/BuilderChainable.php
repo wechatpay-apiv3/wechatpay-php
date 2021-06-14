@@ -1,10 +1,13 @@
 <?php
+
 namespace WechatPay\GuzzleMiddleware;
 
+use ArrayAccess;
+
 /**
- * Signature of the Chainable `\GuzzleHttp\Client` interface
+ * Signature of the Chainable `GuzzleHttp\Client` interface
  */
-interface BuilderChainable extends \ArrayAccess
+interface BuilderChainable extends ArrayAccess
 {
     /**
      * Chainable the given `$key` with the `ClientDecoratorInterface` instance

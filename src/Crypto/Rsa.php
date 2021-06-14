@@ -1,5 +1,20 @@
 <?php
+
 namespace WechatPay\GuzzleMiddleware\Crypto;
+
+use function in_array;
+use function openssl_get_md_methods;
+use function openssl_public_encrypt;
+use function base64_encode;
+use function openssl_verify;
+use function base64_decode;
+use function openssl_sign;
+use function openssl_private_decrypt;
+
+use const OPENSSL_PKCS1_OAEP_PADDING;
+
+use RuntimeException;
+use UnexpectedValueException;
 
 const sha256WithRSAEncryption = 'sha256WithRSAEncryption';
 
@@ -12,12 +27,12 @@ class Rsa
      * Detect the ext-openssl whether or nor including the `sha256WithRSAEncryption` cipher method
      *
      * @return void
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     private static function preCondition(): void
     {
-        if (!\in_array(sha256WithRSAEncryption, \openssl_get_md_methods(true))) {
-            throw new \RuntimeException('It looks like the ext-openssl extension missing the `sha256WithRSAEncryption` digest method.');
+        if (!in_array(sha256WithRSAEncryption, openssl_get_md_methods(true))) {
+            throw new RuntimeException('It looks like the ext-openssl extension missing the `sha256WithRSAEncryption` digest method.');
         }
     }
 
@@ -28,14 +43,15 @@ class Rsa
      * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $publicKey - A PEM encoded public key.
      *
      * @return string - The base64-encoded ciphertext.
+     * @throws UnexpectedValueException
      */
     public static function encrypt(string $plaintext, $publicKey): string
     {
-        if (!\openssl_public_encrypt($plaintext, $encrypted, $publicKey, \OPENSSL_PKCS1_OAEP_PADDING)) {
-            throw new \UnexpectedValueException('Encrypting the input $plaintext failed, please checking your $publicKey whether or nor correct.');
+        if (!openssl_public_encrypt($plaintext, $encrypted, $publicKey, OPENSSL_PKCS1_OAEP_PADDING)) {
+            throw new UnexpectedValueException('Encrypting the input $plaintext failed, please checking your $publicKey whether or nor correct.');
         }
 
-        return \base64_encode($encrypted);
+        return base64_encode($encrypted);
     }
 
     /**
@@ -46,13 +62,14 @@ class Rsa
      * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $publicKey - A PEM encoded public key.
      *
      * @return boolean - True is passed, false is failed.
+     * @throws UnexpectedValueException
      */
     public static function verify(string $message, string $signature, $publicKey): bool
     {
         static::preCondition();
 
-        if (($result = \openssl_verify($message, \base64_decode($signature), $publicKey, sha256WithRSAEncryption)) === false) {
-            throw new \UnexpectedValueException('Verified the input $message failed, please checking your $publicKey whether or nor correct.');
+        if (($result = openssl_verify($message, base64_decode($signature), $publicKey, sha256WithRSAEncryption)) === false) {
+            throw new UnexpectedValueException('Verified the input $message failed, please checking your $publicKey whether or nor correct.');
         }
 
         return $result === 1;
@@ -65,16 +82,17 @@ class Rsa
      * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $privateKey - A PEM encoded private key.
      *
      * @return string - The base64-encoded signature.
+     * @throws UnexpectedValueException
      */
     public static function sign(string $message, $privateKey): string
     {
         static::preCondition();
 
-        if (!\openssl_sign($message, $signature, $privateKey, sha256WithRSAEncryption)) {
-            throw new \UnexpectedValueException('Signing the input $message failed, please checking your $privateKey whether or nor correct.');
+        if (!openssl_sign($message, $signature, $privateKey, sha256WithRSAEncryption)) {
+            throw new UnexpectedValueException('Signing the input $message failed, please checking your $privateKey whether or nor correct.');
         }
 
-        return \base64_encode($signature);
+        return base64_encode($signature);
     }
 
     /**
@@ -84,11 +102,12 @@ class Rsa
      * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $privateKey - A PEM encoded private key.
      *
      * @return string - The utf-8 plaintext.
+     * @throws UnexpectedValueException
      */
     public static function decrypt(string $ciphertext, $privateKey): string
     {
-        if (!\openssl_private_decrypt(\base64_decode($ciphertext), $decrypted, $privateKey, \OPENSSL_PKCS1_OAEP_PADDING)) {
-            throw new \UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $privateKey whether or nor correct.');
+        if (!openssl_private_decrypt(base64_decode($ciphertext), $decrypted, $privateKey, OPENSSL_PKCS1_OAEP_PADDING)) {
+            throw new UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $privateKey whether or nor correct.');
         }
 
         return $decrypted;
