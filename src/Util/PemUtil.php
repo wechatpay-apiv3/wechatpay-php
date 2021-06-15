@@ -19,6 +19,7 @@ class PemUtil
      * Read private key from file
      *
      * @param string $filepath - PEM encoded private key file path
+     * @param null|string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
      *
      * @return OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
      */
@@ -43,7 +44,7 @@ class PemUtil
      * Read private key from string
      *
      * @param OpenSSLAsymmetricKey|resource|array|string $content - PEM encoded private key string content
-     * @param ?string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
+     * @param null|string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
      *
      * @return OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
      */
@@ -76,7 +77,7 @@ class PemUtil
     {
         $info = openssl_x509_parse($certificate);
         if (false === $info || !isset($info['serialNumberHex'])) {
-            throw new InvalidArgumentException('证书格式错误');
+            throw new InvalidArgumentException('Read the $certificate failed, please check it whether or nor correct');
         }
 
         return strtoupper($info['serialNumberHex'] ?? '');
