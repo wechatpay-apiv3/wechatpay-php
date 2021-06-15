@@ -18,7 +18,7 @@ use function strtoupper;
 use const PHP_OS;
 use const PHP_VERSION;
 
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\UriTemplate\UriTemplate;
 use Psr\Http\Message\MessageInterface;
@@ -51,7 +51,7 @@ final class ClientDecorator implements ClientDecoratorInterface
     {
         $value = ['WechatPay-Guzzle/' . static::VERSION];
 
-        array_push($value, 'GuzzleHttp/' . Client::MAJOR_VERSION);
+        array_push($value, 'GuzzleHttp/' . ClientInterface::MAJOR_VERSION);
 
         extension_loaded('curl') && function_exists('curl_version') && array_push($value, 'curl/' . curl_version()['version']);
 
@@ -114,9 +114,9 @@ final class ClientDecorator implements ClientDecoratorInterface
     /**
      * @inheritDoc
      */
-    public function select(?string $protocol = null): Client
+    public function select(?string $protocol = null): ClientInterface
     {
-        return 0 === strcasecmp(ClientDecoratorInterface::XML_BASED, $protocol)
+        return $protocol && 0 === strcasecmp(ClientDecoratorInterface::XML_BASED, $protocol)
             ? $this->{ClientDecoratorInterface::XML_BASED}
             : $this->{ClientDecoratorInterface::JSON_BASED};
     }
