@@ -27,24 +27,26 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 我们开发和测试使用的环境如下：
 
-+ PHP 7.2+
-+ guzzlehttp/guzzle 7.0+
++ PHP ^7.2.5 || ^8.0
++ guzzlehttp/guzzle ^7.0
 
 
 ## 安装
 
-可以使用PHP包管理工具composer引入SDK到项目中：
+推荐使用PHP包管理工具`composer`引入SDK到项目中：
 
-#### Composer
 
-方式一：在项目目录中，通过composer命令行添加：
+### 方式一
+
+在项目目录中，通过composer命令行添加：
 
 ```shell
 composer require wechatpay/wechatpay
 ```
 
+### 方式二
 
-方式二：在项目的composer.json中加入以下配置：
+在项目的`composer.json`中加入以下配置：
 
 ```json
     "require": {
@@ -100,7 +102,7 @@ $instance = Builder::factory([
 - `merchant[cert => $path]` 为你的`商户证书`,一般是文件名为`apiclient_cert.pem`文件路径
 - `merchant[key => $path]` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件路径
 
-**注：** 1.0版本做了重构及优化， `APIv3`, `APIv2` 以及 `GuzzleHttp\Client` 的 `$config = []` 初始化参数，均融合在一个型参上。
+**注：** `APIv3`, `APIv2` 以及 `GuzzleHttp\Client` 的 `$config = []` 初始化参数，均融合在一个型参上。
 
 ## APIv3
 
@@ -169,7 +171,7 @@ $resp = $instance->v3->marketing->favor->media->imageUpload->postAsync([
 ### 敏感信息加/解密
 
 ```php
-// 参考上上述说明，引入 `Crypto\Rsa`
+// 参考上上述说明，引入 `WeChatPay\Crypto\Rsa`
 use WeChatPay\Crypto\Rsa;
 // 加载最新的平台证书
 $publicKey = PemUtil::loadCertificate('/path/to/wechatpay/cert.pem');
@@ -240,7 +242,7 @@ print_r($res);
 
 ### 如何下载平台证书？
 
-使用内置的平台下载器 `./bin/CertificateDownloader.php` ，验签逻辑与有`平台证书`请求其他接口一致，即在请求完成后，立即用获得的`平台证书`对返回的消息进行验签，下载器同时开启了 `Guzzle` 的 `debug => true` 方便查询请求/返回消息内容。
+使用内置的平台下载器 `./bin/CertificateDownloader.php` ，验签逻辑与有`平台证书`请求其他接口一致，即在请求完成后，立即用获得的`平台证书`对返回的消息进行验签，下载器同时开启了 `Guzzle` 的 `debug => true` 参数，方便查询请求/响应消息的基础调试信息。
 
 
 ### 证书和回调解密需要的AesGcm解密在哪里？

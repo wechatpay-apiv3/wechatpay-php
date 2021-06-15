@@ -13,7 +13,6 @@ use function preg_match;
 use function strncasecmp;
 use function strcasecmp;
 use function preg_replace;
-use function strtoupper;
 
 use const PHP_OS;
 use const PHP_VERSION;
@@ -25,7 +24,7 @@ use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Decorate the `\GuzzleHttp\Client` instance
+ * Decorate the `GuzzleHttp\Client` instance
  */
 final class ClientDecorator implements ClientDecoratorInterface
 {
@@ -87,6 +86,10 @@ final class ClientDecorator implements ClientDecoratorInterface
      * @param string $config[serial] - The serial number of the merchant certificate
      * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $config[privateKey] - The merchant private key.
      * @param array $config[certs] - The WeChatPay platform serial and certificate(s), `[serial => certificate]` pair
+     * @param string [$config[secret] = null] - The secret key string
+     * @param array [$config[merchant] = null] - The merchant private key and certificate array
+     * @param string [$config[merchant[key]] = null] - The merchant private key(file path string).
+     * @param string [$config[merchant[cert]] = null] - The merchant certificate(file path string).
      *
      * @return ClientDecorator - The `ClientDecorator` instance
      */
@@ -129,7 +132,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      *
      * @return string
     */
-    protected function withUriTemplate(string $template, array $variables = []): string
+    protected static function withUriTemplate(string $template, array $variables = []): string
     {
         if (0 === preg_match('#{(?:[^/]+)}#', $template)) {
             return $template;
@@ -154,9 +157,9 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
-        $did = static::prepare($uri);
+        list($protocol, $pathname) = static::prepare($uri);
 
-        return $this->select($did[0])->request(strtoupper($method), $this->withUriTemplate($did[1], $options), $options);
+        return $this->select($protocol)->request($method, static::withUriTemplate($pathname, $options), $options);
     }
 
     /**
@@ -164,8 +167,8 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function requestAsync(string $method, string $uri, array $options = []): PromiseInterface
     {
-        $did = static::prepare($uri);
+        list($protocol, $pathname) = static::prepare($uri);
 
-        return $this->select($did[0])->requestAsync(strtoupper($method), $this->withUriTemplate($did[1], $options), $options);
+        return $this->select($protocol)->requestAsync($method, static::withUriTemplate($pathname, $options), $options);
     }
 }

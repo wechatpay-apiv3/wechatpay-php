@@ -39,7 +39,7 @@ class Hash
      */
     public static function md5(string $thing, string $key = '', $agency = false): string
     {
-        $ctx = hash_init(static::ALGO_MD5);
+        $ctx = hash_init(ALGO_MD5);
 
         hash_update($ctx, $thing) && $key && hash_update($ctx, $agency ? '&secret=' : '&key=') && hash_update($ctx, $key);
 

@@ -21,25 +21,21 @@
     "homepage": "https://pay.weixin.qq.com/",
     "license": "Apache-2.0",
     "require": {
-        "php": ">=7.2.5",
+        "php": "^7.2.5 || ^8.0",
         "ext-curl": "*",
         "ext-libxml": "*",
         "ext-simplexml": "*",
         "ext-openssl": "*",
-        "guzzlehttp/uri-template": "*",
+        "guzzlehttp/uri-template": "^0.2",
         "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "*"
+        "phpunit/phpunit": "^8.5.5 || ^9.3.5"
     },
     "autoload": {
         "psr-4": { "WeChatPay\\" : "src/" }
     },
     "bin": [
         "bin/CertificateDownloader.php"
-    ],
-    "suggest": {
-        "guzzlehttp/uri-template": "For using wechatpay guzzle url-template(RFC6570) feature.",
-        "guzzlehttp/guzzle": "For using wechatpay guzzle middleware."
-    }
+    ]
 }
