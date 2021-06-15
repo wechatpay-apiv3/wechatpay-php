@@ -60,7 +60,7 @@ class CertificateDownloader
             'certs' => &$certs,
         ]);
 
-        $handler = $wxpay->getDriver()->v3->getConfig('handler');
+        $handler = $wxpay->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
         $handler->after('verifier', Middleware::mapResponse(static function($response) use ($apiv3Secret, &$certs) {
             $body = $response->getBody()->getContents();
             $body = Utils::jsonDecode($body);
