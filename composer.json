@@ -1,10 +1,16 @@
 {
     "name": "wechatpay/wechatpay-guzzle-middleware",
     "version": "1.0.0",
-    "description": "WechatPay API V3 Guzzle Middleware",
+    "description": "[A]Sync Chainable WeChatPay v2&v3's OpenAPI SDK for PHP",
     "type": "library",
     "keywords": [
-        "wechatpay", "chainable requests client", "aes-gcm", "rsa-oaep"
+        "wechatpay",
+        "chainable HTTP requests client",
+        "xml-parser",
+        "xml-builder",
+        "aes-ecb",
+        "aes-gcm",
+        "rsa-oaep"
     ],
     "authors": [
         {
@@ -15,10 +21,13 @@
     "homepage": "https://wechatpay-api.gitbook.io/wechatpay-api-v3/",
     "license": "Apache-2.0",
     "require": {
+        "php": ">=7.2.5",
+        "ext-curl": "*",
+        "ext-libxml": "*",
+        "ext-simplexml": "*",
+        "ext-openssl": "*",
         "guzzlehttp/uri-template": "*",
-        "guzzlehttp/guzzle": ">=7.0",
-        "php": ">=7.2",
-        "ext-openssl": "*"
+        "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
         "phpunit/phpunit": "*"

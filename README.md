@@ -1,5 +1,7 @@
 # 微信支付 WeChatPay OpenAPI SDK
 
+[A]Sync Chainable WeChatPay v2&v3's OpenAPI SDK for PHP
+
 [![Packagist Stars](https://img.shields.io/packagist/stars/wechatpay/wechatpay-guzzle-middleware)](https://packagist.org/packages/wechatpay/wechatpay-guzzle-middleware)
 [![Packagist Downloads](https://img.shields.io/packagist/dm/wechatpay/wechatpay-guzzle-middleware)](https://packagist.org/packages/wechatpay/wechatpay-guzzle-middleware)
 [![Packagist Version](https://img.shields.io/packagist/v/wechatpay/wechatpay-guzzle-middleware)](https://packagist.org/packages/wechatpay/wechatpay-guzzle-middleware)
@@ -76,18 +78,30 @@ $wxpay = Builder::factory([
         // CLI `./bin/CertificateDownloader.php -m {商户号} -s {商户证书序列号} -f {商户API私钥文件路径} -k {APIv3密钥(32字节)} -o {保存地址}` 生成
         'YYYYYYYYYY' => PemUtil::loadCertificate('/path/to/wechatpay/cert.pem')
     ],
+    // APIv2密钥(32字节)--不使用APIv2可选
+    'secret' => 'ZZZZZZZZZZ',
+    'merchant' => [// --不使用APIv2可选
+        // 商户证书 文件路径 --不使用APIv2可选
+        'cert' => '/path/to/mch/apiclient_cert.pem',
+        // 商户API私钥 文件路径 --不使用APIv2可选
+        'key' => '/path/to/mch/apiclient_key.pem',
+    ],
 ]);
 ```
 
 初始化字典说明如下：
 
-- `mchid` 为你的商户号，一般是10字节纯数字
-- `serial` 为你的商户证书序列号，一般是40字节字符串
-- `privateKey` 为你的商户API私钥，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件，支持纯字符串或者文件`resource`格式
-- `certs{[serial_number]:string}` 为通过下载工具下载的平台证书`key/value`键值对，键为平台证书序列号，值为平台证书pem格式的纯字符串或者文件`resource`格式
+- `mchid` 为你的`商户号`，一般是10字节纯数字
+- `serial` 为你的`商户证书序列号`，一般是40字节字符串
+- `privateKey` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件，支持纯字符串或者文件`resource`格式
+- `certs[$serial_number => #resource]` 为通过下载工具下载的平台证书`key/value`键值对，键为`平台证书序列号`，值为`平台证书`pem格式的纯字符串或者文件`resource`格式
+- `secret` 为APIv2版的`密钥`，商户平台上设置的32字节字符串
+- `merchant[cert => $path]` 为你的`商户证书`,一般是文件名为`apiclient_cert.pem`文件路径
+- `merchant[key => $path]` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件路径
 
-**注：** 1.0版本做了重构及优化，APIv3 以及 `\GuzzleHttp\Client` 的 `$config = []` 初始化参数，均融合在一个型参上。
+**注：** 1.0版本做了重构及优化， `APIv3`, `APIv2` 以及 `GuzzleHttp\Client` 的 `$config = []` 初始化参数，均融合在一个型参上。
 
+## APIv3
 
 ### Native下单
 
@@ -194,6 +208,32 @@ try {
 }
 ```
 
+## APIv2
+
+### 企业付款到零钱
+
+```php
+use WechatPay\GuzzleMiddleware\Transformer;
+$res = $wxpay->v2->mmpaymkttransfers->promotion->transfers->postAsync([
+    'xml' => [
+      'appid' => 'wx8888888888888888',
+      'mch_id' => '1900000109',
+      'partner_trade_no' => '10000098201411111234567890',
+      'openid' => 'oxTWIuGaIt6gTKsQRLau2M0yL16E',
+      'check_name' => 'FORCE_CHECK',
+      're_user_name' => '王小王',
+      'amount' => 10099,
+      'desc' => '理赔',
+      'spbill_create_ip' => '192.168.0.1',
+    ],
+    'security' => true,
+    'debug' => true //开启调试模式
+])
+->then(static function($response) { return Transformer::toArray($response->getBody()->getContents()); })
+->otherwise(static function($exception) { return Transformer::toArray($exception->getResponse()->getBody()->getContents()); })
+->wait();
+print_r($res);
+```
 
 ## 常见问题
 

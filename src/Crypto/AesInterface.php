@@ -29,7 +29,12 @@ interface AesInterface
     const ALGO_AES_256_GCM = 'aes-256-gcm';
 
     /**
-     * Encrypts given data with given method and key, returns a base64 encoded string.
+     * The `aes-256-ecb` algorithm string
+     */
+    const ALGO_AES_256_ECB = 'aes-256-ecb';
+
+    /**
+     * Encrypts given data with given key and iv, returns a base64 encoded string.
      *
      * @param string $plaintext - Text to encode.
      * @param string $key - The secret key, 32 bytes string.
@@ -40,7 +45,7 @@ interface AesInterface
     public static function encrypt(string $plaintext, string $key, string $iv = ''): string;
 
     /**
-     * Takes a base64 encoded string and decrypts it using a given method and key.
+     * Takes a base64 encoded string and decrypts it using a given key and iv.
      *
      * @param string $ciphertext - The base64-encoded ciphertext.
      * @param string $key - The secret key, 32 bytes string.

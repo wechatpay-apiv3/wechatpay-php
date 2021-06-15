@@ -1,32 +1,48 @@
 <?php
+
 namespace WechatPay\GuzzleMiddleware;
+
+use function preg_replace;
+use function preg_replace_callback;
+use function strtolower;
+use function implode;
+use function array_filter;
+use function array_push;
+
+use ArrayIterator;
 
 /**
  * Chainable the client for sending HTTP requests.
  */
-class Builder
+final class Builder
 {
     /**
-     * Building & decorate the chainable `\GuzzleHttp\Client`
+     * Building & decorate the chainable `GuzzleHttp\Client`
      *
-     * @example
+     * ```php
+     * // samples
      * $wxpay = Builder::factory([]);
      * $res = $wxpay['v3/merchantService/complaintsV2']->get(['debug' => true]);
      * $res = $wxpay['v3/merchant-service/complaint-notifications']->get(['debug' => true]);
      * $wxpay->v3->merchantService->ComplaintNotifications->postAsync([])->wait();
      * $wxpay->v3->certificates->getAsync()->then()->otherwise()->wait();
+     * ```
      *
      * @param array $config - configuration
      * @param string|int $config[mchid] - The merchant ID
      * @param string $config[serial] - The serial number of the merchant certificate
      * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $config[privateKey] - The merchant private key.
      * @param array $config[certs] - The WeChatPay platform serial and certificate(s), `[serial => certificate]` pair
+     * @param string [$config[secret] = null] - The secret key string
+     * @param array [$config[merchant] = null] - The merchant private key and certificate array
+     * @param string [$config[merchant[key]] = null] - The merchant private key(file path string).
+     * @param string [$config[merchant[cert]] = null] - The merchant certificate(file path string).
      *
      * @return BuilderChainable - The chainable client
      */
     public static function factory(array $config = [])
     {
-        return new class([], new ClientDecorator($config)) extends \ArrayIterator implements BuilderChainable
+        return new class([], new ClientDecorator($config)) extends ArrayIterator implements BuilderChainable
         {
             use BuilderTrait;
 
@@ -78,10 +94,10 @@ class Builder
              */
             protected function normalize(string $thing = ''): string
             {
-                return \preg_replace('/^_(.*)_$/', '{\1}', \preg_replace_callback('/[A-Z]/', static function($piece) {
-                    return '-' . \strtolower($piece[0]);
-                }, \preg_replace_callback('/^[A-Z]/', static function($piece) {
-                    return \strtolower($piece);
+                return preg_replace('#^_(.*)_$#', '{\1}', preg_replace_callback('#[A-Z]#', static function($piece) {
+                    return '-' . strtolower($piece[0]);
+                }, preg_replace_callback('#^[A-Z]#', static function($piece) {
+                    return strtolower($piece);
                 }, $thing)));
             }
 
@@ -94,7 +110,7 @@ class Builder
              */
             protected function pathname(string $seperator = '/'): string
             {
-                return \implode($seperator, $this->simplized());
+                return implode($seperator, $this->simplized());
             }
 
             /**
@@ -104,7 +120,7 @@ class Builder
              */
             protected function simplized(): array
             {
-                return \array_filter($this->getArrayCopy(), static function($v) { return !($v instanceof BuilderChainable); });
+                return array_filter($this->getArrayCopy(), static function($v) { return !($v instanceof BuilderChainable); });
             }
 
             /**
@@ -118,7 +134,7 @@ class Builder
             {
                 if (!$this->offsetExists($key)) {
                   $index = $this->simplized();
-                  \array_push($index, $this->normalize($key));
+                  array_push($index, $this->normalize($key));
                   $this->offsetSet($key, new self($index, $this->getDriver()));
                 }
 

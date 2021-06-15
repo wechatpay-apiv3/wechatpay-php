@@ -2,6 +2,21 @@
 
 namespace WechatPay\GuzzleMiddleware;
 
+use function preg_replace_callback;
+use function rand;
+use function str_repeat;
+use function time;
+use function sprintf;
+use function implode;
+use function array_merge;
+use function ksort;
+use function is_null;
+
+use const SORT_FLAG_CASE;
+use const SORT_NATURAL;
+
+const BASE62_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 /**
  * Provides easy used methods using in this project.
  */
@@ -16,9 +31,7 @@ class Formatter
      */
     public static function nonce(int $size = 32): string
     {
-        static $chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-        return \preg_replace_callback('/0/', function() use (&$chars) { return $chars[\rand(0, 61)]; }, \str_repeat('0', $size));
+        return preg_replace_callback('#0#', static function() { return BASE62_CHARS[rand(0, 61)]; }, str_repeat('0', $size));
     }
 
     /**
@@ -28,7 +41,7 @@ class Formatter
      */
     public static function timestamp(): int
     {
-        return \time();
+        return time();
     }
 
     /**
@@ -44,7 +57,7 @@ class Formatter
      */
     public static function authorization(string $mchid, string $nonce, string $signature, string $timestamp, string $serial): string
     {
-        return \sprintf(
+        return sprintf(
             'WECHATPAY2-SHA256-RSA2048 mchid="%s",nonce_str="%s",signature="%s",timestamp="%s",serial_no="%s"',
             $mchid, $nonce, $signature, $timestamp, $serial
         );
@@ -89,6 +102,41 @@ class Formatter
      */
     public static function joinedByLineFeed(...$pieces): string
     {
-        return \implode("\n", \array_merge($pieces, ['']));
+        return implode("\n", array_merge($pieces, ['']));
+    }
+
+    /**
+     * Sort an array by key with `SORT_FLAG_CASE | SORT_NATURAL` flag.
+     *
+     * @param array thing - The input array.
+     *
+     * @return array - The sorted array.
+     */
+    public static function ksort(array $thing = []): array
+    {
+        ksort($thing, SORT_FLAG_CASE | SORT_NATURAL);
+
+        return $thing;
+    }
+
+    /**
+     * Like `queryString` does but without the `sign` and `empty value` entities.
+     *
+     * @param array $thing - The input array.
+     *
+     * @return string - The `key=value` pair string whose joined by `&` char.
+     */
+    public static function queryStringLike(array $thing = []): string
+    {
+        $data = [];
+
+        foreach ($thing as $key => $value) {
+            if ($key === 'sign' || is_null($value) || $value === '') {
+                continue;
+            }
+            $data[] = implode('=', [$key, $value]);
+        }
+
+        return implode('&', $data);
     }
 }

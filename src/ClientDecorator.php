@@ -1,5 +1,21 @@
 <?php
+
 namespace WechatPay\GuzzleMiddleware;
+
+use function array_replace_recursive;
+use function array_push;
+use function extension_loaded;
+use function function_exists;
+use function sprintf;
+use function php_uname;
+use function implode;
+use function preg_match;
+use function strncasecmp;
+use function preg_replace;
+use function strtoupper;
+
+use const PHP_OS;
+use const PHP_VERSION;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\PromiseInterface;
@@ -12,6 +28,7 @@ use Psr\Http\Message\ResponseInterface;
  */
 final class ClientDecorator implements ClientDecoratorInterface
 {
+    use ClientXmlTrait;
     use ClientJsonTrait;
 
     /**
@@ -23,7 +40,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     protected static function withDefaults(array $config = []): array
     {
-        return \array_replace_recursive(static::$defaults, ['headers' => static::userAgent()], $config);
+        return array_replace_recursive(static::$defaults, ['headers' => static::userAgent()], $config);
     }
 
     /**
@@ -33,15 +50,13 @@ final class ClientDecorator implements ClientDecoratorInterface
     {
         $value = ['WechatPay-Guzzle/' . static::VERSION];
 
-        \array_push($value, 'GuzzleHttp/' . Client::MAJOR_VERSION);
+        array_push($value, 'GuzzleHttp/' . Client::MAJOR_VERSION);
 
-        if (\extension_loaded('curl') && \function_exists('curl_version')) {
-            \array_push($value, 'curl/' . \curl_version()['version']);
-        }
+        extension_loaded('curl') && function_exists('curl_version') && array_push($value, 'curl/' . curl_version()['version']);
 
-        \array_push($value, \sprintf('(%s/%s) PHP/%s', \PHP_OS, \php_uname('r'), \PHP_VERSION));
+        array_push($value, sprintf('(%s/%s) PHP/%s', PHP_OS, php_uname('r'), PHP_VERSION));
 
-        return ['User-Agent' => \implode(' ', $value)];
+        return ['User-Agent' => implode(' ', $value)];
     }
 
     /**
@@ -64,7 +79,7 @@ final class ClientDecorator implements ClientDecoratorInterface
     }
 
     /**
-     * Decorate the `\GuzzleHttp\Client` factory
+     * Decorate the `GuzzleHttp\Client` factory
      *
      * @param array $config - configuration
      * @param string|int $config[mchid] - The merchant ID
@@ -76,7 +91,20 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function __construct(array $config = [])
     {
+        $this->v2 = static::xmlBased($config);
         $this->v3 = static::jsonBased($config);
+    }
+
+    /**
+     * Identify the `Client` and `uri`
+     *
+     * @param string $pathname - The pathname string.
+     *
+     * @return array - the first element is the client instance, the second is the real uri
+     */
+    private static function prepare(string $pathname): array
+    {
+        return [0 === strncasecmp('v2/', $pathname, 3) ? 'v2' : 'v3', preg_replace('#^v2/#i', '', $pathname)];
     }
 
     /**
@@ -89,7 +117,11 @@ final class ClientDecorator implements ClientDecoratorInterface
     */
     protected function withUriTemplate(string $template, array $variables = []): string
     {
-        if (\extension_loaded('uri_template')) {
+        if (0 === preg_match('#{(?:[^/]+)}#', $template)) {
+            return $template;
+        }
+
+        if (extension_loaded('uri_template')) {
             // @codeCoverageIgnoreStart
             return \uri_template($template, $variables);
             // @codeCoverageIgnoreEnd
@@ -104,30 +136,22 @@ final class ClientDecorator implements ClientDecoratorInterface
     }
 
     /**
-     * Request the remote `$pathname` by a HTTP `$method` verb
-     *
-     * @param string $pathname - The pathname string.
-     * @param string $method - The method string.
-     * @param array $options - The options.
-     *
-     * @return \Psr\Http\Message\ResponseInterface - The `\Psr\Http\Message\ResponseInterface` instance
+     * @inheritDoc
      */
     public function request(string $method, string $pathname, array $options = []): ResponseInterface
     {
-        return $this->v3->request(\strtoupper($method), $this->withUriTemplate($pathname, $options), $options);
+        $did = static::prepare($pathname);
+
+        return $this->{$did[0]}->request(strtoupper($method), $this->withUriTemplate($did[1], $options), $options);
     }
 
     /**
-     * Async request the remote `$pathname` by a HTTP `$method` verb
-     *
-     * @param string $pathname - The pathname string.
-     * @param string $method - The method string.
-     * @param array $options - The options.
-     *
-     * @return \GuzzleHttp\Promise\PromiseInterface - The `\GuzzleHttp\Promise` instance
+     * @inheritDoc
      */
     public function requestAsync(string $method, string $pathname, array $options = []): PromiseInterface
     {
-        return $this->v3->requestAsync(\strtoupper($method), $this->withUriTemplate($pathname, $options), $options);
+        $did = static::prepare($pathname);
+
+        return $this->{$did[0]}->requestAsync(strtoupper($method), $this->withUriTemplate($did[1], $options), $options);
     }
 }
