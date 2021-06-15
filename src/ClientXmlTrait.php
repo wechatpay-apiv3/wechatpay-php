@@ -23,7 +23,7 @@ trait ClientXmlTrait
     /**
      * @var Client - The APIv2's `GuzzleHttp\Client`
      */
-    public $v2;
+    protected $v2;
 
     /**
      * @var array - The default headers whose passed in `GuzzleHttp\Client`.

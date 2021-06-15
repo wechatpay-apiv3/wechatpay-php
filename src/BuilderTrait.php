@@ -11,13 +11,6 @@ use Psr\Http\Message\ResponseInterface;
 trait BuilderTrait
 {
     /**
-     * `$driver` getter
-     *
-     * @return ClientDecoratorInterface - The `ClientDecorator` instance
-     */
-    abstract public function getDriver(): ClientDecoratorInterface;
-
-    /**
      * URI pathname
      *
      * @param string [$seperator = '/'] - The URI seperator

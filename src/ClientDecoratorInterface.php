@@ -2,6 +2,7 @@
 
 namespace WechatPay\GuzzleMiddleware;
 
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -11,29 +12,47 @@ use Psr\Http\Message\ResponseInterface;
 interface ClientDecoratorInterface
 {
     /**
-     * @var string - The WechatPayMiddleware version
+     * @var string - This library version
      */
     const VERSION = '1.0.0';
 
     /**
-     * Request the remote `$pathname` by a HTTP `$method` verb
+     * @var string - The HTTP transfer `xml` based protocol
+     */
+    const XML_BASED = 'v2';
+
+    /**
+     * @var string - The HTTP transfer `json` based protocol
+     */
+    const JSON_BASED = 'v3';
+
+    /**
+     * Protocol selector
      *
-     * @param string $pathname - The pathname string.
+     * @param string|null $protocol - one of the constants of `XML_BASED`, `JSON_BASED`, default is `JSON_BASED`
+     * @return ClientInterface
+     */
+    public function select(?string $protocol = null): ClientInterface;
+
+    /**
+     * Request the remote `$uri` by a HTTP `$method` verb
+     *
+     * @param string $uri - The uri string.
      * @param string $method - The method string.
      * @param array $options - The options.
      *
      * @return ResponseInterface - The `Psr\Http\Message\ResponseInterface` instance
      */
-    public function request(string $method, string $pathname, array $options = []): ResponseInterface;
+    public function request(string $method, string $uri, array $options = []): ResponseInterface;
 
     /**
-     * Async request the remote `$pathname` by a HTTP `$method` verb
+     * Async request the remote `$uri` by a HTTP `$method` verb
      *
-     * @param string $pathname - The pathname string.
+     * @param string $uri - The uri string.
      * @param string $method - The method string.
      * @param array $options - The options.
      *
      * @return PromiseInterface - The `GuzzleHttp\Promise\PromiseInterface` instance
      */
-    public function requestAsync(string $method, string $pathname, array $options = []): PromiseInterface;
+    public function requestAsync(string $method, string $uri, array $options = []): PromiseInterface;
 }

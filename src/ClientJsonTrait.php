@@ -36,7 +36,7 @@ trait ClientJsonTrait
     /**
      * @var Client - The APIv3's `GuzzleHttp\Client`
      */
-    public $v3;
+    protected $v3;
 
     /**
      * @var array - The defaults configuration whose pased in `GuzzleHttp\Client`.
@@ -72,7 +72,7 @@ trait ClientJsonTrait
     {
         return static function (RequestInterface $request) use ($mchid, $serial, $privateKey): RequestInterface {
             $nonce = Formatter::nonce();
-            $timestamp = Formatter::timestamp();
+            $timestamp = (string) Formatter::timestamp();
             $signature = Crypto\Rsa::sign(Formatter::request(
                 $request->getMethod(), $request->getRequestTarget(), $timestamp, $nonce, static::body($request)
             ), $privateKey);

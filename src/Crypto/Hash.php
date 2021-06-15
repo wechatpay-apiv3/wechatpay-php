@@ -10,7 +10,9 @@ use function strtoupper;
 
 use const HASH_HMAC;
 
-const WCP_SUPPORT_HASHES = [Hash::ALGO_HMAC_SHA256 => 'hmac', Hash::ALGO_MD5 => 'md5'];
+const ALGO_MD5 = 'MD5';
+const ALGO_HMAC_SHA256 = 'HMAC-SHA256';
+const WCP_SUPPORT_HASHES = [ALGO_HMAC_SHA256 => 'hmac', ALGO_MD5 => 'md5'];
 
 /**
  * Crypto hash functions utils.
@@ -19,10 +21,10 @@ const WCP_SUPPORT_HASHES = [Hash::ALGO_HMAC_SHA256 => 'hmac', Hash::ALGO_MD5 => 
 class Hash
 {
     /** @var string - hashing `MD5` algorithm */
-    const ALGO_MD5 = 'MD5';
+    const ALGO_MD5 = ALGO_MD5;
 
     /** @var string - hashing `HMAC-SHA256` algorithm */
-    const ALGO_HMAC_SHA256 = 'HMAC-SHA256';
+    const ALGO_HMAC_SHA256 = ALGO_HMAC_SHA256;
 
     /**
      * Calculate the input string with an optional secret `key` in MD5,

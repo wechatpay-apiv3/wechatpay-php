@@ -11,6 +11,7 @@ use function php_uname;
 use function implode;
 use function preg_match;
 use function strncasecmp;
+use function strcasecmp;
 use function preg_replace;
 use function strtoupper;
 
@@ -91,20 +92,33 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function __construct(array $config = [])
     {
-        $this->v2 = static::xmlBased($config);
-        $this->v3 = static::jsonBased($config);
+        $this->{ClientDecoratorInterface::XML_BASED} = static::xmlBased($config);
+        $this->{ClientDecoratorInterface::JSON_BASED} = static::jsonBased($config);
     }
 
     /**
      * Identify the `Client` and `uri`
      *
-     * @param string $pathname - The pathname string.
+     * @param string $uri - The uri string.
      *
      * @return array - the first element is the client instance, the second is the real uri
      */
-    private static function prepare(string $pathname): array
+    private static function prepare(string $uri): array
     {
-        return [0 === strncasecmp('v2/', $pathname, 3) ? 'v2' : 'v3', preg_replace('#^v2/#i', '', $pathname)];
+        return [0 === strncasecmp(ClientDecoratorInterface::XML_BASED . '/', $uri, 3)
+            ? ClientDecoratorInterface::XML_BASED
+            : ClientDecoratorInterface::JSON_BASED,
+            preg_replace('#^' . ClientDecoratorInterface::XML_BASED . '/#i', '', $uri)];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function select(?string $protocol = null): Client
+    {
+        return 0 === strcasecmp(ClientDecoratorInterface::XML_BASED, $protocol)
+            ? $this->{ClientDecoratorInterface::XML_BASED}
+            : $this->{ClientDecoratorInterface::JSON_BASED};
     }
 
     /**
@@ -138,20 +152,20 @@ final class ClientDecorator implements ClientDecoratorInterface
     /**
      * @inheritDoc
      */
-    public function request(string $method, string $pathname, array $options = []): ResponseInterface
+    public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
-        $did = static::prepare($pathname);
+        $did = static::prepare($uri);
 
-        return $this->{$did[0]}->request(strtoupper($method), $this->withUriTemplate($did[1], $options), $options);
+        return $this->select($did[0])->request(strtoupper($method), $this->withUriTemplate($did[1], $options), $options);
     }
 
     /**
      * @inheritDoc
      */
-    public function requestAsync(string $method, string $pathname, array $options = []): PromiseInterface
+    public function requestAsync(string $method, string $uri, array $options = []): PromiseInterface
     {
-        $did = static::prepare($pathname);
+        $did = static::prepare($uri);
 
-        return $this->{$did[0]}->requestAsync(strtoupper($method), $this->withUriTemplate($did[1], $options), $options);
+        return $this->select($did[0])->requestAsync(strtoupper($method), $this->withUriTemplate($did[1], $options), $options);
     }
 }

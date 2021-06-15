@@ -74,9 +74,7 @@ final class Builder
             }
 
             /**
-             * `$driver` getter
-             *
-             * @return ClientDecoratorInterface - The `ClientDecorator` instance
+             * @inheritDoc
              */
             public function getDriver(): ClientDecoratorInterface
             {
