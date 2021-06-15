@@ -53,14 +53,14 @@ class CertificateDownloader
         $outputDir = $opts['output'] ?? \sys_get_temp_dir();
         $apiv3Secret = $opts['key'];
 
-        $wxpay = Builder::factory([
+        $instance = Builder::factory([
             'mchid' => $opts['mchid'],
             'serial' => $opts['serialno'],
             'privateKey' => \file_get_contents($opts['privatekey']),
             'certs' => &$certs,
         ]);
 
-        $handler = $wxpay->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
+        $handler = $instance->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
         $handler->after('verifier', Middleware::mapResponse(static function($response) use ($apiv3Secret, &$certs) {
             $body = $response->getBody()->getContents();
             $body = Utils::jsonDecode($body);
@@ -72,7 +72,7 @@ class CertificateDownloader
             return $response;
         }), 'injector');
 
-        $wxpay->v3->certificates->getAsync(['debug' => true])->then(static function($response) use ($outputDir, &$certs) {
+        $instance->v3->certificates->getAsync(['debug' => true])->then(static function($response) use ($outputDir, &$certs) {
             $body = $response->getBody()->getContents();
             $body = Utils::jsonDecode($body);
             $timeZone = new \DateTimeZone('Asia/Shanghai');

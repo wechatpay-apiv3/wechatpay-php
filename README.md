@@ -68,7 +68,7 @@ use WeChatPay\Builder;
 use WeChatPay\Util\PemUtil;
 
 // 工厂方法构造一个实例
-$wxpay = Builder::factory([
+$instance = Builder::factory([
     // 商户号
     'mchid' => '1000100',
     // 商户证书序列号
@@ -108,7 +108,7 @@ $wxpay = Builder::factory([
 
 ```php
 try {
-    $resp = $wxpay->v3->pay->transactions->native->post(['json' => [/*文档参数放这里就好*/]]);
+    $resp = $instance->v3->pay->transactions->native->post(['json' => [/*文档参数放这里就好*/]]);
 
     echo $resp->getStatusCode() .' ' . $resp->getReasonPhrase()."\n";
     echo $resp->getBody() . "\n";
@@ -131,7 +131,7 @@ use WeChatPay\Util\MediaUtil;
 $media = new MediaUtil('/your/file/path/with.extension');
 
 try {
-    $resp = $wxpay['v3/merchant/media/video_upload']->post([
+    $resp = $instance['v3/merchant/media/video_upload']->post([
         'body'    => $media->getStream(),
         'headers' => [
             'content-type' => $media->getContentType(),
@@ -151,7 +151,7 @@ try {
 ### 图片上传
 
 ```php
-$resp = $wxpay->v3->marketing->favor->media->imageUpload->postAsync([
+$resp = $instance->v3->marketing->favor->media->imageUpload->postAsync([
     'body'    => $media->getStream(),
     'headers' => [
         'content-type' => $media->getContentType(),
@@ -179,7 +179,7 @@ $encryptor = function($msg) use ($publicKey) { return Rsa::encrypt($msg, $public
 // 正常使用Guzzle发起API请求
 try {
     // POST 语法糖
-    $resp = $wxpay['v3/applyment4sub/applyment/']->post([
+    $resp = $instance['v3/applyment4sub/applyment/']->post([
         'json' => [
             'business_code' => 'APL_98761234',
             'contact_info'  => [
@@ -215,7 +215,7 @@ try {
 
 ```php
 use WeChatPay\Transformer;
-$res = $wxpay->v2->mmpaymkttransfers->promotion->transfers->postAsync([
+$res = $instance->v2->mmpaymkttransfers->promotion->transfers->postAsync([
     'xml' => [
       'appid' => 'wx8888888888888888',
       'mch_id' => '1900000109',

@@ -49,7 +49,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     protected static function userAgent(): array
     {
-        $value = ['WechatPay-Guzzle/' . static::VERSION];
+        $value = ['wechatpay-php/' . static::VERSION];
 
         array_push($value, 'GuzzleHttp/' . ClientInterface::MAJOR_VERSION);
 
