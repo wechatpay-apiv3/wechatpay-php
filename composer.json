@@ -1,0 +1,45 @@
+{
+    "name": "wechatpay/wechatpay",
+    "version": "1.0.0",
+    "description": "[A]Sync Chainable WeChatPay v2&v3's OpenAPI SDK for PHP",
+    "type": "library",
+    "keywords": [
+        "wechatpay",
+        "chainable HTTP requests client",
+        "xml-parser",
+        "xml-builder",
+        "aes-ecb",
+        "aes-gcm",
+        "rsa-oaep"
+    ],
+    "authors": [
+        {
+            "name": "WeChatPay Community",
+            "homepage": "https://developers.weixin.qq.com/community/pay"
+        }
+    ],
+    "homepage": "https://pay.weixin.qq.com/",
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=7.2.5",
+        "ext-curl": "*",
+        "ext-libxml": "*",
+        "ext-simplexml": "*",
+        "ext-openssl": "*",
+        "guzzlehttp/uri-template": "*",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "autoload": {
+        "psr-4": { "WeChatPay\\" : "src/" }
+    },
+    "bin": [
+        "bin/CertificateDownloader.php"
+    ],
+    "suggest": {
+        "guzzlehttp/uri-template": "For using wechatpay guzzle url-template(RFC6570) feature.",
+        "guzzlehttp/guzzle": "For using wechatpay guzzle middleware."
+    }
+}
