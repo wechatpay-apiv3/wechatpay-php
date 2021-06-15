@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatPay\GuzzleMiddleware;
+namespace WeChatPay;
 
 use function array_replace_recursive;
 use function array_push;

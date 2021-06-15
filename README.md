@@ -2,18 +2,19 @@
 
 [A]Sync Chainable WeChatPay v2&v3's OpenAPI SDK for PHP
 
-[![Packagist Stars](https://img.shields.io/packagist/stars/wechatpay/wechatpay-guzzle-middleware)](https://packagist.org/packages/wechatpay/wechatpay-guzzle-middleware)
-[![Packagist Downloads](https://img.shields.io/packagist/dm/wechatpay/wechatpay-guzzle-middleware)](https://packagist.org/packages/wechatpay/wechatpay-guzzle-middleware)
-[![Packagist Version](https://img.shields.io/packagist/v/wechatpay/wechatpay-guzzle-middleware)](https://packagist.org/packages/wechatpay/wechatpay-guzzle-middleware)
-[![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/wechatpay/wechatpay-guzzle-middleware)](https://packagist.org/packages/wechatpay/wechatpay-guzzle-middleware)
-[![Packagist License](https://img.shields.io/packagist/l/wechatpay/wechatpay-guzzle-middleware)](https://packagist.org/packages/wechatpay/wechatpay-guzzle-middleware)
+[![Packagist Stars](https://img.shields.io/packagist/stars/wechatpay/wechatpay)](https://packagist.org/packages/wechatpay/wechatpay)
+[![Packagist Downloads](https://img.shields.io/packagist/dm/wechatpay/wechatpay)](https://packagist.org/packages/wechatpay/wechatpay)
+[![Packagist Version](https://img.shields.io/packagist/v/wechatpay/wechatpay)](https://packagist.org/packages/wechatpay/wechatpay)
+[![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/wechatpay/wechatpay)](https://packagist.org/packages/wechatpay/wechatpay)
+[![Packagist License](https://img.shields.io/packagist/l/wechatpay/wechatpay)](https://packagist.org/packages/wechatpay/wechatpay)
 
 ## 概览
 
-[微信支付APIv3](https://wechatpay-api.gitbook.io/wechatpay-api-v3/)的[Guzzle HttpClient](http://docs.guzzlephp.org/)封装组合，
-内置 `请求签名` 和 `应答验签` 两个middleware中间件，创新性地实现了链式面向对象同步/异步调用远程接口。
+微信支付 APIv2&APIv3 的[Guzzle HttpClient](http://docs.guzzlephp.org/)封装组合，
+APIv2已内置请求数据签名及`XML`转换器，应答做了数据`签名验签`，转换提供有`WeChatPay\Transformer::toArray`静态方法，按需转换；
+APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创新性地实现了链式面向对象同步/异步调用远程接口。
 
-如果你是使用 `Guzzle` 的商户开发者，可以使用 `Wechatpay\GuzzleMiddleware\Builder` 工厂方法直接创建一个 `GuzzleHttp\Client` 的链式调用封装器，
+如果你是使用 `Guzzle` 的商户开发者，可以使用 `WeChatPay\Builder` 工厂方法直接创建一个 `GuzzleHttp\Client` 的链式调用封装器，
 实例在执行请求时将自动携带身份认证信息，并检查应答的微信支付签名。
 
 
@@ -39,7 +40,7 @@
 方式一：在项目目录中，通过composer命令行添加：
 
 ```shell
-composer require wechatpay/wechatpay-guzzle-middleware
+composer require wechatpay/wechatpay
 ```
 
 
@@ -47,7 +48,7 @@ composer require wechatpay/wechatpay-guzzle-middleware
 
 ```json
     "require": {
-        "wechatpay/wechatpay-guzzle-middleware": "^1.0.0"
+        "wechatpay/wechatpay": "^1.0.0"
     }
 ```
 
@@ -60,11 +61,11 @@ composer install
 
 ## 开始
 
-首先，通过 `WechatPay\Middleware\Builder` 工厂方法构建一个实例，然后就可以按照 [#51 链式同步或异步请求远端接口](https://github.com/wechatpay-apiv3/wechatpay-guzzle-middleware/issues/51)。
+首先，通过 `WCchatPay\Builder` 工厂方法构建一个实例，然后就可以按照 [#51 链式同步或异步请求远端接口](https://github.com/wechatpay-apiv3/wechatpay-guzzle-middleware/issues/51)。
 
 ```php
-use WechatPay\GuzzleMiddleware\Builder;
-use WechatPay\GuzzleMiddleware\Util\PemUtil;
+use WeChatPay\Builder;
+use WeChatPay\Util\PemUtil;
 
 // 工厂方法构造一个实例
 $wxpay = Builder::factory([
@@ -125,7 +126,7 @@ try {
 
 ```php
 // 参考上述指引说明，并引入 `MediaUtil` 正常初始化，无额外条件
-use WechatPay\GuzzleMiddleware\Util\MediaUtil;
+use WeChatPay\Util\MediaUtil;
 // 实例化一个媒体文件流，注意文件后缀名需符合接口要求
 $media = new MediaUtil('/your/file/path/with.extension');
 
@@ -169,7 +170,7 @@ $resp = $wxpay->v3->marketing->favor->media->imageUpload->postAsync([
 
 ```php
 // 参考上上述说明，引入 `Crypto\Rsa`
-use WechatPay\GuzzleMiddleware\Crypto\Rsa;
+use WeChatPay\Crypto\Rsa;
 // 加载最新的平台证书
 $publicKey = PemUtil::loadCertificate('/path/to/wechatpay/cert.pem');
 // 做一个匿名方法，供后续方便使用
@@ -213,7 +214,7 @@ try {
 ### 企业付款到零钱
 
 ```php
-use WechatPay\GuzzleMiddleware\Transformer;
+use WeChatPay\Transformer;
 $res = $wxpay->v2->mmpaymkttransfers->promotion->transfers->postAsync([
     'xml' => [
       'appid' => 'wx8888888888888888',

@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatPay\GuzzleMiddleware\Crypto;
+namespace WeChatPay\Crypto;
 
 use function in_array;
 use function openssl_get_md_methods;

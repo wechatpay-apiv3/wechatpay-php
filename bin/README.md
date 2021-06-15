@@ -8,7 +8,7 @@ Certificate Downloader 是 PHP版 微信支付 APIv3 平台证书的命令行下
 ```shell
 > php bin/CertificateDownloader.php
 
-Usage: 微信支付平台证书下载工具 [-hV] [-c=<wechatpayCertificatePath>]
+Usage: 微信支付平台证书下载工具 [-hV]
                     -f=<privateKeyFilePath> -k=<apiV3key> -m=<merchantId>
                     -o=[outputFilePath] -s=<serialNo>
   -m, --mchid=<merchantId>   商户号

@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatPay\GuzzleMiddleware;
+namespace WeChatPay;
 
 use const LIBXML_VERSION;
 use const LIBXML_NONET;

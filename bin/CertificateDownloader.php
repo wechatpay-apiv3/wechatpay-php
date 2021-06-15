@@ -19,9 +19,9 @@ unset($possibleFiles, $possibleFile, $file);
 
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Utils;
-use WechatPay\GuzzleMiddleware\Builder;
-use WechatPay\GuzzleMiddleware\ClientDecoratorInterface;
-use WechatPay\GuzzleMiddleware\Crypto\AesGcm;
+use WeChatPay\Builder;
+use WeChatPay\ClientDecoratorInterface;
+use WeChatPay\Crypto\AesGcm;
 
 class CertificateDownloader
 {
@@ -64,7 +64,7 @@ class CertificateDownloader
         $handler->after('verifier', Middleware::mapResponse(static function($response) use ($apiv3Secret, &$certs) {
             $body = $response->getBody()->getContents();
             $body = Utils::jsonDecode($body);
-            \array_map(function($row) use ($apiv3Secret, &$certs) {
+            \array_map(static function($row) use ($apiv3Secret, &$certs) {
                 $cert = $row->encrypt_certificate;
                 $certs[$row->serial_no] = AesGcm::decrypt($cert->ciphertext, $apiv3Secret, $cert->nonce, $cert->associated_data);
             }, $body->data);
@@ -92,7 +92,7 @@ class CertificateDownloader
             }, $certs);
 
             return $response;
-        })->otherwise(function($exception) {
+        })->otherwise(static function($exception) {
             $body = $exception->getResponse()->getBody();
             echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
             echo $exception->getTraceAsString(), PHP_EOL;
@@ -149,7 +149,7 @@ class CertificateDownloader
         echo <<<EOD
 Usage: 微信支付平台证书下载工具 [-hV]
                     -f=<privateKeyFilePath> -k=<apiV3key> -m=<merchantId>
-                    -o=<outputFilePath> -s=<serialNo>
+                    -o=[outputFilePath] -s=<serialNo>
   -m, --mchid=<merchantId>   商户号
   -s, --serialno=<serialNo>  商户证书的序列号
   -f, --privatekey=<privateKeyFilePath>

@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatPay\GuzzleMiddleware;
+namespace WeChatPay;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Promise\PromiseInterface;

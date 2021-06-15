@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatPay\GuzzleMiddleware;
+namespace WeChatPay;
 
 use function assert;
 use function strlen;

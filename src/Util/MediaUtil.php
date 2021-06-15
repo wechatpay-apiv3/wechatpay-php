@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatPay\GuzzleMiddleware\Util;
+namespace WeChatPay\Util;
 
 use function basename;
 

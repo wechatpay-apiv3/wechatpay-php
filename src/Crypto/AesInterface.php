@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatPay\GuzzleMiddleware\Crypto;
+namespace WeChatPay\Crypto;
 
 /**
  * Advanced Encryption Standard Interface

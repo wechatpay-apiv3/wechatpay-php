@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatPay\GuzzleMiddleware\Crypto;
+namespace WeChatPay\Crypto;
 
 use function openssl_encrypt;
 use function base64_encode;

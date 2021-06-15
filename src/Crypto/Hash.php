@@ -1,6 +1,6 @@
 <?php
 
-namespace WechatPay\GuzzleMiddleware\Crypto;
+namespace WeChatPay\Crypto;
 
 use function hash_init;
 use function hash_update;

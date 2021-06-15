@@ -1,5 +1,5 @@
 {
-    "name": "wechatpay/wechatpay-guzzle-middleware",
+    "name": "wechatpay/wechatpay",
     "version": "1.0.0",
     "description": "[A]Sync Chainable WeChatPay v2&v3's OpenAPI SDK for PHP",
     "type": "library",
@@ -18,7 +18,7 @@
             "homepage": "https://developers.weixin.qq.com/community/pay"
         }
     ],
-    "homepage": "https://wechatpay-api.gitbook.io/wechatpay-api-v3/",
+    "homepage": "https://pay.weixin.qq.com/",
     "license": "Apache-2.0",
     "require": {
         "php": ">=7.2.5",
@@ -33,13 +33,12 @@
         "phpunit/phpunit": "*"
     },
     "autoload": {
-        "psr-4": { "WechatPay\\GuzzleMiddleware\\" : "src/" }
+        "psr-4": { "WeChatPay\\" : "src/" }
     },
     "bin": [
         "bin/CertificateDownloader.php"
     ],
     "suggest": {
-        "ext-bcmath": "Require bcmath in php 5.* version.",
         "guzzlehttp/uri-template": "For using wechatpay guzzle url-template(RFC6570) feature.",
         "guzzlehttp/guzzle": "For using wechatpay guzzle middleware."
     }
