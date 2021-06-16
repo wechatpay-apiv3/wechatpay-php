@@ -108,11 +108,11 @@ class Formatter
     /**
      * Sort an array by key with `SORT_FLAG_CASE | SORT_NATURAL` flag.
      *
-     * @param array $thing - The input array reference.
+     * @param array $thing - The input array.
      *
      * @return array - The sorted array.
      */
-    public static function ksort(array &$thing = []): array
+    public static function ksort(array $thing = []): array
     {
         ksort($thing, SORT_FLAG_CASE | SORT_NATURAL);
 
