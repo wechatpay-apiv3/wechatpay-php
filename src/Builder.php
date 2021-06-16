@@ -20,12 +20,12 @@ final class Builder
      * Building & decorate the chainable `GuzzleHttp\Client`
      *
      * ```php
-     * // samples
+     * // usage samples
      * $instance = Builder::factory([]);
      * $res = $instance['v3/merchantService/complaintsV2']->get(['debug' => true]);
      * $res = $instance['v3/merchant-service/complaint-notifications']->get(['debug' => true]);
      * $instance->v3->merchantService->ComplaintNotifications->postAsync([])->wait();
-     * $instance->v3->certificates->getAsync()->then()->otherwise()->wait();
+     * $instance->v3->certificates->getAsync()->then(function() {})->otherwise(function() {})->wait();
      * ```
      *
      * @param array $config - configuration
@@ -122,11 +122,7 @@ final class Builder
             }
 
             /**
-             * Chainable the given `$key` with the `ClientDecoratorInterface` instance
-             *
-             * @param string|int $key - The key
-             *
-             * @return BuilderChainable
+             * @inheritDoc
              */
             public function offsetGet($key): BuilderChainable
             {

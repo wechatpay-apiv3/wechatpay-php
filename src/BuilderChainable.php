@@ -2,15 +2,13 @@
 
 namespace WeChatPay;
 
-use ArrayAccess;
-
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
  * Signature of the Chainable `GuzzleHttp\Client` interface
  */
-interface BuilderChainable extends ArrayAccess
+interface BuilderChainable
 {
     /**
      * `$driver` getter
