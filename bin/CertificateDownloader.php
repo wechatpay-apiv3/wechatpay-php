@@ -72,7 +72,7 @@ class CertificateDownloader
             return $response;
         }), 'injector');
 
-        $instance->v3->certificates->getAsync(['debug' => true])->then(static function($response) use ($outputDir, &$certs) {
+        $instance->offsetGet('v3/certificates')->getAsync(['debug' => true])->then(static function($response) use ($outputDir, &$certs) {
             $body = $response->getBody()->getContents();
             $body = Utils::jsonDecode($body);
             $timeZone = new \DateTimeZone('Asia/Shanghai');
