@@ -78,7 +78,7 @@ composer install
 
 ## 开始
 
-首先，通过 `WeChatPay\Builder` 工厂方法构建一个实例，然后就可以按照 [#51 链式同步或异步请求远端接口](https://github.com/wechatpay-apiv3/wechatpay-guzzle-middleware/issues/51)。
+首先，通过 `WeChatPay\Builder` 工厂方法构建一个实例，然后如上述`约定`，链式`同步`或`异步`请求远端`OpenAPI`接口。
 
 ```php
 use WeChatPay\Builder;
