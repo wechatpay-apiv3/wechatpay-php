@@ -18,13 +18,13 @@ interface BuilderChainable
     public function getDriver(): ClientDecoratorInterface;
 
     /**
-     * Chainable the given `$key` with the `ClientDecoratorInterface` instance
+     * Chainable the given `$segment` with the `ClientDecoratorInterface` instance
      *
-     * @param string|int $key - The key
+     * @param string|int $segment - The sgement or `URI`
      *
      * @return BuilderChainable
      */
-    public function offsetGet($key): BuilderChainable;
+    public function chain($segment): BuilderChainable;
 
     /**
      * Create and send an HTTP GET request.

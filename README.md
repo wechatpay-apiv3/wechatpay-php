@@ -70,7 +70,7 @@ composer install
 4. 每个 `segment` 有中线(dash)分隔符的，可以使用驼峰`camelCase`风格书写，例如: `merchant-service`可写成 `merchantService`，或如 `{'merchant-service'}`;
 5. 每个 `segment` 中，若有`uri_template`动态参数，例如 `business_code/{business_code}` 推荐以`business_code->{'{business_code}'}`形式书写，其格式语义与`pathname`基本一致，阅读起来比较自然;
 6. SDK内置以 `v2` 特殊标识为 `APIv2` 的起始 `segmemt`，之后串接切分后的 `segments`，如源 `pay/micropay` 即串成 `v2->pay->micropay->post(['xml' => []])` 即以XML形式请求远端接口；
-7. 在IDE集成环境，也可以按照PHP内置的`ArrayIterator->offsetGet($key)`接口规范，直接以`pathname`作为变量`$key`，可获取到`OpenAPI`接入点的`endpoints`操作对象，然后即可调用支持的请求方法链，例如 `offsetGet('v3/pay/transactions/jsapi')->post(['json' => []])`；
+7. 在IDE集成环境下，也可以按照内置的`chain($segment)`接口规范，直接以`pathname`作为变量`$segment`，来获取`OpenAPI`接入点的`endpoints`串接对象，驱动末尾执行方法(填入对应参数)，发起请求，例如 `chain('v3/pay/transactions/jsapi')->post(['json' => []])`；
 
 以下示例用法，以`异步(Async/PromiseA+)`或`同步(Sync)`结合此种编码模式展开。
 

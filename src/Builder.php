@@ -134,6 +134,14 @@ final class Builder
 
                 return parent::offsetGet($key);
             }
+
+            /**
+             * @inheritDoc
+             */
+            public function chain($segment): BuilderChainable
+            {
+                return $this->offsetGet($segment);
+            }
         };
     }
 
