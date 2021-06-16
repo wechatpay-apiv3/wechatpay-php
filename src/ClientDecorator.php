@@ -100,18 +100,17 @@ final class ClientDecorator implements ClientDecoratorInterface
     }
 
     /**
-     * Identify the `Client` and `uri`
+     * Identify the `protocol` and `uri`
      *
      * @param string $uri - The uri string.
      *
-     * @return array - the first element is the client instance, the second is the real uri
+     * @return array - the first element is the API version ask `protocol`, the second is the real `uri`
      */
     private static function prepare(string $uri): array
     {
-        return [0 === strncasecmp(ClientDecoratorInterface::XML_BASED . '/', $uri, 3)
-            ? ClientDecoratorInterface::XML_BASED
-            : ClientDecoratorInterface::JSON_BASED,
-            preg_replace('#^' . ClientDecoratorInterface::XML_BASED . '/#i', '', $uri)];
+        return 0 === strncasecmp(ClientDecoratorInterface::XML_BASED . '/', $uri, 3)
+            ? [ClientDecoratorInterface::XML_BASED, substr($uri, 3)]
+            : [ClientDecoratorInterface::JSON_BASED, $uri];
     }
 
     /**
