@@ -20,9 +20,7 @@ trait BuilderTrait
     abstract protected function pathname(string $seperator = '/'): string;
 
     /**
-     * Create and send an HTTP GET request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function get(array $options = []): ResponseInterface
     {
@@ -30,9 +28,7 @@ trait BuilderTrait
     }
 
     /**
-     * Create and send an HTTP PUT request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function put(array $options = []): ResponseInterface
     {
@@ -40,9 +36,7 @@ trait BuilderTrait
     }
 
     /**
-     * Create and send an HTTP POST request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function post(array $options = []): ResponseInterface
     {
@@ -50,9 +44,7 @@ trait BuilderTrait
     }
 
     /**
-     * Create and send an HTTP PATCH request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function patch(array $options = []): ResponseInterface
     {
@@ -60,9 +52,7 @@ trait BuilderTrait
     }
 
     /**
-     * Create and send an HTTP DELETE request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function delete(array $options = []): ResponseInterface
     {
@@ -70,9 +60,7 @@ trait BuilderTrait
     }
 
     /**
-     * Create and send an asynchronous HTTP GET request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function getAsync(array $options = []): PromiseInterface
     {
@@ -80,9 +68,7 @@ trait BuilderTrait
     }
 
     /**
-     * Create and send an asynchronous HTTP PUT request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function putAsync(array $options = []): PromiseInterface
     {
@@ -90,9 +76,7 @@ trait BuilderTrait
     }
 
     /**
-     * Create and send an asynchronous HTTP POST request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function postAsync(array $options = []): PromiseInterface
     {
@@ -100,9 +84,7 @@ trait BuilderTrait
     }
 
     /**
-     * Create and send an asynchronous HTTP PATCH request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function patchAsync(array $options = []): PromiseInterface
     {
@@ -110,9 +92,7 @@ trait BuilderTrait
     }
 
     /**
-     * Create and send an asynchronous HTTP DELETE request.
-     *
-     * @param array $options Request options to apply.
+     * @inheritDoc
      */
     public function deleteAsync(array $options = []): PromiseInterface
     {

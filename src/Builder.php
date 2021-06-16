@@ -21,11 +21,11 @@ final class Builder
      *
      * ```php
      * // samples
-     * $wxpay = Builder::factory([]);
-     * $res = $wxpay['v3/merchantService/complaintsV2']->get(['debug' => true]);
-     * $res = $wxpay['v3/merchant-service/complaint-notifications']->get(['debug' => true]);
-     * $wxpay->v3->merchantService->ComplaintNotifications->postAsync([])->wait();
-     * $wxpay->v3->certificates->getAsync()->then()->otherwise()->wait();
+     * $instance = Builder::factory([]);
+     * $res = $instance['v3/merchantService/complaintsV2']->get(['debug' => true]);
+     * $res = $instance['v3/merchant-service/complaint-notifications']->get(['debug' => true]);
+     * $instance->v3->merchantService->ComplaintNotifications->postAsync([])->wait();
+     * $instance->v3->certificates->getAsync()->then()->otherwise()->wait();
      * ```
      *
      * @param array $config - configuration
