@@ -31,8 +31,8 @@ class Hash
      * when the `key` is Falsey, this method works as normal `MD5`.
      *
      * @param string $thing - The input string.
-     * @param string [$key = ''] - The secret key string.
-     * @param boolean|int|string [$agency = false] - The secret **key** is from wework, placed with `true` or better of the `AgentId` value.
+     * @param string $key - The secret key string.
+     * @param boolean|int|string $agency - The secret **key** is from wework, placed with `true` or better of the `AgentId` value.
      *                                               [spec]{@link https://work.weixin.qq.com/api/doc/90000/90135/90281}
      *
      * @return string - The data signature
@@ -51,7 +51,7 @@ class Hash
      *
      * @param string $thing - The input string.
      * @param string $key - The secret key string.
-     * @param string [$algorithm = sha256] - The algorithm string, default is `sha256`.
+     * @param string $algorithm - The algorithm string, default is `sha256`.
      *
      * @return string - The data signature
      */

@@ -1,0 +1,8 @@
+parameters:
+	paths:
+		- src
+	level: 5
+	ignoreErrors:
+		- '#Function uri_template not found#'
+		- '#Variable \$previous might not be defined#'
+		- '#\$writer (.*?) type XMLWritter#'

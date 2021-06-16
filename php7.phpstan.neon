@@ -1,0 +1,5 @@
+includes:
+	- phpstan.neon.dist
+parameters:
+	ignoreErrors:
+		- '#invalid(?: typehint)? type OpenSSL(?:Certificate|AsymmetricKey)#'

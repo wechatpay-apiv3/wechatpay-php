@@ -102,12 +102,10 @@ trait ClientXmlTrait
     /**
      * Create an APIv2's client
      *
-     * @param array $config - configuration
-     * @param string|int $config[mchid] - The merchant ID
-     * @param string $config[secret] - The secret key string
-     * @param array $config[merchant] - The merchant private key and certificate array
-     * @param string $config[merchant[key]] - The merchant private key(file path string).
-     * @param string $config[merchant[cert]] - The merchant certificate(file path string).
+     * Optional acceptable \$config parameters
+     *   - mchid: ?string - The merchant ID
+     *   - secret: ?string - The secret key string
+     *   - merchant: ?array{key: ?string, cert: ?string}
      *
      * @return Client - The `GuzzleHttp\Client` instance
      */

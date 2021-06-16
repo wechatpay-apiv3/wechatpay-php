@@ -81,15 +81,15 @@ final class ClientDecorator implements ClientDecoratorInterface
     /**
      * Decorate the `GuzzleHttp\Client` factory
      *
-     * @param array $config - configuration
-     * @param string|int $config[mchid] - The merchant ID
-     * @param string $config[serial] - The serial number of the merchant certificate
-     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $config[privateKey] - The merchant private key.
-     * @param array $config[certs] - The WeChatPay platform serial and certificate(s), `[serial => certificate]` pair
-     * @param string [$config[secret] = null] - The secret key string
-     * @param array [$config[merchant] = null] - The merchant private key and certificate array
-     * @param string [$config[merchant[key]] = null] - The merchant private key(file path string).
-     * @param string [$config[merchant[cert]] = null] - The merchant certificate(file path string).
+     * Acceptable \$config parameters stucture
+     *   - mchid: string - The merchant ID
+     *   - serial: string - The serial number of the merchant certificate
+     *   - privateKey: \OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string - The merchant private key.
+     *   - certs: [$key:string => $value: mixed] - The wechatpay platform serial and certificate(s)
+     *   - secret: ?string - The secret key string (optional)
+     *   - merchant: ?array - The merchant private key and certificate array (optional)
+     *   - merchant<key: ?string> - The merchant private key(file path string). (optional)
+     *   - merchant<cert: ?string> - The merchant certificate(file path string). (optional)
      *
      * @return ClientDecorator - The `ClientDecorator` instance
      */

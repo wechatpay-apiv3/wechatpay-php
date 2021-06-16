@@ -61,9 +61,9 @@ trait ClientJsonTrait
     /**
      * APIv3's signer middleware stack
      *
-     * @param string|int $mchid - The merchant ID
+     * @param string $mchid - The merchant ID
      * @param string $serial - The serial number of the merchant certificate
-     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $privateKey - The merchant private key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string $privateKey - The merchant private key.
      *
      * @return callable
      * @throws InvalidArgumentException
@@ -127,11 +127,11 @@ trait ClientJsonTrait
     /**
      * Create an APIv3's client
      *
-     * @param array $config - configuration
-     * @param string|int $config[mchid] - The merchant ID
-     * @param string $config[serial] - The serial number of the merchant certificate
-     * @param OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string $config[privateKey] - The merchant private key.
-     * @param array $config[certs] - The wechatpay platform serial and certificate(s), `[serial => certificate]` pair
+     * Mandatory \$config array paramters
+     *   - mchid: string - The merchant ID
+     *   - serial: string - The serial number of the merchant certificate
+     *   - privateKey: mixed - The merchant private key.
+     *   - certs: [$key:string => $value: mixed] - The wechatpay platform serial and certificate(s)
      *
      * @return Client - The `GuzzleHttp\Client` instance
      * @throws InvalidArgumentException

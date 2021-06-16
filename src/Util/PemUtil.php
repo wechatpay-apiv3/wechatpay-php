@@ -21,7 +21,7 @@ class PemUtil
      * @param string $filepath - PEM encoded private key file path
      * @param null|string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
      *
-     * @return OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
+     * @return \OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
      */
     public static function loadPrivateKey(string $filepath, ?string $passphrase = null)
     {
@@ -33,7 +33,7 @@ class PemUtil
      *
      * @param string $filepath - PEM encoded X.509 certificate file path
      *
-     * @return OpenSSLCertificate|resource|bool - X.509 certificate resource identifier on success or FALSE on failure
+     * @return \OpenSSLCertificate|resource|bool - X.509 certificate resource identifier on success or FALSE on failure
      */
     public static function loadCertificate(string $filepath)
     {
@@ -43,10 +43,10 @@ class PemUtil
     /**
      * Read private key from string
      *
-     * @param OpenSSLAsymmetricKey|resource|array|string $content - PEM encoded private key string content
+     * @param \OpenSSLAsymmetricKey|resource|string $content - PEM encoded private key string content
      * @param null|string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
      *
-     * @return OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
+     * @return \OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
      */
     public static function loadPrivateKeyFromString($content, ?string $passphrase = null)
     {
@@ -56,9 +56,9 @@ class PemUtil
     /**
      * Read certificate from string
      *
-     * @param OpenSSLCertificate|resource|string $content - PEM encoded X.509 certificate string content
+     * @param \OpenSSLCertificate|resource|string $content - PEM encoded X.509 certificate string content
      *
-     * @return OpenSSLCertificate|resource|bool - X.509 certificate resource identifier on success or FALSE on failure
+     * @return \OpenSSLCertificate|resource|bool - X.509 certificate resource identifier on success or FALSE on failure
      */
     public static function loadCertificateFromString($content)
     {
@@ -68,7 +68,7 @@ class PemUtil
     /**
      * Parse Serial Number from Certificate
      *
-     * @param OpenSSLCertificate|resource|string $certifcates Certificates string or resource
+     * @param \OpenSSLCertificate|resource|string $certificate Certificates string or resource
      *
      * @return string - The serial number
      * @throws InvalidArgumentException

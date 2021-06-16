@@ -32,7 +32,7 @@ class Transformer
      *                                                    | `LIBXML_NOCDATA`
      *                                                    | `LIBXML_NOBLANKS`
      *
-     * @param string [$xml = '<xml/>'] - The xml string
+     * @param string $xml - The xml string, default is `<xml/>` string
      *
      * @return array - The array
      */
@@ -65,7 +65,7 @@ class Transformer
     /**
      * Cast the value $thing, specially doing the `array`, `object`, `SimpleXMLElement` to `array`
      *
-     * @param string|array|object|SimpleXMLElement &$thing - The value thing
+     * @param string|array|object|SimpleXMLElement $thing - The value thing reference
      *
      * @return void
      */
@@ -96,10 +96,10 @@ class Transformer
      * Transform the given $data array as of an XML string.
      *
      * @param array $data - The data array
-     * @param boolean [$headless = true] - The headless flag, default True means without the `<?xml version="1.0" encoding="UTF-8" ?>` doctype
-     * @param boolean [indent = false] - Toggle indentation on/off, default is off
-     * @param string [$root = 'xml'] - The root node label
-     * @param string [$item = 'item'] - The nest array identify text
+     * @param boolean $headless - The headless flag, default `true` means without the `<?xml version="1.0" encoding="UTF-8" ?>` doctype
+     * @param boolean $indent - Toggle indentation on/off, default is `false` off
+     * @param string $root - The root node label, default is `xml` string
+     * @param string $item - The nest array identify text, default is `item` string
      *
      * @return string - The xml string
      */
@@ -122,7 +122,7 @@ class Transformer
     /**
      * Walk the given data array by the `XMLWriter` instance.
      *
-     * @param XMLWritter &$writer - The `XMLWritter` instance
+     * @param \XMLWritter $writer - The `XMLWritter` instance reference
      * @param array $data - The data array
      * @param string $item - The nest array identify tag text
      *
@@ -148,7 +148,7 @@ class Transformer
      * The content text includes the characters `<`, `>`, `&` and `"` are written as CDATA references.
      * All others including `'` are written literally.
      *
-     * @param XMLWritter &$writer - The `XMLWritter` instance
+     * @param \XMLWritter $writer - The `XMLWritter` instance reference
      * @param string|null $thing - The content text
      *
      * @return void
@@ -176,7 +176,7 @@ class Transformer
     /**
      * Checks if a value contains any characters which would require CDATA wrapping.
      *
-     * Notes here: the `XMLWriter` shall been wrapped the '"' string as '&quot;' symbol string,
+     * Notes here: the `XMLWriter` shall been wrapped the `"` string as `&quot;` symbol string,
      *             it's strictly following the `XMLWriter` specification here.
      *
      * @see Symfony\Component\Serializer\Encoder\XmlEncoder::needsCdataWrapping

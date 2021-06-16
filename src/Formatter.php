@@ -25,7 +25,7 @@ class Formatter
     /**
      * Generate a random ASCII string aka `nonce`, similar as `random_bytes`.
      *
-     * @param int [$size = 32] - Nonce string length, default is 32.
+     * @param int $size - Nonce string length, default is 32.
      *
      * @return string - base62 random string.
      */
@@ -47,10 +47,10 @@ class Formatter
     /**
      * Formatting for the heading `Authorization` value.
      *
-     * @param string|int $mchid - The merchant ID.
+     * @param string $mchid - The merchant ID.
      * @param string $nonce - The Nonce string.
      * @param string $signature - The base64-encoded `Rsa::sign` ciphertext.
-     * @param string|int $timestamp - The `Unix` timestamp.
+     * @param string $timestamp - The `Unix` timestamp.
      * @param string $serial - The serial number of the merchant public certification.
      *
      * @return string - The APIv3 Authorization `header` value
@@ -68,7 +68,7 @@ class Formatter
      *
      * @param string $method - The HTTP verb, must be the uppercase sting.
      * @param string $uri - Combined string with `URL::pathname` and `URL::search`.
-     * @param string|int $timestamp - The `Unix` timestamp, should be the one used in `authorization`.
+     * @param string $timestamp - The `Unix` timestamp, should be the one used in `authorization`.
      * @param string $nonce - The `Nonce` string, should be the one used in `authorization`.
      * @param string $body - The playload string, HTTP `GET` should be an empty string.
      *
@@ -82,7 +82,7 @@ class Formatter
     /**
      * Formatting this `HTTP::response` for `Rsa::verify` input.
      *
-     * @param string|int $timestamp - The `Unix` timestamp, should be the one from `response::headers[Wechatpay-Timestamp]`.
+     * @param string $timestamp - The `Unix` timestamp, should be the one from `response::headers[Wechatpay-Timestamp]`.
      * @param string $nonce - The `Nonce` string, should be the one from `response::headers[Wechatpay-Nonce]`.
      * @param string $body - The response payload string, HTTP status(`201`, `204`) should be an empty string.
      *
@@ -108,11 +108,11 @@ class Formatter
     /**
      * Sort an array by key with `SORT_FLAG_CASE | SORT_NATURAL` flag.
      *
-     * @param array thing - The input array.
+     * @param array $thing - The input array reference.
      *
      * @return array - The sorted array.
      */
-    public static function ksort(array $thing = []): array
+    public static function ksort(array &$thing = []): array
     {
         ksort($thing, SORT_FLAG_CASE | SORT_NATURAL);
 
