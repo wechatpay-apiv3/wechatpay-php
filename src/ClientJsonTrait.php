@@ -19,6 +19,7 @@ use GuzzleHttp\Middleware;
 use GuzzleHttp\HandlerStack;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\MessageInterface;
 
 /** @var int - The maximum clock offset in second */
 const MAXIMUM_CLOCK_OFFSET = 301;
@@ -49,13 +50,8 @@ trait ClientJsonTrait
         ],
     ];
 
-    /**
-     * Deep merge the input with the defaults
-     *
-     * @param array $config - The configuration.
-     *
-     * @return array - With the built-in configuration.
-     */
+    abstract protected static function body(MessageInterface $message): string;
+
     abstract protected static function withDefaults(array $config = []): array;
 
     /**

@@ -141,11 +141,6 @@ parameters:
 			path: src/ClientDecorator.php
 
 		-
-			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:transformRequest\\(\\) has parameter \\$merchant with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/ClientDecorator.php
-
-		-
 			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:withDefaults\\(\\) has parameter \\$config with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/ClientDecorator.php

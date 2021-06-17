@@ -12,7 +12,7 @@ use const HASH_HMAC;
 
 const ALGO_MD5 = 'MD5';
 const ALGO_HMAC_SHA256 = 'HMAC-SHA256';
-const WCP_SUPPORT_HASHES = [ALGO_HMAC_SHA256 => 'hmac', ALGO_MD5 => 'md5'];
+const ALGO_DICTONARIES = [ALGO_HMAC_SHA256 => 'hmac', ALGO_MD5 => 'md5'];
 
 /**
  * Crypto hash functions utils.
@@ -32,8 +32,9 @@ class Hash
      *
      * @param string $thing - The input string.
      * @param string $key - The secret key string.
-     * @param boolean|int|string $agency - The secret **key** is from wework, placed with `true` or better of the `AgentId` value.
-     *                                               [spec]{@link https://work.weixin.qq.com/api/doc/90000/90135/90281}
+     * @param boolean|int|string $agency - The secret **key** is from work.weixin.qq.com, default is `false`,
+     *                                     placed with `true` or better of the `AgentId` value.
+     *                                     [spec]{@link https://work.weixin.qq.com/api/doc/90000/90135/90281}
      *
      * @return string - The data signature
      */
@@ -75,6 +76,6 @@ class Hash
      */
     public static function sign(string $type, string $data, string $key): ?string
     {
-        return array_key_exists($type, WCP_SUPPORT_HASHES) ? strtoupper(static::{WCP_SUPPORT_HASHES[$type]}($data, $key)) : null;
+        return array_key_exists($type, ALGO_DICTONARIES) ? strtoupper(static::{ALGO_DICTONARIES[$type]}($data, $key)) : null;
     }
 }

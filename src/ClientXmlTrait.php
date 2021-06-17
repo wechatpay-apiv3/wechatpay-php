@@ -14,6 +14,7 @@ use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Promise as P;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\MessageInterface;
 
 /**
  * XML based Client interface for sending HTTP requests.
@@ -33,8 +34,16 @@ trait ClientXmlTrait
         'Content-Type' => 'text/xml; charset=utf-8',
     ];
 
+    abstract protected static function body(MessageInterface $message): string;
+
+    abstract protected static function withDefaults(array $config = []): array;
+
     /**
      * APIv2's transformRequest, did the `datasign` and `array2xml` together
+     *
+     * @param ?string $mchid - The merchant ID
+     * @param ?string $secret - The secret key string (optional)
+     * @param array{cert?: ?string, key?: ?string} $merchant - The merchant private key and certificate array. (optional)
      *
      * @return callable
      */
@@ -75,6 +84,8 @@ trait ClientXmlTrait
     /**
      * APIv2's transformResponse, doing the `xml2array` then `verify` the signature job only
      *
+     * @param ?string $secret - The secret key string (optional)
+     *
      * @return callable
      */
     public static function transformResponse(?string $secret = null): callable
@@ -103,9 +114,11 @@ trait ClientXmlTrait
      * Create an APIv2's client
      *
      * Optional acceptable \$config parameters
-     *   - mchid: ?string - The merchant ID
-     *   - secret: ?string - The secret key string
-     *   - merchant: ?array{key: ?string, cert: ?string}
+     *   - mchid?: ?string - The merchant ID
+     *   - secret?: ?string - The secret key string
+     *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
+     *   - merchant<?key, string> - The merchant private key(file path string). (optional)
+     *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
      *
      * @return Client - The `GuzzleHttp\Client` instance
      */
