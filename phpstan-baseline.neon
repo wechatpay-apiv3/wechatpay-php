@@ -111,11 +111,6 @@ parameters:
 			path: src/BuilderChainable.php
 
 		-
-			message: "#^Function uri_template not found\\.$#"
-			count: 1
-			path: src/ClientDecorator.php
-
-		-
 			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:__construct\\(\\) has parameter \\$config with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/ClientDecorator.php
@@ -229,4 +224,3 @@ parameters:
 			message: "#^Variable \\$previous might not be defined\\.$#"
 			count: 1
 			path: src/Transformer.php
-

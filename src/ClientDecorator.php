@@ -139,12 +139,6 @@ final class ClientDecorator implements ClientDecoratorInterface
             return $template;
         }
 
-        if (extension_loaded('uri_template') && function_exists('uri_template')) {
-            // @codeCoverageIgnoreStart
-            return \uri_template($template, $variables);
-            // @codeCoverageIgnoreEnd
-        }
-
         static $uriTemplate;
         if (!$uriTemplate) {
             $uriTemplate = new UriTemplate();
