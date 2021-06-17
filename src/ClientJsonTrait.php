@@ -39,7 +39,7 @@ trait ClientJsonTrait
     protected $v3;
 
     /**
-     * @var array - The defaults configuration whose pased in `GuzzleHttp\Client`.
+     * @var array<string, string|array<string, string>> - The defaults configuration whose pased in `GuzzleHttp\Client`.
      */
     protected static $defaults = [
         'base_uri' => 'https://api.mch.weixin.qq.com/',
@@ -86,7 +86,7 @@ trait ClientJsonTrait
     /**
      * APIv3's verifier middleware stack
      *
-     * @param array $certs The wechatpay platform serial and certificate(s), `[serial => certificate]` pair
+     * @param array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string> $certs The wechatpay platform serial and certificate(s), `[serial => certificate]` pair
      *
      * @return callable
      * @throws InvalidArgumentException
@@ -130,8 +130,8 @@ trait ClientJsonTrait
      * Mandatory \$config array paramters
      *   - mchid: string - The merchant ID
      *   - serial: string - The serial number of the merchant certificate
-     *   - privateKey: mixed - The merchant private key.
-     *   - certs: [$key:string => $value: mixed] - The wechatpay platform serial and certificate(s)
+     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string - The merchant private key.
+     *   - certs: array{string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string} - The wechatpay platform serial and certificate(s)
      *
      * @return Client - The `GuzzleHttp\Client` instance
      * @throws InvalidArgumentException

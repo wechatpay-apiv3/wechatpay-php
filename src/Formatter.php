@@ -108,9 +108,9 @@ class Formatter
     /**
      * Sort an array by key with `SORT_FLAG_CASE | SORT_NATURAL` flag.
      *
-     * @param array $thing - The input array.
+     * @param array<string, string|int> $thing - The input array.
      *
-     * @return array - The sorted array.
+     * @return array<string, string|int> - The sorted array.
      */
     public static function ksort(array $thing = []): array
     {
@@ -122,7 +122,7 @@ class Formatter
     /**
      * Like `queryString` does but without the `sign` and `empty value` entities.
      *
-     * @param array $thing - The input array.
+     * @param array<string, string|int|null> $thing - The input array.
      *
      * @return string - The `key=value` pair string whose joined by `&` char.
      */

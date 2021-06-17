@@ -23,6 +23,11 @@ use WeChatPay\Builder;
 use WeChatPay\ClientDecoratorInterface;
 use WeChatPay\Crypto\AesGcm;
 
+ /**
+  * CertificateDownloader class
+  *
+  * @phpstan-type DownloaderOptions array{mchid: string, serialno: string, privatekey: string, key: string, output?: string, help?: true, version?: true}
+  */
 class CertificateDownloader
 {
     public function run(): void
@@ -42,11 +47,15 @@ class CertificateDownloader
             echo ClientDecoratorInterface::VERSION, PHP_EOL;
             exit(0);
         }
-
-        $this->downloadCert($opts);
+        $this->job($opts);
     }
 
-    private function downloadCert($opts): void
+    /**
+     * @param DownloaderOptions $opts
+     *
+     * @return void
+     */
+    private function job(array $opts): void
     {
         static $certs = ['any' => null];
 
@@ -99,6 +108,9 @@ class CertificateDownloader
         })->wait();
     }
 
+    /**
+     * @return ?DownloaderOptions
+     */
     private function parseOpts(): ?array
     {
         $opts = [
@@ -112,11 +124,11 @@ class CertificateDownloader
         $shortopts = 'hV';
         $longopts = [ 'help', 'version' ];
         foreach ($opts as $opt) {
-            $shortopts .= $opt[1].':';
-            $longopts[] = $opt[0].':';
+            list($key, $alias) = $opt;
+            $shortopts .= $alias . ':';
+            $longopts[] = $key . ':';
         }
         $parsed = \getopt($shortopts, $longopts);
-
 
         if (!$parsed) {
             return null;
@@ -124,13 +136,11 @@ class CertificateDownloader
 
         $args = [];
         foreach ($opts as $opt) {
-            if (isset($parsed[$opt[0]])) {
-                $args[$opt[0]] = $parsed[$opt[0]];
-            }
-            else if (isset($parsed[$opt[1]])) {
-                $args[$opt[0]] = $parsed[$opt[1]];
-            }
-            else if ($opt[2]) {
+            list($key, $alias, $mandatory) = $opt;
+            if (isset($parsed[$key]) || isset($parsed[$alias])) {
+                $possiable = $parsed[$key] ?? $parsed[$alias] ?? '';
+                $args[$key] = (string) (is_array($possiable) ? $possiable[0] : $possiable);
+            } elseif ($mandatory) {
                 return null;
             }
         }

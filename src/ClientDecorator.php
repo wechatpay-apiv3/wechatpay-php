@@ -36,7 +36,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      *
      * @param array $config - The configuration.
      *
-     * @return array - With the built-in configuration.
+     * @return array<string, string|mixed> - With the built-in configuration.
      */
     protected static function withDefaults(array $config = []): array
     {
@@ -45,6 +45,8 @@ final class ClientDecorator implements ClientDecoratorInterface
 
     /**
      * Prepare the `User-Agent` value key/value pair
+     *
+     * @return array<string, string>
      */
     protected static function userAgent(): array
     {
@@ -84,12 +86,12 @@ final class ClientDecorator implements ClientDecoratorInterface
      * Acceptable \$config parameters stucture
      *   - mchid: string - The merchant ID
      *   - serial: string - The serial number of the merchant certificate
-     *   - privateKey: \OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string - The merchant private key.
-     *   - certs: [$key:string => $value: mixed] - The wechatpay platform serial and certificate(s)
-     *   - secret: ?string - The secret key string (optional)
-     *   - merchant: ?array - The merchant private key and certificate array (optional)
-     *   - merchant<key: ?string> - The merchant private key(file path string). (optional)
-     *   - merchant<cert: ?string> - The merchant certificate(file path string). (optional)
+     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string - The merchant private key.
+     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string> - The wechatpay platform serial and certificate(s)
+     *   - secret?: string - The secret key string (optional)
+     *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
+     *   - merchant<?key, string> - The merchant private key(file path string). (optional)
+     *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
      *
      * @return ClientDecorator - The `ClientDecorator` instance
      */
@@ -104,7 +106,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      *
      * @param string $uri - The uri string.
      *
-     * @return array - the first element is the API version ask `protocol`, the second is the real `uri`
+     * @return array<string> - the first element is the API version ask `protocol`, the second is the real `uri`
      */
     private static function prepare(string $uri): array
     {
@@ -127,7 +129,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      * Expands a URI template
      *
      * @param string $template  URI template
-     * @param array  $variables Template variables
+     * @param array<string|int,string|int> $variables Template variables
      *
      * @return string
     */

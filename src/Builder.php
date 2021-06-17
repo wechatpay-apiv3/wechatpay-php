@@ -22,8 +22,8 @@ final class Builder
      * ```php
      * // usage samples
      * $instance = Builder::factory([]);
-     * $res = $instance['v3/merchantService/complaintsV2']->get(['debug' => true]);
-     * $res = $instance['v3/merchant-service/complaint-notifications']->get(['debug' => true]);
+     * $res = $instance->chain('v3/merchantService/complaintsV2')->get(['debug' => true]);
+     * $res = $instance->chain('v3/merchant-service/complaint-notifications')->get(['debug' => true]);
      * $instance->v3->merchantService->ComplaintNotifications->postAsync([])->wait();
      * $instance->v3->certificates->getAsync()->then(function() {})->otherwise(function() {})->wait();
      * ```
@@ -31,12 +31,12 @@ final class Builder
      * Acceptable \$config parameters stucture
      *   - mchid: string - The merchant ID
      *   - serial: string - The serial number of the merchant certificate
-     *   - privateKey: OpenSSLAsymmetricKey|OpenSSLCertificate|resource|array|string - The merchant private key.
-     *   - certs: [$key:string => $value: mixed] - The wechatpay platform serial and certificate(s)
-     *   - secret: ?string - The secret key string (optional)
-     *   - merchant: ?array - The merchant private key and certificate array (optional)
-     *   - merchant<key: ?string> - The merchant private key(file path string). (optional)
-     *   - merchant<cert: ?string> - The merchant certificate(file path string). (optional)
+     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string - The merchant private key.
+     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string> - The wechatpay platform serial and certificate(s)
+     *   - secret?: string - The secret key string (optional)
+     *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
+     *   - merchant<?key, string> - The merchant private key(file path string). (optional)
+     *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
      *
      * @return BuilderChainable - The chainable client
      */
@@ -48,6 +48,8 @@ final class Builder
 
             /**
              * Compose the chainable `ClientDecorator` instance, most starter with the tree root point
+             * @param array<string|int> $input
+             * @param ?ClientDecoratorInterface $instance
              */
             public function __construct(array $input = [], ?ClientDecoratorInterface $instance = null) {
                 parent::__construct($input, self::STD_PROP_LIST | self::ARRAY_AS_PROPS);
@@ -102,7 +104,7 @@ final class Builder
             /**
              * URI pathname
              *
-             * @param string $seperator- The URI seperator, default is slash(`/`) character
+             * @param string $seperator - The URI seperator, default is slash(`/`) character
              *
              * @return string - The URI string
              */
@@ -112,9 +114,9 @@ final class Builder
             }
 
             /**
-             * Only retrieve a copy array of the URI entities
+             * Only retrieve a copy array of the URI segments
              *
-             * @return array - The URI entities' array
+             * @return array<string|int> - The URI segments array
              */
             protected function simplized(): array
             {

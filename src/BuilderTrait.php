@@ -13,7 +13,7 @@ trait BuilderTrait
     /**
      * URI pathname
      *
-     * @param string [$seperator = '/'] - The URI seperator
+     * @param string $seperator - The URI seperator, default is slash(`/`) character
      *
      * @return string - The URI string
      */

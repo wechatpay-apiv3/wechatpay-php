@@ -26,7 +26,7 @@ trait ClientXmlTrait
     protected $v2;
 
     /**
-     * @var array - The default headers whose passed in `GuzzleHttp\Client`.
+     * @var array<string, string> - The default headers whose passed in `GuzzleHttp\Client`.
      */
     protected static $headers = [
         'Accept' => 'text/xml, text/plain, application/x-gzip',

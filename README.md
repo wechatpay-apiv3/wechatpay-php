@@ -196,7 +196,7 @@ $encryptor = function($msg) use ($publicKey) { return Rsa::encrypt($msg, $public
 // 正常使用Guzzle发起API请求
 try {
     // POST 语法糖
-    $resp = $instance['v3/applyment4sub/applyment/']->post([
+    $resp = $instance->chain('v3/applyment4sub/applyment/')->post([
         'json' => [
             'business_code' => 'APL_98761234',
             'contact_info'  => [

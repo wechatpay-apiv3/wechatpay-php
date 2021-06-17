@@ -1,10 +1,7 @@
+includes:
+  - phpstan-baseline.neon
 parameters:
-  level: 5
+  level: 6
   paths:
     - src
     - bin
-  ignoreErrors:
-    - '#Function uri_template not found#'
-    - '#Variable \$previous might not be defined#'
-    - '#\$writer (.*?) type XMLWritter#'
-    - '#Cannot access property \$data on array\|bool\|float\|int\|object\|string.#'
