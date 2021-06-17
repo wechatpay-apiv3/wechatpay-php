@@ -12,7 +12,7 @@ use function implode;
 use function preg_match;
 use function strncasecmp;
 use function strcasecmp;
-use function preg_replace;
+use function substr;
 
 use const PHP_OS;
 use const PHP_VERSION;
@@ -110,7 +110,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     private static function prepare(string $uri): array
     {
-        return 0 === strncasecmp(ClientDecoratorInterface::XML_BASED . '/', $uri, 3)
+        return $uri && 0 === strncasecmp(ClientDecoratorInterface::XML_BASED . '/', $uri, 3)
             ? [ClientDecoratorInterface::XML_BASED, substr($uri, 3)]
             : [ClientDecoratorInterface::JSON_BASED, $uri];
     }
@@ -139,7 +139,7 @@ final class ClientDecorator implements ClientDecoratorInterface
             return $template;
         }
 
-        if (extension_loaded('uri_template')) {
+        if (extension_loaded('uri_template') && function_exists('uri_template')) {
             // @codeCoverageIgnoreStart
             return \uri_template($template, $variables);
             // @codeCoverageIgnoreEnd
