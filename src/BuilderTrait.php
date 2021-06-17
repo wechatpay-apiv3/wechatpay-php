@@ -10,6 +10,8 @@ use Psr\Http\Message\ResponseInterface;
  */
 trait BuilderTrait
 {
+    abstract public function getDriver(): ClientDecoratorInterface;
+
     /**
      * URI pathname
      *
