@@ -60,7 +60,7 @@ class CertificateDownloader
         static $certs = ['any' => null];
 
         $outputDir = $opts['output'] ?? \sys_get_temp_dir();
-        $apiv3Secret = $opts['key'];
+        $apiv3Key = (string) $opts['key'];
 
         $instance = Builder::factory([
             'mchid' => $opts['mchid'],
@@ -70,12 +70,12 @@ class CertificateDownloader
         ]);
 
         $handler = $instance->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
-        $handler->after('verifier', Middleware::mapResponse(static function($response) use ($apiv3Secret, &$certs) {
+        $handler->after('verifier', Middleware::mapResponse(static function($response) use ($apiv3Key, &$certs) {
             $body = $response->getBody()->getContents();
             $body = Utils::jsonDecode($body);
-            \array_map(static function($row) use ($apiv3Secret, &$certs) {
+            \array_map(static function($row) use ($apiv3Key, &$certs) {
                 $cert = $row->encrypt_certificate;
-                $certs[$row->serial_no] = AesGcm::decrypt($cert->ciphertext, $apiv3Secret, $cert->nonce, $cert->associated_data);
+                $certs[$row->serial_no] = AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_data);
             }, $body->data);
 
             return $response;
@@ -158,13 +158,13 @@ class CertificateDownloader
     {
         echo <<<EOD
 Usage: 微信支付平台证书下载工具 [-hV]
-                    -f=<privateKeyFilePath> -k=<apiV3key> -m=<merchantId>
+                    -f=<privateKeyFilePath> -k=<apiv3Key> -m=<merchantId>
                     -o=[outputFilePath] -s=<serialNo>
   -m, --mchid=<merchantId>   商户号
   -s, --serialno=<serialNo>  商户证书的序列号
   -f, --privatekey=<privateKeyFilePath>
                              商户的私钥文件
-  -k, --key=<apiV3key>       ApiV3Key
+  -k, --key=<apiv3Key>       API v3密钥
   -o, --output=[outputFilePath]
                              下载成功后保存证书的路径，可选参数，默认为临时文件目录夹
   -V, --version              Print version information and exit.
