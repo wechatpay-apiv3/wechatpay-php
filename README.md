@@ -139,6 +139,80 @@ try {
 }
 ```
 
+### 查单
+
+```php
+$res = $instance->v3->pay->transactions->id->{'{transaction_id}'}->getAsync([
+    // 查询参数结构
+    'query' => ['mchid' => '1230000109'],
+    // uri_template 字面量参数
+    'transaction_id' => '1217752501201407033233368018',
+])
+->then(function($response) {
+    // 正常逻辑回调处理
+    echo $response->getBody()->getContents(), PHP_EOL;
+    return $response;
+})
+->otherwise(function($exception) {
+    // 异常错误处理
+    $body = $exception->getResponse()->getBody();
+    echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    echo $exception->getTraceAsString(), PHP_EOL;
+})
+->wait();
+```
+
+### 关单
+
+```php
+$res = $instance->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close->postAsync([
+    // 请求参数结构
+    'json' => ['mchid' => '1230000109'],
+    // uri_template 字面量参数
+    'out_trade_no' => '1217752501201407033233368018',
+])
+->then(function($response) {
+    // 正常逻辑回调处理
+    echo $response->getBody()->getContents(), PHP_EOL;
+    return $response;
+})
+->otherwise(function($exception) {
+    // 异常错误处理
+    $body = $exception->getResponse()->getBody();
+    echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    echo $exception->getTraceAsString(), PHP_EOL;
+})
+->wait();
+```
+
+### 退款
+
+```php
+$res = $instance->chain('v3/refund/domestic/refunds')->postAsync([
+    'json' => [
+        'transaction_id' => '1217752501201407033233368018',
+        'out_refund_no' => '1217752501201407033233368018',
+        'amount' => [
+            'refund' => 888,
+            'total' => 888,
+            'currency' => 'CNY',
+        ],
+    ],
+])
+->then(function($response) {
+    // 正常逻辑回调处理
+    echo $response->getBody()->getContents(), PHP_EOL;
+    return $response;
+})
+->otherwise(function($exception) {
+    // 异常错误处理
+    $body = $exception->getResponse()->getBody();
+    echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    echo $exception->getTraceAsString(), PHP_EOL;
+})
+->wait();
+```
+
 ### 视频文件上传
 
 ```php
