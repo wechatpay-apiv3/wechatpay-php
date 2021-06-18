@@ -74,7 +74,10 @@ composer install
 
 以下示例用法，以`异步(Async/PromiseA+)`或`同步(Sync)`结合此种编码模式展开。
 
-> Notes: [RFC3986 #section-3.3](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3) A path consists of a sequence of path segments separated by a slash ("/") character.
+> Note of the `segments`: See [RFC3986 #section-3.3](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)
+> > A path consists of a sequence of path segments separated by a slash ("/") character.
+>
+> Note of the `uri_template`: See [RFC6570](https://www.rfc-editor.org/rfc/rfc6570.html)
 
 ## 开始
 
