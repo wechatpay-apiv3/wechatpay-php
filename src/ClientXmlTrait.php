@@ -55,7 +55,7 @@ trait ClientXmlTrait
     public static function transformRequest(?string $mchid = null, ?string $secret = null, ?array $merchant = null): callable
     {
         return static function (callable $handler) use ($mchid, $secret, $merchant): callable {
-            trigger_error('New features are all in `APIv3`, there\'s no reason to continue use this kind client since v2.0', E_USER_DEPRECATED);
+            trigger_error('New features are all in `APIv3`, there\'s no reason to continue use this kind client since v2.0.', E_USER_DEPRECATED);
 
             return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant) {
                 $data = $options['xml'] ?? [];
