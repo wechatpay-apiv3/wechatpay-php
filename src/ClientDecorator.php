@@ -93,7 +93,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      *   - merchant<?key, string> - The merchant private key(file path string). (optional)
      *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
      *
-     * @return ClientDecorator - The `ClientDecorator` instance
+     * @param array $config - `\GuzzleHttp\Client`, `APIv3` and `APIv2` configuration settings.
      */
     public function __construct(array $config = [])
     {
@@ -135,7 +135,7 @@ final class ClientDecorator implements ClientDecoratorInterface
     */
     protected static function withUriTemplate(string $template, array $variables = []): string
     {
-        if (0 === preg_match('#{(?:[^/]+)}#', $template)) {
+        if (0 === preg_match('#\{(?:[^/]+)\}#', $template)) {
             return $template;
         }
 

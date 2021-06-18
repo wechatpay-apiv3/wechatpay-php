@@ -11,52 +11,52 @@ parameters:
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:delete\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:delete\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:deleteAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:deleteAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:get\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:get\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:getAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:getAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:patch\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:patch\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:patchAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:patchAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:post\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:post\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:postAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:postAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:put\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:put\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 
 		-
-			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:putAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:putAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
 

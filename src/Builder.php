@@ -19,6 +19,16 @@ final class Builder
     /**
      * Building & decorate the chainable `GuzzleHttp\Client`
      *
+     * Minimum mandatory \$config parameters structure
+     *   - mchid: string - The merchant ID
+     *   - serial: string - The serial number of the merchant certificate
+     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string - The merchant private key.
+     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string> - The wechatpay platform serial and certificate(s)
+     *   - secret?: string - The secret key string (optional)
+     *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
+     *   - merchant<?key, string> - The merchant private key(file path string). (optional)
+     *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
+     *
      * ```php
      * // usage samples
      * $instance = Builder::factory([]);
@@ -28,15 +38,7 @@ final class Builder
      * $instance->v3->certificates->getAsync()->then(function() {})->otherwise(function() {})->wait();
      * ```
      *
-     * Acceptable \$config parameters stucture
-     *   - mchid: string - The merchant ID
-     *   - serial: string - The serial number of the merchant certificate
-     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string - The merchant private key.
-     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string> - The wechatpay platform serial and certificate(s)
-     *   - secret?: string - The secret key string (optional)
-     *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
-     *   - merchant<?key, string> - The merchant private key(file path string). (optional)
-     *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
+     * @param array $config - `\GuzzleHttp\Client`, `APIv3` and `APIv2` configuration settings.
      *
      * @return BuilderChainable - The chainable client
      */
