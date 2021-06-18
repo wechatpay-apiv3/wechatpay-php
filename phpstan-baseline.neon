@@ -1,0 +1,226 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Cannot access property \\$data on array\\|bool\\|float\\|int\\|object\\|string\\.$#"
+			count: 2
+			path: bin/CertificateDownloader.php
+
+		-
+			message: "#^Method WeChatPay\\\\Builder\\:\\:factory\\(\\) has parameter \\$config with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:delete\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:deleteAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:get\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:getAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:patch\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:patchAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:post\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:postAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:put\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:47\\:\\:putAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:delete\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:deleteAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:get\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:getAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:patch\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:patchAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:post\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:postAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:put\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\BuilderChainable\\:\\:putAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/BuilderChainable.php
+
+		-
+			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:__construct\\(\\) has parameter \\$config with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:jsonBased\\(\\) has parameter \\$config with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:request\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:requestAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:signer\\(\\) has parameter \\$privateKey with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:withDefaults\\(\\) has parameter \\$config with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Method WeChatPay\\\\ClientDecorator\\:\\:xmlBased\\(\\) has parameter \\$config with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Method WeChatPay\\\\ClientDecoratorInterface\\:\\:request\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/ClientDecoratorInterface.php
+
+		-
+			message: "#^Method WeChatPay\\\\ClientDecoratorInterface\\:\\:requestAsync\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/ClientDecoratorInterface.php
+
+		-
+			message: "#^Method WeChatPay\\\\Crypto\\\\Rsa\\:\\:decrypt\\(\\) has parameter \\$privateKey with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Method WeChatPay\\\\Crypto\\\\Rsa\\:\\:encrypt\\(\\) has parameter \\$publicKey with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Method WeChatPay\\\\Crypto\\\\Rsa\\:\\:sign\\(\\) has parameter \\$privateKey with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Method WeChatPay\\\\Crypto\\\\Rsa\\:\\:verify\\(\\) has parameter \\$publicKey with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Method WeChatPay\\\\Transformer\\:\\:cast\\(\\) has parameter \\$thing with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Method WeChatPay\\\\Transformer\\:\\:cast\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Method WeChatPay\\\\Transformer\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Method WeChatPay\\\\Transformer\\:\\:toXml\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Method WeChatPay\\\\Transformer\\:\\:value\\(\\) has parameter \\$thing with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Method WeChatPay\\\\Transformer\\:\\:walk\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^PHPDoc tag @param for parameter \\$writer with type XMLWritter is not subtype of native type XMLWriter\\.$#"
+			count: 2
+			path: src/Transformer.php
+
+		-
+			message: "#^Parameter \\$writer of method WeChatPay\\\\Transformer\\:\\:content\\(\\) has invalid typehint type XMLWritter\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Parameter \\$writer of method WeChatPay\\\\Transformer\\:\\:walk\\(\\) has invalid typehint type XMLWritter\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Variable \\$previous might not be defined\\.$#"
+			count: 1
+			path: src/Transformer.php
