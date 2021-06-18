@@ -125,7 +125,17 @@ $instance = Builder::factory([
 
 ```php
 try {
-    $resp = $instance->v3->pay->transactions->native->post(['json' => [/*文档参数放这里就好*/]]);
+    $resp = $instance->v3->pay->transactions->native->post(['json' => [
+        'mchid' => '1900006XXX',
+        'out_trade_no' => 'native12177525012014070332333',
+        'appid' => 'wxdace645e0bc2cXXX',
+        'description' => 'Image形象店-深圳腾大-QQ公仔',
+        'notify_url' => 'https =>//weixin.qq.com/',
+        'amount' => [
+            'total' => 1,
+            'currency': 'CNY'
+        ],
+    ]]);
 
     echo $resp->getStatusCode() .' ' . $resp->getReasonPhrase()."\n";
     echo $resp->getBody() . "\n";
@@ -142,7 +152,8 @@ try {
 ### 查单
 
 ```php
-$res = $instance->v3->pay->transactions->id->{'{transaction_id}'}->getAsync([
+$res = $instance->v3->pay->transactions->id->{'{transaction_id}'}
+->getAsync([
     // 查询参数结构
     'query' => ['mchid' => '1230000109'],
     // uri_template 字面量参数
@@ -165,7 +176,8 @@ $res = $instance->v3->pay->transactions->id->{'{transaction_id}'}->getAsync([
 ### 关单
 
 ```php
-$res = $instance->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close->postAsync([
+$res = $instance->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
+->postAsync([
     // 请求参数结构
     'json' => ['mchid' => '1230000109'],
     // uri_template 字面量参数
@@ -188,7 +200,8 @@ $res = $instance->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close->
 ### 退款
 
 ```php
-$res = $instance->chain('v3/refund/domestic/refunds')->postAsync([
+$res = $instance->chain('v3/refund/domestic/refunds')
+->postAsync([
     'json' => [
         'transaction_id' => '1217752501201407033233368018',
         'out_refund_no' => '1217752501201407033233368018',
@@ -242,19 +255,23 @@ try {
 ### 图片上传
 
 ```php
-$resp = $instance->v3->marketing->favor->media->imageUpload->postAsync([
+$resp = $instance->v3->marketing->favor->media->imageUpload
+->postAsync([
     'body'    => $media->getStream(),
     'headers' => [
         'content-type' => $media->getContentType(),
     ]
-])->then(function($response) {
+])
+->then(function($response) {
     echo $response->getBody()->getContents(), PHP_EOL;
     return $response;
-})->otherwise(function($exception) {
+})
+->otherwise(function($exception) {
     $body = $exception->getResponse()->getBody();
     echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
     echo $exception->getTraceAsString(), PHP_EOL;
-})->wait();
+})
+->wait();
 ```
 
 ### 敏感信息加/解密
@@ -306,7 +323,8 @@ try {
 
 ```php
 use WeChatPay\Transformer;
-$res = $instance->v2->mmpaymkttransfers->promotion->transfers->postAsync([
+$res = $instance->v2->mmpaymkttransfers->promotion->transfers
+->postAsync([
     'xml' => [
       'appid' => 'wx8888888888888888',
       'mch_id' => '1900000109',
