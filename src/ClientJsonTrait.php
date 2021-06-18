@@ -2,7 +2,6 @@
 
 namespace WeChatPay;
 
-use function assert;
 use function abs;
 use function intval;
 use function is_string;
@@ -13,6 +12,7 @@ use function is_array;
 use function count;
 
 use InvalidArgumentException;
+use UnexpectedValueException;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Middleware;
@@ -22,7 +22,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\MessageInterface;
 
 /** @var int - The maximum clock offset in second */
-const MAXIMUM_CLOCK_OFFSET = 301;
+const MAXIMUM_CLOCK_OFFSET = 300;
 
 const WechatpayNonce = 'Wechatpay-Nonce';
 const WechatpaySerial = 'Wechatpay-Serial';
@@ -85,15 +85,15 @@ trait ClientJsonTrait
      * @param array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string> $certs The wechatpay platform serial and certificate(s), `[serial => certificate]` pair
      *
      * @return callable
-     * @throws InvalidArgumentException
+     * @throws UnexpectedValueException
      */
     public static function verifier(array &$certs): callable
     {
         return static function (ResponseInterface $response) use (&$certs): ResponseInterface {
-            assert($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
-                && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp),
-                new InvalidArgumentException('The response\'s Headers incomplete.')
-            );
+            if (!($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
+                && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp))) {
+                throw new UnexpectedValueException('The response\'s Headers incomplete.');
+            }
 
             list($nonce) = $response->getHeader(WechatpayNonce);
             list($serial) = $response->getHeader(WechatpaySerial);
@@ -102,19 +102,17 @@ trait ClientJsonTrait
 
             $localTimestamp = Formatter::timestamp();
 
-            assert(
-                abs($localTimestamp - intval($timestamp)) < MAXIMUM_CLOCK_OFFSET,
-                new InvalidArgumentException(
+            if (abs($localTimestamp - intval($timestamp)) > MAXIMUM_CLOCK_OFFSET) {
+                throw new UnexpectedValueException(
                     "It's allowed time offset in ± 5 minutes, the response was on ${timestamp}, your's localtime on ${localTimestamp}."
-                )
-            );
+                );
+            }
 
-            assert(
-                Crypto\Rsa::verify(Formatter::response($timestamp, $nonce, static::body($response)), $signature, $certs[$serial]),
-                new InvalidArgumentException(
+            if (!Crypto\Rsa::verify(Formatter::response($timestamp, $nonce, static::body($response)), $signature, $certs[$serial])) {
+                throw new UnexpectedValueException(
                     "Verify the response's data with: timestamp=${timestamp}, nonce=${nonce}, signature=${signature}, cert=[${serial}: publicKey] failed."
-                )
-            );
+                );
+            }
 
             return $response;
         };
@@ -134,25 +132,21 @@ trait ClientJsonTrait
      */
     public static function jsonBased(array $config = []): Client
     {
-        assert(
-            isset($config['mchid']) && (is_string($config['mchid']) || is_numeric($config['mchid'])),
-            new InvalidArgumentException('The merchant\' ID aka `mchid` is required, usually numerical.')
-        );
+        if (!(
+           isset($config['mchid']) && (is_string($config['mchid']) || is_numeric($config['mchid']))
+        )) { throw new InvalidArgumentException('The merchant\' ID aka `mchid` is required, usually numerical.'); }
 
-        assert(
-            isset($config['serial']) && is_string($config['serial']),
-            new InvalidArgumentException('The serial number of the merchant\'s certificate aka `serial` is required, usually hexadecial.')
-        );
+        if (!(
+            isset($config['serial']) && is_string($config['serial'])
+        )) { throw new InvalidArgumentException('The serial number of the merchant\'s certificate aka `serial` is required, usually hexadecial.'); }
 
-        assert(
-            isset($config['privateKey']) && (is_string($config['privateKey']) || is_resource($config['privateKey']) || is_object($config['privateKey'])),
-            new InvalidArgumentException('The merchant\'s private key aka `privateKey` is required, usual as pem format.')
-        );
+        if (!(
+            isset($config['privateKey']) && (is_string($config['privateKey']) || is_resource($config['privateKey']) || is_object($config['privateKey']))
+        )) { throw new InvalidArgumentException('The merchant\'s private key aka `privateKey` is required, usual as pem format.'); }
 
-        assert(
-            isset($config['certs']) && is_array($config['certs']) && count($config['certs']),
-            new InvalidArgumentException('The platform certificate(s) aka `certs` is required, paired as of `[serial => certificate]`.')
-        );
+        if (!(
+            isset($config['certs']) && is_array($config['certs']) && count($config['certs'])
+        )) { throw new InvalidArgumentException('The platform certificate(s) aka `certs` is required, paired as of `[serial => certificate]`.'); }
 
         $handler = $config['handler'] ?? HandlerStack::create();
         $handler->unshift(Middleware::mapRequest(static::signer($config['mchid'], $config['serial'], $config['privateKey'])), 'signer');

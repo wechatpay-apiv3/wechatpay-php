@@ -2,7 +2,6 @@
 
 namespace WeChatPay;
 
-use function assert;
 use function strlen;
 use function array_replace_recursive;
 use function trigger_error;
@@ -51,6 +50,7 @@ trait ClientXmlTrait
      * @param array{cert?: ?string, key?: ?string} $merchant - The merchant private key and certificate array. (optional)
      *
      * @return callable
+     * @throws InvalidArgumentException
      */
     public static function transformRequest(?string $mchid = null, ?string $secret = null, ?array $merchant = null): callable
     {
@@ -60,10 +60,9 @@ trait ClientXmlTrait
             return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant) {
                 $data = $options['xml'] ?? [];
 
-                assert(
-                    $mchid === ($data['mch_id'] ?? null),
-                    new InvalidArgumentException("The xml's mch_id({$data['mch_id']}) doesn't matched the init one ({$mchid}).")
-                );
+                if ($mchid && $mchid !== ($data['mch_id'] ?? null)) {
+                    throw new InvalidArgumentException("The xml's mch_id({$data['mch_id']}) doesn't matched the init one ({$mchid}).");
+                }
 
                 $type = $data['sign_type'] ?? Crypto\Hash::ALGO_MD5;
 
