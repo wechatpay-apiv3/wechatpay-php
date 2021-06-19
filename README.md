@@ -49,9 +49,9 @@ composer require wechatpay/wechatpay
 在项目的`composer.json`中加入以下配置：
 
 ```json
-    "require": {
-        "wechatpay/wechatpay": "^1.0.0"
-    }
+"require": {
+    "wechatpay/wechatpay": "^1.0.0"
+}
 ```
 
 添加配置后，执行安装
@@ -133,7 +133,7 @@ try {
         'out_trade_no' => 'native12177525012014070332333',
         'appid' => 'wxdace645e0bc2cXXX',
         'description' => 'Image形象店-深圳腾大-QQ公仔',
-        'notify_url' => 'https =>//weixin.qq.com/',
+        'notify_url' => 'https://weixin.qq.com/',
         'amount' => [
             'total' => 1,
             'currency': 'CNY'
