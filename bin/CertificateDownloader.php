@@ -25,8 +25,6 @@ use WeChatPay\Crypto\AesGcm;
 
  /**
   * CertificateDownloader class
-  *
-  * @phpstan-type DownloaderOptions array{mchid: string, serialno: string, privatekey: string, key: string, output?: string, help?: true, version?: true}
   */
 class CertificateDownloader
 {
@@ -51,7 +49,7 @@ class CertificateDownloader
     }
 
     /**
-     * @param DownloaderOptions $opts
+     * @param array<string,string|true> $opts
      *
      * @return void
      */
@@ -111,7 +109,7 @@ class CertificateDownloader
     }
 
     /**
-     * @return ?DownloaderOptions
+     * @return ?array<string,string|true>
      */
     private function parseOpts(): ?array
     {

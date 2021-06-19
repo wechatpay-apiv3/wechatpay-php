@@ -39,7 +39,7 @@ interface ClientDecoratorInterface
      *
      * @param string $uri - The uri string.
      * @param string $method - The method string.
-     * @param array $options - The options.
+     * @param array<string,string|int|bool|array|mixed> $options - The options.
      *
      * @return ResponseInterface - The `Psr\Http\Message\ResponseInterface` instance
      */
@@ -50,7 +50,7 @@ interface ClientDecoratorInterface
      *
      * @param string $uri - The uri string.
      * @param string $method - The method string.
-     * @param array $options - The options.
+     * @param array<string,string|int|bool|array|mixed> $options - The options.
      *
      * @return PromiseInterface - The `GuzzleHttp\Promise\PromiseInterface` instance
      */

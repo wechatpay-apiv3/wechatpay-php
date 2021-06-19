@@ -34,7 +34,7 @@ class Transformer
      *
      * @param string $xml - The xml string, default is `<xml/>` string
      *
-     * @return array - The array
+     * @return array<string,string|array|mixed>
      */
     public static function toArray(string $xml = '<xml/>'): array
     {
@@ -50,9 +50,9 @@ class Transformer
     /**
      * Recursive cast the $thing as array data structure.
      *
-     * @param array|object|SimpleXMLElement $thing - The thing
+     * @param array<string,mixed>|object|SimpleXMLElement $thing - The thing
      *
-     * @return array - The array
+     * @return array<string,string|array|mixed>
      */
     protected static function cast($thing): array
     {
@@ -65,9 +65,7 @@ class Transformer
     /**
      * Cast the value $thing, specially doing the `array`, `object`, `SimpleXMLElement` to `array`
      *
-     * @param string|array|object|SimpleXMLElement $thing - The value thing reference
-     *
-     * @return void
+     * @param string|array<string,string|SimpleXMLElement|mixed>|object|SimpleXMLElement $thing - The value thing reference
      */
     protected static function value(&$thing): void
     {
@@ -83,9 +81,7 @@ class Transformer
      * @see https://github.com/w7corp/easywechat/pull/1419
      * @license https://github.com/w7corp/easywechat/blob/4.x/LICENSE
      *
-     * @param string $xml
-     *
-     * @return string
+     * @param string $xml - The xml string
      */
     public static function sanitize(string $xml): string
     {
@@ -95,7 +91,7 @@ class Transformer
     /**
      * Transform the given $data array as of an XML string.
      *
-     * @param array $data - The data array
+     * @param array<string,string|array|mixed> $data - The data array
      * @param boolean $headless - The headless flag, default `true` means without the `<?xml version="1.0" encoding="UTF-8" ?>` doctype
      * @param boolean $indent - Toggle indentation on/off, default is `false` off
      * @param string $root - The root node label, default is `xml` string
@@ -123,10 +119,8 @@ class Transformer
      * Walk the given data array by the `XMLWriter` instance.
      *
      * @param \XMLWritter $writer - The `XMLWritter` instance reference
-     * @param array $data - The data array
+     * @param array<string,string|array|mixed> $data - The data array
      * @param string $item - The nest array identify tag text
-     *
-     * @return void
      */
     protected static function walk(XMLWriter &$writer, array $data, string $item): void
     {
@@ -150,8 +144,6 @@ class Transformer
      *
      * @param \XMLWritter $writer - The `XMLWritter` instance reference
      * @param string|null $thing - The content text
-     *
-     * @return void
      */
     protected static function content(XMLWriter &$writer, ?string $thing = null): void
     {

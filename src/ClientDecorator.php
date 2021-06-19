@@ -34,7 +34,7 @@ final class ClientDecorator implements ClientDecoratorInterface
     /**
      * Deep merge the input with the defaults
      *
-     * @param array $config - The configuration.
+     * @param array<string,string|int|bool|array|mixed> $config - The configuration.
      *
      * @return array<string, string|mixed> - With the built-in configuration.
      */
@@ -65,8 +65,6 @@ final class ClientDecorator implements ClientDecoratorInterface
      * Taken body string
      *
      * @param MessageInterface $message - The message
-     *
-     * @return string
      */
     protected static function body(MessageInterface $message): string
     {
@@ -86,14 +84,14 @@ final class ClientDecorator implements ClientDecoratorInterface
      * Acceptable \$config parameters stucture
      *   - mchid: string - The merchant ID
      *   - serial: string - The serial number of the merchant certificate
-     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string - The merchant private key.
-     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string> - The wechatpay platform serial and certificate(s)
+     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string - The merchant private key.
+     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string> - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *   - secret?: string - The secret key string (optional)
      *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
      *   - merchant<?key, string> - The merchant private key(file path string). (optional)
      *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
      *
-     * @param array $config - `\GuzzleHttp\Client`, `APIv3` and `APIv2` configuration settings.
+     * @param array<string,string|int|bool|array|mixed> $config - `\GuzzleHttp\Client`, `APIv3` and `APIv2` configuration settings.
      */
     public function __construct(array $config = [])
     {
