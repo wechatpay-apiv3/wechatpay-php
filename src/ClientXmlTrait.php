@@ -126,7 +126,7 @@ trait ClientXmlTrait
      *   - merchant<?key, string> - The merchant private key(file path string). (optional)
      *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
      *
-     * @return Client - The `GuzzleHttp\Client` instance
+     * @param array<string,string|int|bool|array|mixed> $config - The configuration
      */
     public static function xmlBased(array $config = []): Client
     {

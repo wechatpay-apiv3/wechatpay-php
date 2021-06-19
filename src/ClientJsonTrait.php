@@ -59,9 +59,9 @@ trait ClientJsonTrait
      *
      * @param string $mchid - The merchant ID
      * @param string $serial - The serial number of the merchant certificate
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string $privateKey - The merchant private key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string $privateKey - The merchant private key.
      *
-     * @return callable
+     * @return callable(RequestInterface)
      * @throws InvalidArgumentException
      */
     public static function signer(string $mchid, string $serial, $privateKey): callable
@@ -82,9 +82,9 @@ trait ClientJsonTrait
     /**
      * APIv3's verifier middleware stack
      *
-     * @param array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string> $certs The wechatpay platform serial and certificate(s), `[serial => certificate]` pair
+     * @param array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string> $certs The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *
-     * @return callable
+     * @return callable(ResponseInterface)
      * @throws UnexpectedValueException
      */
     public static function verifier(array &$certs): callable
@@ -124,10 +124,10 @@ trait ClientJsonTrait
      * Mandatory \$config array paramters
      *   - mchid: string - The merchant ID
      *   - serial: string - The serial number of the merchant certificate
-     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string - The merchant private key.
-     *   - certs: array{string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string} - The wechatpay platform serial and certificate(s)
+     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string - The merchant private key.
+     *   - certs: array{string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string} - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *
-     * @return Client - The `GuzzleHttp\Client` instance
+     * @param array<string,string|int|bool|array|mixed> $config - The configuration
      * @throws InvalidArgumentException
      */
     public static function jsonBased(array $config = []): Client
