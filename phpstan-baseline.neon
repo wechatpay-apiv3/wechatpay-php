@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Cannot access property \\$data on array\\|bool\\|float\\|int\\|object\\|string\\.$#"
-			count: 2
-			path: bin/CertificateDownloader.php
-
-		-
 			message: "#^Method WeChatPay\\\\Builder\\:\\:factory\\(\\) has parameter \\$config with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Builder.php
