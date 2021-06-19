@@ -25,8 +25,6 @@ use WeChatPay\Crypto\AesGcm;
 
  /**
   * CertificateDownloader class
-  *
-  * @phpstan-type DownloaderOptions array{mchid: string, serialno: string, privatekey: string, key: string, output?: string, help?: true, version?: true}
   */
 class CertificateDownloader
 {
@@ -51,7 +49,7 @@ class CertificateDownloader
     }
 
     /**
-     * @param DownloaderOptions $opts
+     * @param array<string,string|true> $opts
      *
      * @return void
      */
@@ -72,20 +70,22 @@ class CertificateDownloader
         $handler = $instance->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
         $handler->after('verifier', Middleware::mapResponse(static function($response) use ($apiv3Key, &$certs) {
             $body = $response->getBody()->getContents();
-            $body = Utils::jsonDecode($body);
+            /** @var object{data:array<object{encrypt_certificate:object{serial_no:string,nonce:string,associated_data:string}}>} $json */
+            $json = Utils::jsonDecode($body);
             \array_map(static function($row) use ($apiv3Key, &$certs) {
                 $cert = $row->encrypt_certificate;
                 $certs[$row->serial_no] = AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_data);
-            }, $body->data);
+            }, $json->data);
 
             return $response;
         }), 'injector');
 
         $instance->chain('v3/certificates')->getAsync(['debug' => true])->then(static function($response) use ($outputDir, &$certs) {
             $body = $response->getBody()->getContents();
-            $body = Utils::jsonDecode($body);
+            /** @var object{data:array<object{effective_time:string,expire_time:string:serial_no:string}>} $json */
+            $json = Utils::jsonDecode($body);
             $timeZone = new \DateTimeZone('Asia/Shanghai');
-            \array_walk($body->data, static function($row, $index, $certs) use ($outputDir, $timeZone) {
+            \array_walk($json->data, static function($row, $index, $certs) use ($outputDir, $timeZone) {
                 $serialNo = $row->serial_no;
                 $outpath = $outputDir . DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
 
@@ -109,7 +109,7 @@ class CertificateDownloader
     }
 
     /**
-     * @return ?DownloaderOptions
+     * @return ?array<string,string|true>
      */
     private function parseOpts(): ?array
     {

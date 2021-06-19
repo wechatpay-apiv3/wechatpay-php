@@ -22,8 +22,8 @@ final class Builder
      * Minimum mandatory \$config parameters structure
      *   - mchid: string - The merchant ID
      *   - serial: string - The serial number of the merchant certificate
-     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string - The merchant private key.
-     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array|string> - The wechatpay platform serial and certificate(s)
+     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string - The merchant private key.
+     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string> - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *   - secret?: string - The secret key string (optional)
      *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
      *   - merchant<?key, string> - The merchant private key(file path string). (optional)
@@ -38,11 +38,9 @@ final class Builder
      * $instance->v3->certificates->getAsync()->then(function() {})->otherwise(function() {})->wait();
      * ```
      *
-     * @param array $config - `\GuzzleHttp\Client`, `APIv3` and `APIv2` configuration settings.
-     *
-     * @return BuilderChainable - The chainable client
+     * @param array<string,string|int|bool|array|mixed> $config - `\GuzzleHttp\Client`, `APIv3` and `APIv2` configuration settings.
      */
-    public static function factory(array $config = [])
+    public static function factory(array $config = []): BuilderChainable
     {
         return new class([], new ClientDecorator($config)) extends ArrayIterator implements BuilderChainable
         {

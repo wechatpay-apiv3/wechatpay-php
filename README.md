@@ -49,9 +49,9 @@ composer require wechatpay/wechatpay
 在项目的`composer.json`中加入以下配置：
 
 ```json
-    "require": {
-        "wechatpay/wechatpay": "^1.0.0"
-    }
+"require": {
+    "wechatpay/wechatpay": "^1.0.0"
+}
 ```
 
 添加配置后，执行安装
@@ -74,7 +74,10 @@ composer install
 
 以下示例用法，以`异步(Async/PromiseA+)`或`同步(Sync)`结合此种编码模式展开。
 
-> Notes: [RFC3986 #section-3.3](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3) A path consists of a sequence of path segments separated by a slash ("/") character.
+> Note of the `segments`: See [RFC3986 #section-3.3](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)
+> > A path consists of a sequence of path segments separated by a slash ("/") character.
+>
+> Note of the `uri_template`: See [RFC6570](https://www.rfc-editor.org/rfc/rfc6570.html)
 
 ## 开始
 
@@ -130,7 +133,7 @@ try {
         'out_trade_no' => 'native12177525012014070332333',
         'appid' => 'wxdace645e0bc2cXXX',
         'description' => 'Image形象店-深圳腾大-QQ公仔',
-        'notify_url' => 'https =>//weixin.qq.com/',
+        'notify_url' => 'https://weixin.qq.com/',
         'amount' => [
             'total' => 1,
             'currency': 'CNY'
@@ -366,3 +369,11 @@ print_r($res);
 如果你发现了**BUG**或者有任何疑问、建议，请通过issue进行反馈。
 
 也欢迎访问我们的[开发者社区](https://developers.weixin.qq.com/community/pay)。
+
+## 链接
+
+- [变更历史](CHANGELOG.md)
+
+## License
+
+[Apache-2.0 License](LICENSE)
