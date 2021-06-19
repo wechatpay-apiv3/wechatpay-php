@@ -369,3 +369,11 @@ print_r($res);
 如果你发现了**BUG**或者有任何疑问、建议，请通过issue进行反馈。
 
 也欢迎访问我们的[开发者社区](https://developers.weixin.qq.com/community/pay)。
+
+## 链接
+
+- [变更历史](CHANGELOG.md)
+
+## License
+
+[Apache-2.0 License](LICENSE)
