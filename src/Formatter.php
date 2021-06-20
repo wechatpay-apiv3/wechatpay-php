@@ -2,9 +2,9 @@
 
 namespace WeChatPay;
 
-use function preg_replace_callback;
-use function rand;
-use function str_repeat;
+use function array_reduce;
+use function mt_rand;
+use function range;
 use function time;
 use function sprintf;
 use function implode;
@@ -14,8 +14,6 @@ use function is_null;
 
 use const SORT_FLAG_CASE;
 use const SORT_NATURAL;
-
-const BASE62_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 /**
  * Provides easy used methods using in this project.
@@ -31,7 +29,9 @@ class Formatter
      */
     public static function nonce(int $size = 32): string
     {
-        return preg_replace_callback('#0#', static function() { return BASE62_CHARS[rand(0, 61)]; }, str_repeat('0', $size));
+        return array_reduce(range(1, $size), static function(string $char) {
+            return $char .= 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[mt_rand(0, 61)];
+        }, '');
     }
 
     /**
