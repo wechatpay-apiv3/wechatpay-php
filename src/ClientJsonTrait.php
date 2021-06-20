@@ -10,8 +10,8 @@ use function is_resource;
 use function is_object;
 use function is_array;
 use function count;
+use function sprintf;
 
-use InvalidArgumentException;
 use UnexpectedValueException;
 
 use GuzzleHttp\Client;
@@ -62,7 +62,6 @@ trait ClientJsonTrait
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string $privateKey - The merchant private key.
      *
      * @return callable(RequestInterface)
-     * @throws InvalidArgumentException
      */
     public static function signer(string $mchid, string $serial, $privateKey): callable
     {
@@ -92,7 +91,7 @@ trait ClientJsonTrait
         return static function (ResponseInterface $response) use (&$certs): ResponseInterface {
             if (!($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
                 && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp))) {
-                throw new UnexpectedValueException('The response\'s Headers incomplete.');
+                throw new UnexpectedValueException(sprintf(Exception\EV3_RES_HEADERS_INCOMPLATE, WechatpayNonce, WechatpaySerial, WechatpaySignature, WechatpayTimestamp));
             }
 
             list($nonce) = $response->getHeader(WechatpayNonce);
@@ -104,13 +103,13 @@ trait ClientJsonTrait
 
             if (abs($localTimestamp - intval($timestamp)) > MAXIMUM_CLOCK_OFFSET) {
                 throw new UnexpectedValueException(
-                    "It's allowed time offset in ± 5 minutes, the response was on ${timestamp}, your's localtime on ${localTimestamp}."
+                    sprintf(Exception\EV3_RES_HEADER_TIMESTAMP_OFFSET, MAXIMUM_CLOCK_OFFSET, $timestamp, $localTimestamp)
                 );
             }
 
             if (!Crypto\Rsa::verify(Formatter::response($timestamp, $nonce, static::body($response)), $signature, $certs[$serial])) {
                 throw new UnexpectedValueException(
-                    "Verify the response's data with: timestamp=${timestamp}, nonce=${nonce}, signature=${signature}, cert=[${serial}: publicKey] failed."
+                    sprintf(Exception\EV3_RES_HEADER_SIGNATURE_DEGIST, $timestamp, $nonce, $signature, $serial)
                 );
             }
 
@@ -128,25 +127,25 @@ trait ClientJsonTrait
      *   - certs: array{string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string} - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *
      * @param array<string,string|int|bool|array|mixed> $config - The configuration
-     * @throws InvalidArgumentException
+     * @throws \WeChatPay\Exception\InvalidArgumentException
      */
     public static function jsonBased(array $config = []): Client
     {
         if (!(
            isset($config['mchid']) && (is_string($config['mchid']) || is_numeric($config['mchid']))
-        )) { throw new InvalidArgumentException('The merchant\' ID aka `mchid` is required, usually numerical.'); }
+        )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_MCHID_IS_MANDATORY); }
 
         if (!(
             isset($config['serial']) && is_string($config['serial'])
-        )) { throw new InvalidArgumentException('The serial number of the merchant\'s certificate aka `serial` is required, usually hexadecial.'); }
+        )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_SERIAL_IS_MANDATORY); }
 
         if (!(
             isset($config['privateKey']) && (is_string($config['privateKey']) || is_resource($config['privateKey']) || is_object($config['privateKey']))
-        )) { throw new InvalidArgumentException('The merchant\'s private key aka `privateKey` is required, usual as pem format.'); }
+        )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_PRIVATEKEY_IS_MANDATORY); }
 
         if (!(
             isset($config['certs']) && is_array($config['certs']) && count($config['certs'])
-        )) { throw new InvalidArgumentException('The platform certificate(s) aka `certs` is required, paired as of `[serial => certificate]`.'); }
+        )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_CERTS_IS_MANDATORY); }
 
         $handler = $config['handler'] ?? HandlerStack::create();
         $handler->unshift(Middleware::mapRequest(static::signer($config['mchid'], $config['serial'], $config['privateKey'])), 'signer');

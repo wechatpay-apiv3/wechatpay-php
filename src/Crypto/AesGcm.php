@@ -23,7 +23,6 @@ class AesGcm implements AesInterface
     /**
      * Detect the ext-openssl whether or nor including the `aes-256-gcm` algorithm
      *
-     * @return void
      * @throws RuntimeException
      */
     private static function preCondition(): void
