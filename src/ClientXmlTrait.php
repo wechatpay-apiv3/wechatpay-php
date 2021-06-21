@@ -5,10 +5,9 @@ namespace WeChatPay;
 use function strlen;
 use function array_replace_recursive;
 use function trigger_error;
+use function sprintf;
 
 use const E_USER_DEPRECATED;
-
-use InvalidArgumentException;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
@@ -49,19 +48,19 @@ trait ClientXmlTrait
      * @param ?string $secret - The secret key string (optional)
      * @param array{cert?: ?string, key?: ?string} $merchant - The merchant private key and certificate array. (optional)
      *
-     * @return callable
-     * @throws InvalidArgumentException
+     * @return callable(callable(RequestInterface, array))
+     * @throws \WeChatPay\Exception\InvalidArgumentException
      */
     public static function transformRequest(?string $mchid = null, ?string $secret = null, ?array $merchant = null): callable
     {
         return static function (callable $handler) use ($mchid, $secret, $merchant): callable {
             trigger_error('New features are all in `APIv3`, there\'s no reason to continue use this kind client since v2.0.', E_USER_DEPRECATED);
 
-            return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant) {
+            return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): P\PromiseInterface {
                 $data = $options['xml'] ?? [];
 
                 if ($mchid && $mchid !== ($data['mch_id'] ?? null)) {
-                    throw new InvalidArgumentException("The xml's mch_id({$data['mch_id']}) doesn't matched the init one ({$mchid}).");
+                    throw new Exception\InvalidArgumentException(sprintf(Exception\EV2_REQ_XML_NOTMATCHED_MCHID, $data['mch_id'] ?? '', $mchid));
                 }
 
                 $type = $data['sign_type'] ?? Crypto\Hash::ALGO_MD5;
@@ -92,12 +91,12 @@ trait ClientXmlTrait
      *
      * @param ?string $secret - The secret key string (optional)
      *
-     * @return callable
+     * @return callable(callable(RequestInterface, array))
      */
     public static function transformResponse(?string $secret = null): callable
     {
         return static function (callable $handler) use ($secret): callable {
-            return static function (RequestInterface $request, array $options = []) use ($secret, $handler) {
+            return static function (RequestInterface $request, array $options = []) use ($secret, $handler): P\PromiseInterface {
                 $promise = $handler($request, $options);
 
                 return $promise->then(static function(ResponseInterface $response) use ($secret) {

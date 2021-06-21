@@ -65,10 +65,8 @@ final class Builder
             /**
              * `$driver` setter
              * @param ClientDecoratorInterface $instance - The `ClientDecorator` instance
-             *
-             * @return BuilderChainable
              */
-            public function setDriver(ClientDecoratorInterface &$instance)
+            public function setDriver(ClientDecoratorInterface &$instance): BuilderChainable
             {
                 $this->driver = $instance;
 
