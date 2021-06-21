@@ -18,28 +18,37 @@ use Psr\Http\Message\StreamInterface;
 class MediaUtil
 {
     /**
-     * @var string - local file path
+     * local file path
+     *
+     * @var string
      */
     private $filepath;
 
     /**
-     * @var string - file content stream to upload
+     * file content stream to upload
+     * @var string
      */
     private $fileStream;
 
     /**
-     * @var string - upload meta json string
+     * upload meta json string
+     *
+     * @var string
      */
     private $meta;
 
     /**
-     * @var MultipartStream - upload contents stream
+     * upload contents stream
+     *
+     * @var MultipartStream
      */
     private $multipart;
 
 
     /**
-     * @var StreamInterface - multipart stream wrapper
+     * multipart stream wrapper
+     *
+     * @var StreamInterface
      */
     private $stream;
 
@@ -94,10 +103,14 @@ class MediaUtil
         $this->multipart = $multipart;
 
         $this->stream = FnStream::decorate($multipart, [
-             /** @var callable __toString -  for signature */
-            '__toString' => static function () use ($json) { return $json; },
-             /** @var callable getSize - let the `CURL` to use `CURLOPT_UPLOAD` context */
-            'getSize' => static function () { return null; },
+             // for signature
+            '__toString' => function () use ($json) {
+                return $json;
+            },
+             // let the `CURL` to use `CURLOPT_UPLOAD` context
+            'getSize' => function () {
+                return null;
+            },
         ]);
     }
 

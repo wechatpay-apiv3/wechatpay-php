@@ -9,6 +9,7 @@ use function function_exists;
 use function sprintf;
 use function php_uname;
 use function implode;
+use function preg_match;
 use function strncasecmp;
 use function strcasecmp;
 use function substr;
@@ -123,13 +124,35 @@ final class ClientDecorator implements ClientDecoratorInterface
     }
 
     /**
+     * Expands a URI template
+     *
+     * @param string $template  URI template
+     * @param array<string|int,string|int> $variables Template variables
+     *
+     * @return string
+    */
+    protected static function withUriTemplate(string $template, array $variables = []): string
+    {
+        if (0 === preg_match('#\{(?:[^/]+)\}#', $template)) {
+            return $template;
+        }
+
+        static $uriTemplate;
+        if (!$uriTemplate) {
+            $uriTemplate = new UriTemplate();
+        }
+
+        return $uriTemplate->expand($template, $variables);
+    }
+
+    /**
      * @inheritDoc
      */
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
         list($protocol, $pathname) = static::prepare($uri);
 
-        return $this->select($protocol)->request($method, UriTemplate::expand($pathname, $options), $options);
+        return $this->select($protocol)->request($method, static::withUriTemplate($pathname, $options), $options);
     }
 
     /**
@@ -139,6 +162,6 @@ final class ClientDecorator implements ClientDecoratorInterface
     {
         list($protocol, $pathname) = static::prepare($uri);
 
-        return $this->select($protocol)->requestAsync($method, UriTemplate::expand($pathname, $options), $options);
+        return $this->select($protocol)->requestAsync($method, static::withUriTemplate($pathname, $options), $options);
     }
 }

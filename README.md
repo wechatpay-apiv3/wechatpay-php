@@ -66,7 +66,7 @@ composer install
 
 1. 请求 `pathname` 切分后的每个`segment`，可直接以对象获取形式串接，例如 `v3/pay/transactions/native` 即串成 `v3->pay->transactions->native`;
 2. 每个 `pathname` 所支持的 `HTTP METHOD`，即作为被串接对象的末尾执行方法，例如: `v3->pay->transactions->native->post(['json' => []])`;
-3. 每个 `pathname` 所支持的 `HTTP METHOD`，同时支持`Async`语法糖，例如: `v3->pay->transactions->native->postAsync(['json' => []])`;
+3. 每个 `pathname` 所支持的 `HTTP METHOD`，同时支持`Async`语法糖，例如: `v3->pay->transactions->native->postAsycn(['json' => []])`;
 4. 每个 `segment` 有中线(dash)分隔符的，可以使用驼峰`camelCase`风格书写，例如: `merchant-service`可写成 `merchantService`，或如 `{'merchant-service'}`;
 5. 每个 `segment` 中，若有`uri_template`动态参数，例如 `business_code/{business_code}` 推荐以`business_code->{'{business_code}'}`形式书写，其格式语义与`pathname`基本一致，阅读起来比较自然;
 6. SDK内置以 `v2` 特殊标识为 `APIv2` 的起始 `segmemt`，之后串接切分后的 `segments`，如源 `pay/micropay` 即串成 `v2->pay->micropay->post(['xml' => []])` 即以XML形式请求远端接口；

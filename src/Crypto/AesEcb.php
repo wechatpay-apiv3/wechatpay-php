@@ -17,7 +17,7 @@ class AesEcb implements AesInterface
     /**
      * @inheritDoc
      */
-    public static function encrypt(string $plaintext, string $key, string $iv = ''): string
+    static public function encrypt(string $plaintext, string $key, string $iv = ''): string
     {
         $ciphertext = openssl_encrypt($plaintext, static::ALGO_AES_256_ECB, $key, OPENSSL_RAW_DATA, $iv);
 
@@ -27,7 +27,7 @@ class AesEcb implements AesInterface
     /**
      * @inheritDoc
      */
-    public static function decrypt(string $ciphertext, string $key, string $iv = ''): string
+    static public function decrypt(string $ciphertext, string $key, string $iv = ''): string
     {
         return openssl_decrypt(base64_decode($ciphertext), static::ALGO_AES_256_ECB, $key, OPENSSL_RAW_DATA, $iv);
     }
