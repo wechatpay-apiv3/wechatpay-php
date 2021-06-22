@@ -1,21 +1,2 @@
 parameters:
 	ignoreErrors:
-		-
-			message: "#^PHPDoc tag @param for parameter \\$writer with type XMLWritter is not subtype of native type XMLWriter\\.$#"
-			count: 2
-			path: src/Transformer.php
-
-		-
-			message: "#^Parameter \\$writer of method WeChatPay\\\\Transformer\\:\\:content\\(\\) has invalid typehint type XMLWritter\\.$#"
-			count: 1
-			path: src/Transformer.php
-
-		-
-			message: "#^Parameter \\$writer of method WeChatPay\\\\Transformer\\:\\:walk\\(\\) has invalid typehint type XMLWritter\\.$#"
-			count: 1
-			path: src/Transformer.php
-
-		-
-			message: "#^Variable \\$previous might not be defined\\.$#"
-			count: 1
-			path: src/Transformer.php

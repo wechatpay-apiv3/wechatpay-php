@@ -20,7 +20,7 @@ use Psr\Http\Message\MessageInterface;
 /**
  * XML based Client interface for sending HTTP requests.
  *
- * @deprecated 2.0 - New features are all in `APIv3`, there's no reason to continue use this kind client since v2.0.
+ * @deprecated 1.0 - New features are all in `APIv3`, there's no reason to continue use this kind client since v2.0.
  */
 trait ClientXmlTrait
 {
@@ -54,7 +54,7 @@ trait ClientXmlTrait
     public static function transformRequest(?string $mchid = null, ?string $secret = null, ?array $merchant = null): callable
     {
         return static function (callable $handler) use ($mchid, $secret, $merchant): callable {
-            trigger_error('New features are all in `APIv3`, there\'s no reason to continue use this kind client since v2.0.', E_USER_DEPRECATED);
+            trigger_error(Exception\WeChatPayException::DEP_XML_PROTOCOL_UNDER_END_OF_LIFE, E_USER_DEPRECATED);
 
             return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): P\PromiseInterface {
                 $data = $options['xml'] ?? [];
