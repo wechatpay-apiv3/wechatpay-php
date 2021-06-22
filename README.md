@@ -322,6 +322,12 @@ try {
 
 ## APIv2
 
+末尾驱动的 `HTTP METHOD` 方法入参 `array $options`，接受两个自定义参数，释义如下：
+
+- `$options['nonceless']` - 标量 `scalar` 任意值，语义上即，本次请求不用自动添加`nonce_str`参数，推荐 `boolean(True)`
+- `$options['security']` - 布尔量`True`，语义上即，本次请求需要加载ssl证书，对应的是初始化 `array $config['merchant']` 结构体
+> 隐含接受 `$options['passphase']` 参数，当且仅当 `pem` 格式当私钥，加了密码，请求时需要
+
 ### 企业付款到零钱
 
 ```php
