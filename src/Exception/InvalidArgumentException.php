@@ -2,6 +2,8 @@
 
 namespace WeChatPay\Exception;
 
-class InvalidArgumentException extends \InvalidArgumentException implements WeChatPayException
+use GuzzleHttp\Exception\GuzzleException;
+
+class InvalidArgumentException extends \InvalidArgumentException implements WeChatPayException, GuzzleException
 {
 }
