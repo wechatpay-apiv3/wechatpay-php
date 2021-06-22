@@ -94,8 +94,8 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function __construct(array $config = [])
     {
-        $this->{ClientDecoratorInterface::XML_BASED} = static::xmlBased($config);
-        $this->{ClientDecoratorInterface::JSON_BASED} = static::jsonBased($config);
+        $this->{static::XML_BASED} = static::xmlBased($config);
+        $this->{static::JSON_BASED} = static::jsonBased($config);
     }
 
     /**
@@ -107,9 +107,9 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     private static function prepare(string $uri): array
     {
-        return $uri && 0 === strncasecmp(ClientDecoratorInterface::XML_BASED . '/', $uri, 3)
-            ? [ClientDecoratorInterface::XML_BASED, substr($uri, 3)]
-            : [ClientDecoratorInterface::JSON_BASED, $uri];
+        return $uri && 0 === strncasecmp(static::XML_BASED . '/', $uri, 3)
+            ? [static::XML_BASED, substr($uri, 3)]
+            : [static::JSON_BASED, $uri];
     }
 
     /**
@@ -117,9 +117,9 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function select(?string $protocol = null): ClientInterface
     {
-        return $protocol && 0 === strcasecmp(ClientDecoratorInterface::XML_BASED, $protocol)
-            ? $this->{ClientDecoratorInterface::XML_BASED}
-            : $this->{ClientDecoratorInterface::JSON_BASED};
+        return $protocol && 0 === strcasecmp(static::XML_BASED, $protocol)
+            ? $this->{static::XML_BASED}
+            : $this->{static::JSON_BASED};
     }
 
     /**
