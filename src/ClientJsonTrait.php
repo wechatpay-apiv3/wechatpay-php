@@ -148,7 +148,7 @@ trait ClientJsonTrait
         )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_CERTS_IS_MANDATORY); }
 
         $handler = $config['handler'] ?? HandlerStack::create();
-        $handler->unshift(Middleware::mapRequest(static::signer($config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
+        $handler->unshift(Middleware::mapRequest(static::signer((string)$config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
         $handler->unshift(Middleware::mapResponse(static::verifier($config['certs'])), 'verifier');
         $config['handler'] = $handler;
 

@@ -31,11 +31,6 @@ parameters:
 			path: src/ClientDecorator.php
 
 		-
-			message: "#^Parameter \\#1 \\$mchid of static method WeChatPay\\\\ClientDecorator\\:\\:signer\\(\\) expects string, float\\|int\\|string given\\.$#"
-			count: 1
-			path: src/ClientDecorator.php
-
-		-
 			message: "#^Parameter \\#3 \\$key of static method WeChatPay\\\\Crypto\\\\Hash\\:\\:sign\\(\\) expects string, string\\|null given\\.$#"
 			count: 2
 			path: src/ClientDecorator.php
