@@ -57,7 +57,7 @@ class Transformer
     protected static function cast($thing): array
     {
         $data = (array) $thing;
-        array_walk($data, ['static', 'value']);
+        array_walk($data, static function(&$value) { static::value($value); });
 
         return $data;
     }
