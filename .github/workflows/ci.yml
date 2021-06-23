@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: [7.2.5, 7.4]
+        php-version: [7.2, 7.4]
         os: [ubuntu-latest, macOS-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -39,7 +39,7 @@ jobs:
           path: vendor
           key: ${{ matrix.os }}-php-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-{{ matrix.php-version }}
+            ${{ runner.os }}-php-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress

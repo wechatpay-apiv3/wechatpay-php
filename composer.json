@@ -21,7 +21,7 @@
     "homepage": "https://pay.weixin.qq.com/",
     "license": "Apache-2.0",
     "require": {
-        "php": "^7.2.5 || ^8.0",
+        "php": ">=7.2",
         "ext-curl": "*",
         "ext-libxml": "*",
         "ext-simplexml": "*",
