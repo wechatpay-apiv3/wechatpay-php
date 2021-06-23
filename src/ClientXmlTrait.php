@@ -45,13 +45,13 @@ trait ClientXmlTrait
      * APIv2's transformRequest, did the `datasign` and `array2xml` together
      *
      * @param ?string $mchid - The merchant ID
-     * @param ?string $secret - The secret key string (optional)
+     * @param string $secret - The secret key string (optional)
      * @param array{cert?: ?string, key?: ?string} $merchant - The merchant private key and certificate array. (optional)
      *
      * @return callable(callable(RequestInterface, array))
      * @throws \WeChatPay\Exception\InvalidArgumentException
      */
-    public static function transformRequest(?string $mchid = null, ?string $secret = null, ?array $merchant = null): callable
+    public static function transformRequest(?string $mchid = null, string $secret = '', ?array $merchant = null): callable
     {
         return static function (callable $handler) use ($mchid, $secret, $merchant): callable {
             trigger_error(Exception\WeChatPayException::DEP_XML_PROTOCOL_UNDER_END_OF_LIFE, E_USER_DEPRECATED);
@@ -89,11 +89,11 @@ trait ClientXmlTrait
     /**
      * APIv2's transformResponse, doing the `xml2array` then `verify` the signature job only
      *
-     * @param ?string $secret - The secret key string (optional)
+     * @param string $secret - The secret key string (optional)
      *
      * @return callable(callable(RequestInterface, array))
      */
-    public static function transformResponse(?string $secret = null): callable
+    public static function transformResponse(string $secret = ''): callable
     {
         return static function (callable $handler) use ($secret): callable {
             return static function (RequestInterface $request, array $options = []) use ($secret, $handler): P\PromiseInterface {
@@ -130,8 +130,8 @@ trait ClientXmlTrait
     public static function xmlBased(array $config = []): Client
     {
         $handler = $config['handler'] ?? HandlerStack::create();
-        $handler->before('prepare_body', static::transformRequest($config['mchid'] ?? null, $config['secret'] ?? null, $config['merchant'] ?? []), 'transform_request');
-        $handler->before('prepare_body', static::transformResponse($config['secret'] ?? null), 'transform_response');
+        $handler->before('prepare_body', static::transformRequest($config['mchid'] ?? null, $config['secret'] ?? '', $config['merchant'] ?? []), 'transform_request');
+        $handler->before('prepare_body', static::transformResponse($config['secret'] ?? ''), 'transform_response');
         $config['handler'] = $handler;
         $config['headers'] = array_replace_recursive(static::$headers, $config['headers'] ?? []);
 
