@@ -143,9 +143,9 @@ class Transformer
      * All others including `'` are written literally.
      *
      * @param \XMLWriter $writer - The `XMLWriter` instance reference
-     * @param string|null $thing - The content text
+     * @param string $thing - The content text
      */
-    protected static function content(XMLWriter &$writer, ?string $thing = null): void
+    protected static function content(XMLWriter &$writer, string $thing = ''): void
     {
         static::needsCdataWrapping($thing) && $writer->writeCdata($thing) || $writer->text($thing);
     }
