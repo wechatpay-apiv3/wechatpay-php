@@ -22,6 +22,13 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+          extensions: curl, libxml, simplexml, openssl
+
       - name: Validate composer.json and composer.lock
         run: composer validate --strict --no-check-version
 
@@ -32,7 +39,7 @@ jobs:
           path: vendor
           key: ${{ matrix.os }}-php-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-
+            ${{ runner.os }}-php-{{ matrix.php-version }}
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
