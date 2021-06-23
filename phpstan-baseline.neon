@@ -1,2 +1,157 @@
 parameters:
 	ignoreErrors:
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$data\\.$#"
+			count: 2
+			path: bin/CertificateDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$filename of function file_get_contents expects string, string\\|true given\\.$#"
+			count: 1
+			path: bin/CertificateDownloader.php
+
+		-
+			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:normalize\\(\\) should return string but returns string\\|null\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function preg_replace_callback expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Cannot access offset 'version' on array\\|false\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Parameter \\#1 \\$mchid of static method WeChatPay\\\\ClientDecorator\\:\\:signer\\(\\) expects string, float\\|int\\|string given\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Parameter \\#3 \\$key of static method WeChatPay\\\\Crypto\\\\Hash\\:\\:sign\\(\\) expects string, string\\|null given\\.$#"
+			count: 2
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Parameter \\#3 \\$privateKey of static method WeChatPay\\\\ClientDecorator\\:\\:signer\\(\\) expects OpenSSLAsymmetricKey\\|OpenSSLCertificate\\|resource\\|string, object\\|resource\\|string given\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Method WeChatPay\\\\Crypto\\\\AesEcb\\:\\:decrypt\\(\\) should return string but returns string\\|false\\.$#"
+			count: 1
+			path: src/Crypto/AesEcb.php
+
+		-
+			message: "#^Parameter \\#1 \\$str(?:ing)? of function base64_encode expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/Crypto/AesEcb.php
+
+		-
+			message: "#^Method WeChatPay\\\\Crypto\\\\AesGcm\\:\\:decrypt\\(\\) should return string but returns string\\|false\\.$#"
+			count: 1
+			path: src/Crypto/AesGcm.php
+
+		-
+			message: "#^Parameter \\#2 \\$(offset|start) of function substr expects int, float\\|int given\\.$#"
+			count: 1
+			path: src/Crypto/AesGcm.php
+
+		-
+			message: "#^Parameter \\#3 \\$length of function substr expects int(\\|null)?, float\\|int given\\.$#"
+			count: 1
+			path: src/Crypto/AesGcm.php
+
+		-
+			message: "#^Parameter \\#3 \\$(?:private_)?key of function openssl_private_decrypt expects#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\#3 \\$(private_key|priv_key_id) of function openssl_sign expects#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\#3 \\$(?:public_)?key of function openssl_public_encrypt#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\#3 \\$(public_key|pub_key_id) of function openssl_verify#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Method WeChatPay\\\\Transformer\\:\\:sanitize\\(\\) should return string but returns string\\|null\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Parameter \\#1 \\$content of method XMLWriter\\:\\:text\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Parameter \\#1 \\$content of method XMLWriter\\:\\:writeCdata\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Parameter \\#1 \\$thing of static method WeChatPay\\\\Transformer\\:\\:cast\\(\\) expects array\\<string, mixed\\>\\|object, SimpleXMLElement\\|false given\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Parameter \\#2 \\$callback of function array_walk expects callable\\(\\)\\: mixed, array\\('static', 'value'\\) given\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Parameter \\#2 \\$subject of function preg_match expects string, string\\|null given\\.$#"
+			count: 1
+			path: src/Transformer.php
+
+		-
+			message: "#^Cannot call method isSeekable\\(\\) on GuzzleHttp\\\\Psr7\\\\LazyOpenStream\\|string\\.$#"
+			count: 1
+			path: src/Util/MediaUtil.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of class GuzzleHttp\\\\Psr7\\\\CachingStream constructor expects Psr\\\\Http\\\\Message\\\\StreamInterface, GuzzleHttp\\\\Psr7\\\\LazyOpenStream\\|string given\\.$#"
+			count: 1
+			path: src/Util/MediaUtil.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of static method GuzzleHttp\\\\Psr7\\\\Utils\\:\\:hash\\(\\) expects Psr\\\\Http\\\\Message\\\\StreamInterface, GuzzleHttp\\\\Psr7\\\\CachingStream\\|GuzzleHttp\\\\Psr7\\\\LazyOpenStream\\|string given\\.$#"
+			count: 1
+			path: src/Util/MediaUtil.php
+
+		-
+			message: "#^Property WeChatPay\\\\Util\\\\MediaUtil\\:\\:\\$fileStream \\(string\\) does not accept Psr\\\\Http\\\\Message\\\\StreamInterface\\|null\\.$#"
+			count: 1
+			path: src/Util/MediaUtil.php
+
+		-
+			message: "#^Parameter \\#1 \\$(?:certificate|x509cert(?:data)?) of function openssl_x509_parse expects#"
+			count: 1
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Parameter \\#1 \\$(certificate|x509cert(?:data)?) of function openssl_x509_read expects#"
+			count: 2
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Parameter \\#1 \\$(?:private_)?key of function openssl_get_privatekey expects#"
+			count: 2
+			path: src/Util/PemUtil.php
+

@@ -1,7 +1,7 @@
 includes:
-  - phpstan-baseline.neon
+	- phpstan-baseline.neon
 parameters:
-  level: 6
-  paths:
-    - src
-    - bin
+	level: 8
+	paths:
+		- src
+		- bin

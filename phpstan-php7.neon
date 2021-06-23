@@ -1,5 +1,104 @@
 includes:
-  - phpstan.neon.dist
+	- phpstan.neon.dist
 parameters:
-  ignoreErrors:
-    - '#invalid(?: typehint)? type OpenSSL(?:Certificate|AsymmetricKey)#'
+	ignoreErrors:
+		-
+			message: "#^Parameter \\$certs of method WeChatPay\\\\ClientDecorator\\:\\:verifier\\(\\) has invalid typehint type OpenSSLAsymmetricKey\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Parameter \\$certs of method WeChatPay\\\\ClientDecorator\\:\\:verifier\\(\\) has invalid typehint type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Parameter \\$privateKey of method WeChatPay\\\\ClientDecorator\\:\\:signer\\(\\) has invalid typehint type OpenSSLAsymmetricKey\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Parameter \\$privateKey of method WeChatPay\\\\ClientDecorator\\:\\:signer\\(\\) has invalid typehint type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Parameter \\$privateKey of method WeChatPay\\\\Crypto\\\\Rsa\\:\\:decrypt\\(\\) has invalid typehint type OpenSSLAsymmetricKey\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\$privateKey of method WeChatPay\\\\Crypto\\\\Rsa\\:\\:decrypt\\(\\) has invalid typehint type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\$privateKey of method WeChatPay\\\\Crypto\\\\Rsa\\:\\:sign\\(\\) has invalid typehint type OpenSSLAsymmetricKey\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\$privateKey of method WeChatPay\\\\Crypto\\\\Rsa\\:\\:sign\\(\\) has invalid typehint type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\$publicKey of method WeChatPay\\\\Crypto\\\\Rsa\\:\\:encrypt\\(\\) has invalid typehint type OpenSSLAsymmetricKey\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\$publicKey of method WeChatPay\\\\Crypto\\\\Rsa\\:\\:encrypt\\(\\) has invalid typehint type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\$publicKey of method WeChatPay\\\\Crypto\\\\Rsa\\:\\:verify\\(\\) has invalid typehint type OpenSSLAsymmetricKey\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\$publicKey of method WeChatPay\\\\Crypto\\\\Rsa\\:\\:verify\\(\\) has invalid typehint type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\#2 \\$passphrase of function openssl_get_privatekey expects string, string\\|null given\\.$#"
+			count: 2
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Parameter \\$certificate of method WeChatPay\\\\Util\\\\PemUtil\\:\\:parseCertificateSerialNo\\(\\) has invalid typehint type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Parameter \\$content of method WeChatPay\\\\Util\\\\PemUtil\\:\\:loadCertificateFromString\\(\\) has invalid typehint type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Parameter \\$content of method WeChatPay\\\\Util\\\\PemUtil\\:\\:loadPrivateKeyFromString\\(\\) has invalid typehint type OpenSSLAsymmetricKey\\.$#"
+			count: 1
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Return typehint of method WeChatPay\\\\Util\\\\PemUtil\\:\\:loadCertificate\\(\\) has invalid type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Return typehint of method WeChatPay\\\\Util\\\\PemUtil\\:\\:loadCertificateFromString\\(\\) has invalid type OpenSSLCertificate\\.$#"
+			count: 1
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Return typehint of method WeChatPay\\\\Util\\\\PemUtil\\:\\:loadPrivateKey\\(\\) has invalid type OpenSSLAsymmetricKey\\.$#"
+			count: 1
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Return typehint of method WeChatPay\\\\Util\\\\PemUtil\\:\\:loadPrivateKeyFromString\\(\\) has invalid type OpenSSLAsymmetricKey\\.$#"
+			count: 1
+			path: src/Util/PemUtil.php
+
