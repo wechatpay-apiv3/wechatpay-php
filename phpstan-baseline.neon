@@ -96,11 +96,6 @@ parameters:
 			path: src/Transformer.php
 
 		-
-			message: "#^Parameter \\#2 \\$subject of function preg_match expects string, string\\|null given\\.$#"
-			count: 1
-			path: src/Transformer.php
-
-		-
 			message: "#^Cannot call method isSeekable\\(\\) on GuzzleHttp\\\\Psr7\\\\LazyOpenStream\\|string\\.$#"
 			count: 1
 			path: src/Util/MediaUtil.php

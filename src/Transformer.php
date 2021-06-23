@@ -156,11 +156,11 @@ class Transformer
      * @see \Symfony\Component\Serializer\Encoder\XmlEncoder::isElementNameValid
      * @license https://github.com/symfony/serializer/blob/5.3/LICENSE
      *
-     * @param string|null $name - The name
+     * @param string $name - The name
      *
      * @return boolean - True means valid
      */
-    protected static function isElementNameValid(?string $name = null): bool
+    protected static function isElementNameValid(string $name = ''): bool
     {
         return $name && false === strpos($name, ' ') && preg_match('#^[\pL_][\pL0-9._:-]*$#ui', $name);
     }
@@ -174,11 +174,11 @@ class Transformer
      * @see \Symfony\Component\Serializer\Encoder\XmlEncoder::needsCdataWrapping
      * @license https://github.com/symfony/serializer/blob/5.3/LICENSE
      *
-     * @param string|null $value - The value
+     * @param string $value - The value
      *
      * @return boolean - True means need
      */
-    protected static function needsCdataWrapping(?string $value = null): bool
+    protected static function needsCdataWrapping(string $value = ''): bool
     {
         return 0 < preg_match('#[>&"<]#', $value);
     }
