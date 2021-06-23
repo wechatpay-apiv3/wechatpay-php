@@ -81,26 +81,6 @@ parameters:
 			path: src/Crypto/Rsa.php
 
 		-
-			message: "#^Cannot call method isSeekable\\(\\) on GuzzleHttp\\\\Psr7\\\\LazyOpenStream\\|string\\.$#"
-			count: 1
-			path: src/Util/MediaUtil.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of class GuzzleHttp\\\\Psr7\\\\CachingStream constructor expects Psr\\\\Http\\\\Message\\\\StreamInterface, GuzzleHttp\\\\Psr7\\\\LazyOpenStream\\|string given\\.$#"
-			count: 1
-			path: src/Util/MediaUtil.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of static method GuzzleHttp\\\\Psr7\\\\Utils\\:\\:hash\\(\\) expects Psr\\\\Http\\\\Message\\\\StreamInterface, GuzzleHttp\\\\Psr7\\\\CachingStream\\|GuzzleHttp\\\\Psr7\\\\LazyOpenStream\\|string given\\.$#"
-			count: 1
-			path: src/Util/MediaUtil.php
-
-		-
-			message: "#^Property WeChatPay\\\\Util\\\\MediaUtil\\:\\:\\$fileStream \\(string\\) does not accept Psr\\\\Http\\\\Message\\\\StreamInterface\\|null\\.$#"
-			count: 1
-			path: src/Util/MediaUtil.php
-
-		-
 			message: "#^Parameter \\#1 \\$(?:certificate|x509cert(?:data)?) of function openssl_x509_parse expects#"
 			count: 1
 			path: src/Util/PemUtil.php
