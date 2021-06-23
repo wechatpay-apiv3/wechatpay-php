@@ -21,7 +21,7 @@ jobs:
 
 
       - name: Validate composer.json and composer.lock
-        run: composer validate --stri
+        run: composer validate --strict
 
       - uses: actions/checkout@v2
 
