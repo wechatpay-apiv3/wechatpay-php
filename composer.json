@@ -40,6 +40,7 @@
         "bin/CertificateDownloader.php"
     ],
     "scripts": {
+        "v3-certificates": "bin/CertificateDownloader.php",
         "phpstan": "vendor/bin/phpstan analyse --no-progress",
         "phpstan-7": "vendor/bin/phpstan analyse --no-progress -c phpstan-php7.neon"
     }

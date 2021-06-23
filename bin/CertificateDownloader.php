@@ -34,16 +34,16 @@ class CertificateDownloader
 
         if (!$opts) {
             $this->printHelp();
-            exit(1);
+            return;
         }
 
         if (isset($opts['help'])) {
             $this->printHelp();
-            exit(0);
+            return;
         }
         if (isset($opts['version'])) {
             echo ClientDecoratorInterface::VERSION, PHP_EOL;
-            exit(0);
+            return;
         }
         $this->job($opts);
     }
