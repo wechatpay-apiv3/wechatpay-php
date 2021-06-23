@@ -19,11 +19,11 @@ class PemUtil
      * Read private key from file
      *
      * @param string $filepath - PEM encoded private key file path
-     * @param null|string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
+     * @param string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
      *
      * @return \OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
      */
-    public static function loadPrivateKey(string $filepath, ?string $passphrase = null)
+    public static function loadPrivateKey(string $filepath, string $passphrase = '')
     {
         return openssl_get_privatekey(file_get_contents($filepath), $passphrase);
     }
@@ -44,11 +44,11 @@ class PemUtil
      * Read private key from string
      *
      * @param \OpenSSLAsymmetricKey|resource|string $content - PEM encoded private key string content
-     * @param null|string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
+     * @param string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
      *
      * @return \OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
      */
-    public static function loadPrivateKeyFromString($content, ?string $passphrase = null)
+    public static function loadPrivateKeyFromString($content, string $passphrase = '')
     {
         return openssl_get_privatekey($content, $passphrase);
     }
