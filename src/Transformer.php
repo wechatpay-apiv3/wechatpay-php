@@ -85,7 +85,7 @@ class Transformer
      */
     public static function sanitize(string $xml): string
     {
-        return preg_replace('#[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+#u', '', $xml);
+        return preg_replace('#[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+#u', '', $xml) ?? '';
     }
 
     /**

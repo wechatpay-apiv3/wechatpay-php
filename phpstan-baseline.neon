@@ -91,11 +91,6 @@ parameters:
 			path: src/Crypto/Rsa.php
 
 		-
-			message: "#^Method WeChatPay\\\\Transformer\\:\\:sanitize\\(\\) should return string but returns string\\|null\\.$#"
-			count: 1
-			path: src/Transformer.php
-
-		-
 			message: "#^Parameter \\#1 \\$content of method XMLWriter\\:\\:text\\(\\) expects string, string\\|null given\\.$#"
 			count: 1
 			path: src/Transformer.php
