@@ -20,10 +20,10 @@ jobs:
         if: runner.os == 'Windows'
 
 
+      - uses: actions/checkout@v2
+
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
-
-      - uses: actions/checkout@v2
 
       - name: PHPv${{ matrix.php-version }}-${{ matrix.os }}
         id: composer-cache
