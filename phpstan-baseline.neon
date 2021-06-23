@@ -91,11 +91,6 @@ parameters:
 			path: src/Crypto/Rsa.php
 
 		-
-			message: "#^Parameter \\#1 \\$thing of static method WeChatPay\\\\Transformer\\:\\:cast\\(\\) expects array\\<string, mixed\\>\\|object, SimpleXMLElement\\|false given\\.$#"
-			count: 1
-			path: src/Transformer.php
-
-		-
 			message: "#^Parameter \\#2 \\$callback of function array_walk expects callable\\(\\)\\: mixed, array\\('static', 'value'\\) given\\.$#"
 			count: 1
 			path: src/Transformer.php

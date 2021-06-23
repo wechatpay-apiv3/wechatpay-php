@@ -50,7 +50,7 @@ class Transformer
     /**
      * Recursive cast the $thing as array data structure.
      *
-     * @param array<string,mixed>|object|\SimpleXMLElement $thing - The thing
+     * @param array<string,mixed>|object|\SimpleXMLElement|false $thing - The thing
      *
      * @return array<string,string|array|mixed>
      */
