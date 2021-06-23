@@ -5,16 +5,6 @@ on: [push, pull_request]
 jobs:
   phpstan:
     name: PHPStan
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Install Dependencies
-      run: composer install --no-progress
-    - name: Run PHPStan
-      run: ./vendor/bin/phpstan analyse --no-progress
-
-  phpstan:
-    name: PHPStan
     strategy:
       fail-fast: false
       matrix:
