@@ -20,14 +20,14 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.0.0`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`1.0.2`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 
 ## 环境要求
 
 我们开发和测试使用的环境如下：
 
-+ PHP ^7.2.5 || ^8.0
++ PHP >=7.2
 + guzzlehttp/guzzle ^7.0
 
 
@@ -50,7 +50,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.0.0"
+    "wechatpay/wechatpay": "^1.0.2"
 }
 ```
 
