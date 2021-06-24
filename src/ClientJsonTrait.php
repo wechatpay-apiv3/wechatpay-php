@@ -59,7 +59,7 @@ trait ClientJsonTrait
      *
      * @param string $mchid - The merchant ID
      * @param string $serial - The serial number of the merchant certificate
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string $privateKey - The merchant private key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string $privateKey - The merchant private key.
      *
      * @return callable(RequestInterface)
      */
@@ -81,7 +81,7 @@ trait ClientJsonTrait
     /**
      * APIv3's verifier middleware stack
      *
-     * @param array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string> $certs The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
+     * @param array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string> $certs The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *
      * @return callable(ResponseInterface)
      * @throws UnexpectedValueException
@@ -123,8 +123,8 @@ trait ClientJsonTrait
      * Mandatory \$config array paramters
      *   - mchid: string - The merchant ID
      *   - serial: string - The serial number of the merchant certificate
-     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string - The merchant private key.
-     *   - certs: array{string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string} - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
+     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string - The merchant private key.
+     *   - certs: array{string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string} - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *
      * @param array<string,string|int|bool|array|mixed> $config - The configuration
      * @throws \WeChatPay\Exception\InvalidArgumentException
@@ -148,7 +148,7 @@ trait ClientJsonTrait
         )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_CERTS_IS_MANDATORY); }
 
         $handler = $config['handler'] ?? HandlerStack::create();
-        $handler->unshift(Middleware::mapRequest(static::signer($config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
+        $handler->unshift(Middleware::mapRequest(static::signer((string)$config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
         $handler->unshift(Middleware::mapResponse(static::verifier($config['certs'])), 'verifier');
         $config['handler'] = $handler;
 

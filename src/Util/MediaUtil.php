@@ -3,6 +3,9 @@
 namespace WeChatPay\Util;
 
 use function basename;
+use function sprintf;
+
+use UnexpectedValueException;
 
 use GuzzleHttp\Utils as GHU;
 use GuzzleHttp\Psr7\Utils;
@@ -23,7 +26,7 @@ class MediaUtil
     private $filepath;
 
     /**
-     * @var string - file content stream to upload
+     * @var ?StreamInterface - file content stream to upload
      */
     private $fileStream;
 
@@ -51,7 +54,7 @@ class MediaUtil
      *                         images(jpg|bmp|png)
      *                         or
      *                         video(avi|wmv|mpeg|mp4|mov|mkv|flv|f4v|m4v|rmvb)
-     * @param StreamInterface $fileStream  File content stream, optional
+     * @param ?StreamInterface $fileStream  File content stream, optional
      */
     public function __construct(string $filepath, ?StreamInterface $fileStream = null)
     {
@@ -67,8 +70,11 @@ class MediaUtil
     {
         $basename = basename($this->filepath);
         $stream = $this->fileStream ?? new LazyOpenStream($this->filepath, 'r');
-        if (!$stream->isSeekable()) {
+        if ($stream instanceof StreamInterface && !($stream->isSeekable())) {
             $stream = new CachingStream($stream);
+        }
+        if (!($stream instanceof StreamInterface)) {
+            throw new UnexpectedValueException(sprintf('Cannot open or caching the file: `%s`', $this->filepath));
         }
 
         $json = GHU::jsonEncode([
@@ -110,7 +116,7 @@ class MediaUtil
     }
 
     /**
-     * Get the `GuzzleHttp\Psr7\FnStream` context
+     * Get the `GuzzleHttp\Psr7\CachingStream`|`GuzzleHttp\Psr7\LazyOpenStream` context
      */
     public function getStream(): StreamInterface
     {
@@ -118,7 +124,7 @@ class MediaUtil
     }
 
     /**
-     * Get the `Content-Type` of the `GuzzleHttp\Psr7\MultipartStream`
+     * Get the `Content-Type` value from the `{$this->multipart}` instance
      */
     public function getContentType(): string
     {

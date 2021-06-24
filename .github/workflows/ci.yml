@@ -1,0 +1,50 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  phpstan:
+    name: PHPStan
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.2', '7.3', '7.4', '8.0']
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set git config
+        shell: bash
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.symlinks true
+        if: runner.os == 'Windows'
+
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP${{ matrix.php-version }}@${{ matrix.os }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+          extensions: curl, libxml, simplexml, openssl
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict --no-check-version
+
+      - name: Cache vendor libraries@${{ matrix.os }}
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ matrix.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - run: composer phpstan-7
+        if: ${{ startsWith(matrix.php-version, '7') }}
+
+      - run: composer phpstan
+        if: ${{ startsWith(matrix.php-version, '8') }}

@@ -1,8 +1,18 @@
 # 变更历史
 
+## 1.0.2 - 2021-06-24
+
+[变更细节](../../compare/c0c1742...1d13829)
+
+- 优化了一些性能；
+- 增加 `github actions` 覆盖 PHP7.2/7.3/7.4/8.0 + Linux/macOs/Windows环境；
+- 提升 `phpstan` 至 `level8` 最严谨级别，并修复大量遗留问题；
+- 优化 `\WeChatPay\Exception\WeChatPayException` 异常类接口；
+- 完善文档及平台证书下载器用法说明；
+
 ## 1.0.1 - 2021-06-21
 
-[变更历史](../../compare/176347f...22a45cb)
+[变更细节](../../compare/176347f...22a45cb)
 
 - 优化了一些性能；
 - 修复了大量 `phpstan level6` 静态分析遗留问题；

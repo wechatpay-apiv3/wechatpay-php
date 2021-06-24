@@ -1,21 +1,92 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^PHPDoc tag @param for parameter \\$writer with type XMLWritter is not subtype of native type XMLWriter\\.$#"
+			message: "#^Access to an undefined property object\\:\\:\\$data\\.$#"
 			count: 2
-			path: src/Transformer.php
+			path: bin/CertificateDownloader.php
 
 		-
-			message: "#^Parameter \\$writer of method WeChatPay\\\\Transformer\\:\\:content\\(\\) has invalid typehint type XMLWritter\\.$#"
+			message: "#^Parameter \\#1 \\$filename of function file_get_contents expects string, string\\|true given\\.$#"
 			count: 1
-			path: src/Transformer.php
+			path: bin/CertificateDownloader.php
 
 		-
-			message: "#^Parameter \\$writer of method WeChatPay\\\\Transformer\\:\\:walk\\(\\) has invalid typehint type XMLWritter\\.$#"
+			message: "#^Method class@anonymous/src/Builder\\.php\\:45\\:\\:normalize\\(\\) should return string but returns string\\|null\\.$#"
 			count: 1
-			path: src/Transformer.php
+			path: src/Builder.php
 
 		-
-			message: "#^Variable \\$previous might not be defined\\.$#"
+			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
 			count: 1
-			path: src/Transformer.php
+			path: src/Builder.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function preg_replace_callback expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: src/Builder.php
+
+		-
+			message: "#^Cannot access offset 'version' on array\\|false\\.$#"
+			count: 1
+			path: src/ClientDecorator.php
+
+		-
+			message: "#^Method WeChatPay\\\\Crypto\\\\AesEcb\\:\\:decrypt\\(\\) should return string but returns string\\|false\\.$#"
+			count: 1
+			path: src/Crypto/AesEcb.php
+
+		-
+			message: "#^Parameter \\#1 \\$str(?:ing)? of function base64_encode expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/Crypto/AesEcb.php
+
+		-
+			message: "#^Method WeChatPay\\\\Crypto\\\\AesGcm\\:\\:decrypt\\(\\) should return string but returns string\\|false\\.$#"
+			count: 1
+			path: src/Crypto/AesGcm.php
+
+		-
+			message: "#^Parameter \\#2 \\$(offset|start) of function substr expects int, float\\|int given\\.$#"
+			count: 1
+			path: src/Crypto/AesGcm.php
+
+		-
+			message: "#^Parameter \\#3 \\$length of function substr expects int(\\|null)?, float\\|int given\\.$#"
+			count: 1
+			path: src/Crypto/AesGcm.php
+
+		-
+			message: "#^Parameter \\#3 \\$(?:private_)?key of function openssl_private_decrypt expects#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\#3 \\$(private_key|priv_key_id) of function openssl_sign expects#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\#3 \\$(?:public_)?key of function openssl_public_encrypt expects#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\#3 \\$(public_key|pub_key_id) of function openssl_verify expects#"
+			count: 1
+			path: src/Crypto/Rsa.php
+
+		-
+			message: "#^Parameter \\#1 \\$(?:certificate|x509cert(?:data)?) of function openssl_x509_parse expects#"
+			count: 1
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Parameter \\#1 \\$(certificate|x509cert(?:data)?) of function openssl_x509_read expects#"
+			count: 2
+			path: src/Util/PemUtil.php
+
+		-
+			message: "#^Parameter \\#1 \\$(?:private_)?key of function openssl_get_privatekey expects#"
+			count: 2
+			path: src/Util/PemUtil.php
+

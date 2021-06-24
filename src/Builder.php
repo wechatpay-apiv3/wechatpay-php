@@ -22,8 +22,8 @@ final class Builder
      * Minimum mandatory \$config parameters structure
      *   - mchid: string - The merchant ID
      *   - serial: string - The serial number of the merchant certificate
-     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string - The merchant private key.
-     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string> - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
+     *   - privateKey: \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string - The merchant private key.
+     *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string> - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *   - secret?: string - The secret key string (optional)
      *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
      *   - merchant<?key, string> - The merchant private key(file path string). (optional)

@@ -42,7 +42,7 @@ class Transformer
 
         $el = simplexml_load_string(static::sanitize($xml), SimpleXMLElement::class, LIBXML_NONET | LIBXML_COMPACT | LIBXML_NOCDATA | LIBXML_NOBLANKS);
 
-        LIBXML_VERSION < 20900 && libxml_disable_entity_loader($previous);
+        LIBXML_VERSION < 20900 && libxml_disable_entity_loader($previous); /** @phpstan-ignore-line */
 
         return static::cast($el);
     }
@@ -50,14 +50,14 @@ class Transformer
     /**
      * Recursive cast the $thing as array data structure.
      *
-     * @param array<string,mixed>|object|SimpleXMLElement $thing - The thing
+     * @param array<string,mixed>|object|\SimpleXMLElement|false $thing - The thing
      *
      * @return array<string,string|array|mixed>
      */
     protected static function cast($thing): array
     {
         $data = (array) $thing;
-        array_walk($data, ['static', 'value']);
+        array_walk($data, static function(&$value) { static::value($value); });
 
         return $data;
     }
@@ -65,7 +65,7 @@ class Transformer
     /**
      * Cast the value $thing, specially doing the `array`, `object`, `SimpleXMLElement` to `array`
      *
-     * @param string|array<string,string|SimpleXMLElement|mixed>|object|SimpleXMLElement $thing - The value thing reference
+     * @param string|array<string,string|\SimpleXMLElement|mixed>|object|\SimpleXMLElement $thing - The value thing reference
      */
     protected static function value(&$thing): void
     {
@@ -85,7 +85,7 @@ class Transformer
      */
     public static function sanitize(string $xml): string
     {
-        return preg_replace('#[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+#u', '', $xml);
+        return preg_replace('#[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+#u', '', $xml) ?? '';
     }
 
     /**
@@ -118,7 +118,7 @@ class Transformer
     /**
      * Walk the given data array by the `XMLWriter` instance.
      *
-     * @param \XMLWritter $writer - The `XMLWritter` instance reference
+     * @param \XMLWriter $writer - The `XMLWriter` instance reference
      * @param array<string,string|array|mixed> $data - The data array
      * @param string $item - The nest array identify tag text
      */
@@ -142,10 +142,10 @@ class Transformer
      * The content text includes the characters `<`, `>`, `&` and `"` are written as CDATA references.
      * All others including `'` are written literally.
      *
-     * @param \XMLWritter $writer - The `XMLWritter` instance reference
-     * @param string|null $thing - The content text
+     * @param \XMLWriter $writer - The `XMLWriter` instance reference
+     * @param string $thing - The content text
      */
-    protected static function content(XMLWriter &$writer, ?string $thing = null): void
+    protected static function content(XMLWriter &$writer, string $thing = ''): void
     {
         static::needsCdataWrapping($thing) && $writer->writeCdata($thing) || $writer->text($thing);
     }
@@ -153,14 +153,14 @@ class Transformer
     /**
      * Checks the name is a valid xml element name.
      *
-     * @see Symfony\Component\Serializer\Encoder\XmlEncoder::isElementNameValid
+     * @see \Symfony\Component\Serializer\Encoder\XmlEncoder::isElementNameValid
      * @license https://github.com/symfony/serializer/blob/5.3/LICENSE
      *
-     * @param string|null $name - The name
+     * @param string $name - The name
      *
      * @return boolean - True means valid
      */
-    protected static function isElementNameValid(?string $name = null): bool
+    protected static function isElementNameValid(string $name = ''): bool
     {
         return $name && false === strpos($name, ' ') && preg_match('#^[\pL_][\pL0-9._:-]*$#ui', $name);
     }
@@ -171,14 +171,14 @@ class Transformer
      * Notes here: the `XMLWriter` shall been wrapped the `"` string as `&quot;` symbol string,
      *             it's strictly following the `XMLWriter` specification here.
      *
-     * @see Symfony\Component\Serializer\Encoder\XmlEncoder::needsCdataWrapping
+     * @see \Symfony\Component\Serializer\Encoder\XmlEncoder::needsCdataWrapping
      * @license https://github.com/symfony/serializer/blob/5.3/LICENSE
      *
-     * @param string|null $value - The value
+     * @param string $value - The value
      *
      * @return boolean - True means need
      */
-    protected static function needsCdataWrapping(?string $value = null): bool
+    protected static function needsCdataWrapping(string $value = ''): bool
     {
         return 0 < preg_match('#[>&"<]#', $value);
     }

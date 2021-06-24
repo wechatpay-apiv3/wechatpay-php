@@ -2,7 +2,7 @@
 
 namespace WeChatPay\Exception;
 
-use GuzzleHttp\Exception\GuzzleException;
+const DEP_XML_PROTOCOL_UNDER_END_OF_LIFE = 'New features are all in `APIv3`, there\'s no reason to continue use this kind client since v2.0.';
 
 const ERR_INIT_MCHID_IS_MANDATORY = 'The merchant\' ID aka `mchid` is required, usually numerical.';
 const ERR_INIT_SERIAL_IS_MANDATORY = 'The serial number of the merchant\'s certificate aka `serial` is required, usually hexadecial.';
@@ -15,6 +15,7 @@ const EV3_RES_HEADERS_INCOMPLATE = 'The response\'s Headers incomplete, must hav
 const EV3_RES_HEADER_TIMESTAMP_OFFSET = 'It\'s allowed time offset in ± %1$s seconds, the response was on %2$s, your\'s localtime on %3$s.';
 const EV3_RES_HEADER_SIGNATURE_DEGIST = 'Verify the response\'s data with: timestamp=%1$s, nonce=%2$s, signature=%3$s, cert=[%4$s => ...] failed.';
 
-interface WeChatPayException extends GuzzleException
+interface WeChatPayException
 {
+    const DEP_XML_PROTOCOL_UNDER_END_OF_LIFE = DEP_XML_PROTOCOL_UNDER_END_OF_LIFE;
 }

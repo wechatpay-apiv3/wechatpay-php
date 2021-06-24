@@ -20,14 +20,14 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.0.0`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`1.0.2`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 
 ## 环境要求
 
 我们开发和测试使用的环境如下：
 
-+ PHP ^7.2.5 || ^8.0
++ PHP >=7.2
 + guzzlehttp/guzzle ^7.0
 
 
@@ -50,7 +50,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.0.0"
+    "wechatpay/wechatpay": "^1.0.2"
 }
 ```
 
@@ -96,7 +96,7 @@ $instance = Builder::factory([
     // 商户API私钥 PEM格式的文本字符串或者文件resource
     'privateKey' => PemUtil::loadPrivateKey('/path/to/mch/apiclient_key.pem'),
     'certs' => [
-        // CLI `./bin/CertificateDownloader.php -m {商户号} -s {商户证书序列号} -f {商户API私钥文件路径} -k {APIv3密钥(32字节)} -o {保存地址}` 生成
+        // 可由内置的平台证书下载器 `./bin/CertificateDownloader.php` 生成
         'YYYYYYYYYY' => PemUtil::loadCertificate('/path/to/wechatpay/cert.pem')
     ],
     // APIv2密钥(32字节)--不使用APIv2可选
@@ -117,10 +117,10 @@ $instance = Builder::factory([
 - `privateKey` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件，支持纯字符串或者文件`resource`格式
 - `certs[$serial_number => #resource]` 为通过下载工具下载的平台证书`key/value`键值对，键为`平台证书序列号`，值为`平台证书`pem格式的纯字符串或者文件`resource`格式
 - `secret` 为APIv2版的`密钥`，商户平台上设置的32字节字符串
-- `merchant[cert => $path]` 为你的`商户证书`,一般是文件名为`apiclient_cert.pem`文件路径
-- `merchant[key => $path]` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件路径
+- `merchant[cert => $path]` 为你的`商户证书`,一般是文件名为`apiclient_cert.pem`文件路径，接受`[$path, $passphrase]` 格式，其中`$passphrase`为证书密码
+- `merchant[key => $path]` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件路径，接受`[$path, $passphrase]` 格式，其中`$passphrase`为私钥密码
 
-**注：** `APIv3`, `APIv2` 以及 `GuzzleHttp\Client` 的 `$config = []` 初始化参数，均融合在一个型参上。
+**注：** `APIv3`, `APIv2` 以及 `GuzzleHttp\Client` 的 `$config = []` 初始化参数，均融合在一个型参上; 另外初始化参数说明中的`平台证书下载器`可阅读[使用说明文档](bin/README.md)。
 
 ## APIv3
 
@@ -305,7 +305,7 @@ try {
             // 命令行获取证书序列号
             // openssl x509 -in /path/to/wechatpay/cert.pem -noout -serial | awk -F= '{print $2}'
             // 或者使用工具类获取证书序列号 `PemUtil::parseCertificateSerialNo($certificate)`
-            'Wechatpay-Serial' => 'must be the serial number via the downloaded pem file of `/v3/certificates`',
+            'Wechatpay-Serial' => '下载的平台证书序列号',
         ],
     ]);
     echo $resp->getStatusCode().' '.$resp->getReasonPhrase()."\n";
@@ -321,6 +321,11 @@ try {
 ```
 
 ## APIv2
+
+末尾驱动的 `HTTP METHOD` 方法入参 `array $options`，接受两个自定义参数，释义如下：
+
+- `$options['nonceless']` - 标量 `scalar` 任意值，语义上即，本次请求不用自动添加`nonce_str`参数，推荐 `boolean(True)`
+- `$options['security']` - 布尔量`True`，语义上即，本次请求需要加载ssl证书，对应的是初始化 `array $config['merchant']` 结构体
 
 ### 企业付款到零钱
 
@@ -352,7 +357,7 @@ print_r($res);
 
 ### 如何下载平台证书？
 
-使用内置的平台下载器 `./bin/CertificateDownloader.php` ，验签逻辑与有`平台证书`请求其他接口一致，即在请求完成后，立即用获得的`平台证书`对返回的消息进行验签，下载器同时开启了 `Guzzle` 的 `debug => true` 参数，方便查询请求/响应消息的基础调试信息。
+使用内置的[平台证书下载器](bin/README.md) `./bin/CertificateDownloader.php` ，验签逻辑与有`平台证书`请求其他接口一致，即在请求完成后，立即用获得的`平台证书`对返回的消息进行验签，下载器同时开启了 `Guzzle` 的 `debug => true` 参数，方便查询请求/响应消息的基础调试信息。
 
 
 ### 证书和回调解密需要的AesGcm解密在哪里？

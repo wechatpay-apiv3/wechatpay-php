@@ -19,11 +19,11 @@ class PemUtil
      * Read private key from file
      *
      * @param string $filepath - PEM encoded private key file path
-     * @param null|string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
+     * @param string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
      *
-     * @return \OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
+     * @return \OpenSSLAsymmetricKey|object|resource|bool - Private key resource identifier on success, or FALSE on error
      */
-    public static function loadPrivateKey(string $filepath, ?string $passphrase = null)
+    public static function loadPrivateKey(string $filepath, string $passphrase = '')
     {
         return openssl_get_privatekey(file_get_contents($filepath), $passphrase);
     }
@@ -33,7 +33,7 @@ class PemUtil
      *
      * @param string $filepath - PEM encoded X.509 certificate file path
      *
-     * @return \OpenSSLCertificate|resource|bool - X.509 certificate resource identifier on success or FALSE on failure
+     * @return \OpenSSLCertificate|object|resource|bool - X.509 certificate resource identifier on success or FALSE on failure
      */
     public static function loadCertificate(string $filepath)
     {
@@ -43,12 +43,12 @@ class PemUtil
     /**
      * Read private key from string
      *
-     * @param \OpenSSLAsymmetricKey|resource|string $content - PEM encoded private key string content
-     * @param null|string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
+     * @param \OpenSSLAsymmetricKey|object|resource|string $content - PEM encoded private key string content
+     * @param string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
      *
-     * @return \OpenSSLAsymmetricKey|resource|bool - Private key resource identifier on success, or FALSE on error
+     * @return \OpenSSLAsymmetricKey|object|resource|bool - Private key resource identifier on success, or FALSE on error
      */
-    public static function loadPrivateKeyFromString($content, ?string $passphrase = null)
+    public static function loadPrivateKeyFromString($content, string $passphrase = '')
     {
         return openssl_get_privatekey($content, $passphrase);
     }
@@ -56,9 +56,9 @@ class PemUtil
     /**
      * Read certificate from string
      *
-     * @param \OpenSSLCertificate|resource|string $content - PEM encoded X.509 certificate string content
+     * @param \OpenSSLCertificate|object|resource|string $content - PEM encoded X.509 certificate string content
      *
-     * @return \OpenSSLCertificate|resource|bool - X.509 certificate resource identifier on success or FALSE on failure
+     * @return \OpenSSLCertificate|object|resource|bool - X.509 certificate resource identifier on success or FALSE on failure
      */
     public static function loadCertificateFromString($content)
     {
@@ -68,7 +68,7 @@ class PemUtil
     /**
      * Parse Serial Number from Certificate
      *
-     * @param \OpenSSLCertificate|resource|string $certificate Certificates string or resource
+     * @param \OpenSSLCertificate|object|resource|string $certificate Certificates string or resource
      *
      * @return string - The serial number
      * @throws InvalidArgumentException
