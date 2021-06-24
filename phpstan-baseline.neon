@@ -31,11 +31,6 @@ parameters:
 			path: src/ClientDecorator.php
 
 		-
-			message: "#^Parameter \\#3 \\$privateKey of static method WeChatPay\\\\ClientDecorator\\:\\:signer\\(\\) expects OpenSSLAsymmetricKey\\|OpenSSLCertificate\\|resource\\|string, object\\|resource\\|string given\\.$#"
-			count: 1
-			path: src/ClientDecorator.php
-
-		-
 			message: "#^Method WeChatPay\\\\Crypto\\\\AesEcb\\:\\:decrypt\\(\\) should return string but returns string\\|false\\.$#"
 			count: 1
 			path: src/Crypto/AesEcb.php
@@ -71,12 +66,12 @@ parameters:
 			path: src/Crypto/Rsa.php
 
 		-
-			message: "#^Parameter \\#3 \\$(?:public_)?key of function openssl_public_encrypt#"
+			message: "#^Parameter \\#3 \\$(?:public_)?key of function openssl_public_encrypt expects#"
 			count: 1
 			path: src/Crypto/Rsa.php
 
 		-
-			message: "#^Parameter \\#3 \\$(public_key|pub_key_id) of function openssl_verify#"
+			message: "#^Parameter \\#3 \\$(public_key|pub_key_id) of function openssl_verify expects#"
 			count: 1
 			path: src/Crypto/Rsa.php
 
