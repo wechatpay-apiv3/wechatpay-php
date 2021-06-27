@@ -31,7 +31,7 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate --strict --no-check-version
 
-      - name: Cache vendor libraries on PHP${{ matrix.php-version }}@${{ matrix.os }}
+      - name: Cache vendor libraries on PHP(=7.2)@${{ matrix.os }}
         if: matrix.php-version == '7.2'
         id: composer-cache-72
         uses: actions/cache@v2
@@ -41,15 +41,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php${{ matrix.php-version }}-
 
-      - name: Cache vendor libraries on PHP${{ matrix.php-version }}@${{ matrix.os }}
+      - name: Cache vendor libraries on PHP(>7.2)@${{ matrix.os }}
         if: matrix.php-version != '7.2'
         id: composer-cache
         uses: actions/cache@v2
         with:
           path: vendor
-          key: ${{ matrix.os }}-php${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ matrix.os }}-php-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php${{ matrix.php-version }}-
+            ${{ runner.os }}-php-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
