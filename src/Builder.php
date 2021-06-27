@@ -92,9 +92,9 @@ final class Builder
              */
             protected function normalize(string $thing = ''): string
             {
-                return preg_replace('#^_(.*)_$#', '{\1}', preg_replace_callback('#[A-Z]#', static function($piece) {
+                return (string)preg_replace('#^_(.*)_$#', '{\1}', (string)preg_replace_callback('#[A-Z]#', static function($piece) {
                     return '-' . strtolower($piece[0]);
-                }, preg_replace_callback('#^[A-Z]#', static function($piece) {
+                }, (string)preg_replace_callback('#^[A-Z]#', static function($piece) {
                     return strtolower($piece);
                 }, $thing)));
             }

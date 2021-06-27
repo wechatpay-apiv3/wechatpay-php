@@ -10,10 +10,12 @@ use function base64_decode;
 use function substr;
 use function strlen;
 use function openssl_decrypt;
+use function intval;
 
 use const OPENSSL_RAW_DATA;
 
 use RuntimeException;
+use UnexpectedValueException;
 
 /**
  * Aes encrypt/decrypt using `aes-256-gcm` algorithm with additional authenticated data(`aad`).
@@ -48,6 +50,10 @@ class AesGcm implements AesInterface
 
         $ciphertext = openssl_encrypt($plaintext, static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $tag, $aad, static::BLOCK_SIZE);
 
+        if (false === $ciphertext) {
+            throw new UnexpectedValueException('Encrypting the input $plaintext failed, please checking your $key and $iv whether or nor correct.');
+        }
+
         return base64_encode($ciphertext . $tag);
     }
 
@@ -66,7 +72,7 @@ class AesGcm implements AesInterface
         static::preCondition();
 
         $ciphertext = base64_decode($ciphertext);
-        $authTag = substr($ciphertext, -static::BLOCK_SIZE);
+        $authTag = substr($ciphertext, intval(-static::BLOCK_SIZE));
         $tagLength = strlen($authTag);
 
         /* Manually checking the length of the tag, because the `openssl_decrypt` was mentioned there, it's the caller's responsibility. */
@@ -74,6 +80,12 @@ class AesGcm implements AesInterface
             throw new RuntimeException('The inputs `$ciphertext` incomplete, the bytes length must be one of 16, 15, 14, 13, 12, 8 or 4.');
         }
 
-        return openssl_decrypt(substr($ciphertext, 0, -static::BLOCK_SIZE), static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $authTag, $aad);
+        $plaintext = openssl_decrypt(substr($ciphertext, 0, intval(-static::BLOCK_SIZE)), static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $authTag, $aad);
+
+        if (false === $plaintext) {
+            throw new UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $key and $iv whether or nor correct.');
+        }
+
+        return $plaintext;
     }
 }

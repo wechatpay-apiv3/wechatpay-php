@@ -53,7 +53,7 @@ final class ClientDecorator implements ClientDecoratorInterface
 
         array_push($value, 'GuzzleHttp/' . ClientInterface::MAJOR_VERSION);
 
-        extension_loaded('curl') && function_exists('curl_version') && array_push($value, 'curl/' . curl_version()['version']);
+        extension_loaded('curl') && function_exists('curl_version') && array_push($value, 'curl/' . ((array)curl_version())['version']);
 
         array_push($value, sprintf('(%s/%s) PHP/%s', PHP_OS, php_uname('r'), PHP_VERSION));
 
