@@ -33,7 +33,7 @@ jobs:
 
       - name: Cache vendor libraries on PHP${{ matrix.php-version }}@${{ matrix.os }}
         if: matrix.php-version == '7.2'
-        id: composer-cache
+        id: composer-cache-72
         uses: actions/cache@v2
         with:
           path: vendor
