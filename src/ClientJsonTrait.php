@@ -147,6 +147,7 @@ trait ClientJsonTrait
             isset($config['certs']) && is_array($config['certs']) && count($config['certs'])
         )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_CERTS_IS_MANDATORY); }
 
+        /** @var \GuzzleHttp\HandlerStack $handler */
         $handler = $config['handler'] ?? HandlerStack::create();
         $handler->unshift(Middleware::mapRequest(static::signer((string)$config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
         $handler->unshift(Middleware::mapResponse(static::verifier($config['certs'])), 'verifier');

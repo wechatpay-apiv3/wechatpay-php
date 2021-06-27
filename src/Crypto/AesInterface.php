@@ -19,7 +19,7 @@ interface AesInterface
 
     /**
      * Bytes Length of the authentication tag in AEAD cipher mode
-     * @deprecated 2.0 - As of the OpenSSL described, the `auth_tag` length maybe one of 16, 15, 14, 13, 12, 8 or 4.
+     * @deprecated 1.0 - As of the OpenSSL described, the `auth_tag` length may be one of 16, 15, 14, 13, 12, 8 or 4.
      *                   Keep it only compatible for the samples on the official documentation.
      */
     const AUTH_TAG_LENGTH_BYTE = 16;
