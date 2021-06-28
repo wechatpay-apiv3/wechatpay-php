@@ -11,6 +11,8 @@ use function is_object;
 use function is_array;
 use function count;
 use function sprintf;
+use function array_key_exists;
+use function array_keys;
 
 use UnexpectedValueException;
 
@@ -107,6 +109,12 @@ trait ClientJsonTrait
                 );
             }
 
+            if (!array_key_exists($serial, $certs)) {
+                throw new UnexpectedValueException(sprintf(
+                    Exception\EV3_RES_HEADER_PLATFORM_SERIAL, $serial, WechatpaySerial, implode(',', array_keys($certs))
+                ));
+            }
+
             if (!Crypto\Rsa::verify(Formatter::response($timestamp, $nonce, static::body($response)), $signature, $certs[$serial])) {
                 throw new UnexpectedValueException(
                     sprintf(Exception\EV3_RES_HEADER_SIGNATURE_DEGIST, $timestamp, $nonce, $signature, $serial)
@@ -146,6 +154,12 @@ trait ClientJsonTrait
         if (!(
             isset($config['certs']) && is_array($config['certs']) && count($config['certs'])
         )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_CERTS_IS_MANDATORY); }
+
+        if (array_key_exists($config['serial'], $config['certs'])) {
+            throw new Exception\InvalidArgumentException(sprintf(
+                Exception\ERR_INIT_CERTS_EXCLUDE_MCHSERRIAL, implode(',', array_keys($config['certs'])), $config['serial']
+            ));
+        }
 
         /** @var \GuzzleHttp\HandlerStack $handler */
         $handler = $config['handler'] ?? HandlerStack::create();
