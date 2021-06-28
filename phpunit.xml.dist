@@ -10,12 +10,6 @@
     stopOnFailure="false"
 >
 
-  <filter>
-    <whitelist processUncoveredFilesFromWhitelist="true">
-      <directory suffix=".php">./src/</directory>
-    </whitelist>
-  </filter>
-
   <testsuites>
     <testsuite name="WeChatPay tests suite">
       <directory>./tests/</directory>
