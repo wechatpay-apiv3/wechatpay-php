@@ -5,9 +5,13 @@ namespace WeChatPay\Tests;
 use function strlen;
 use function abs;
 use function strval;
+use function preg_quote;
+use function substr_count;
 
 use WeChatPay\Formatter;
 use PHPUnit\Framework\TestCase;
+
+const LINE_FEED = "\n";
 
 class FormatterTest extends TestCase
 {
@@ -76,6 +80,96 @@ class FormatterTest extends TestCase
             . 'signature="(?:[0-9A-Za-z+\/]+)={0,2}",'
             . 'timestamp="(?:1[0-9]{9})",'
             . 'serial_no="(?:[0-9A-Za-z]{8,40})"$/';
+
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            self::assertMatchesRegularExpression($pattern, $value);
+        } else {
+            self::assertRegExp($pattern, $value);
+        }
+    }
+
+    public function requestPhrasesProvider(): array
+    {
+        return [
+            'DELETE root(/)' => ['DELETE', '/', ''],
+            'DELETE root(/) with query' => ['DELETE', '/?hello=wechatpay', ''],
+            'GET root(/)' => ['GET', '/', ''],
+            'GET root(/) with query' => ['GET', '/?hello=wechatpay', ''],
+            'POST root(/) with body' => ['POST', '/', '{}'],
+            'POST root(/) with body and query' => ['POST', '/?hello=wechatpay', '{}'],
+            'PUT root(/) with body' => ['PUT', '/', '{}'],
+            'PUT root(/) with body and query' => ['PUT', '/?hello=wechatpay', '{}'],
+            'PATCH root(/) with body' => ['PATCH', '/', '{}'],
+            'PATCH root(/) with body and query' => ['PATCH', '/?hello=wechatpay', '{}'],
+        ];
+    }
+
+    /**
+     * @dataProvider requestPhrasesProvider
+     */
+    public function testRequest(string $method, string $uri, string $body): void
+    {
+        $value = Formatter::request($method, $uri, (string) Formatter::timestamp(), Formatter::nonce(), $body);
+
+        self::assertIsString($value);
+
+        self::assertStringStartsWith($method, $value);
+        self::assertStringEndsWith(LINE_FEED, $value);
+        self::assertLessThanOrEqual(substr_count($value, LINE_FEED), 5);
+
+        $pattern = '#^' . $method . LINE_FEED
+            .  preg_quote($uri) . LINE_FEED
+            . '1[0-9]{9}' . LINE_FEED
+            . '[0-9A-Za-z]{32}' . LINE_FEED
+            . preg_quote($body) . LINE_FEED
+            . '$#';
+
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            self::assertMatchesRegularExpression($pattern, $value);
+        } else {
+            self::assertRegExp($pattern, $value);
+        }
+    }
+
+    public function responsePhrasesProvider(): array
+    {
+        return [
+            'HTTP 200 STATUS with body' => ['{}'],
+            'HTTP 200 STATUS with no body' => [''],
+            'HTTP 202 STATUS with no body' => [''],
+            'HTTP 204 STATUS with no body' => [''],
+            'HTTP 301 STATUS with no body' => [''],
+            'HTTP 301 STATUS with body' => ['<html></html>'],
+            'HTTP 302 STATUS with no body' => [''],
+            'HTTP 302 STATUS with body' => ['<html></html>'],
+            'HTTP 307 STATUS with no body' => [''],
+            'HTTP 307 STATUS with body' => ['<html></html>'],
+            'HTTP 400 STATUS with body' => ['{}'],
+            'HTTP 401 STATUS with body' => ['{}'],
+            'HTTP 403 STATUS with body' => ['<html></html>'],
+            'HTTP 404 STATUS with body' => ['<html></html>'],
+            'HTTP 500 STATUS with body' => ['{}'],
+            'HTTP 502 STATUS with body' => ['<html></html>'],
+            'HTTP 503 STATUS with body' => ['<html></html>'],
+        ];
+    }
+
+    /**
+     * @dataProvider responsePhrasesProvider
+     */
+    public function testResponse(string $body): void
+    {
+        $value = Formatter::response((string) Formatter::timestamp(), Formatter::nonce(), $body);
+
+        self::assertIsString($value);
+
+        self::assertStringEndsWith(LINE_FEED, $value);
+        self::assertLessThanOrEqual(substr_count($value, LINE_FEED), 3);
+
+        $pattern = '#^1[0-9]{9}' . LINE_FEED
+            . '[0-9A-Za-z]{32}' . LINE_FEED
+            . preg_quote($body) . LINE_FEED
+            . '$#';
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
             self::assertMatchesRegularExpression($pattern, $value);
