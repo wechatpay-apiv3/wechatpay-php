@@ -7,6 +7,8 @@ use function abs;
 use function strval;
 use function preg_quote;
 use function substr_count;
+use function count;
+use function ksort;
 
 use WeChatPay\Formatter;
 use PHPUnit\Framework\TestCase;
@@ -176,5 +178,120 @@ class FormatterTest extends TestCase
         } else {
             self::assertRegExp($pattern, $value);
         }
+    }
+
+    public function joinedByLineFeedPhrasesProvider(): array
+    {
+        return [
+            'one argument' => [1],
+            'two arguments' => [1, '2'],
+            'more arguments' => [1, 2.0, '3', LINE_FEED, true, false, null, '4'],
+        ];
+    }
+
+    /**
+     * @dataProvider joinedByLineFeedPhrasesProvider
+     */
+    public function testJoinedByLineFeed(...$data): void
+    {
+        $value = Formatter::joinedByLineFeed(...$data);
+
+        self::assertIsString($value);
+
+        self::assertStringEndsWith(LINE_FEED, $value);
+
+        self::assertLessThanOrEqual(substr_count($value, LINE_FEED), count($data));
+    }
+
+    public function testNoneArgumentPassedToJoinedByLineFeed(): void
+    {
+        $value = Formatter::joinedByLineFeed();
+
+        self::assertIsString($value);
+
+        self::assertStringNotContainsString(LINE_FEED, $value);
+
+        self::assertTrue(strlen($value) == 0);
+    }
+
+    public function ksortByFlagNaturePhrasesProvider(): array
+    {
+        return [
+            'normal' => [
+                ['a' => '1', 'b' => '3', 'aa' => '2'],
+                ['a' => '1', 'aa' => '2', 'b' => '3'],
+            ],
+            'key with numeric' => [
+                ['rfc1' => '1', 'b' => '4', 'rfc822' => '2', 'rfc2086' => '3'],
+                ['b' => '4', 'rfc1' => '1', 'rfc822' => '2', 'rfc2086' => '3'],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider ksortByFlagNaturePhrasesProvider
+     */
+    public function testKsort(array $thing, array $excepted): void
+    {
+        self::assertEquals(Formatter::ksort($thing), $excepted);
+    }
+
+    public function nativeKsortPhrasesProvider(): array
+    {
+        return [
+            'normal' => [
+                ['a' => '1', 'b' => '3', 'aa' => '2'],
+                ['a' => '1', 'aa' => '2', 'b' => '3'],
+            ],
+            'key with numeric' => [
+                ['rfc1' => '1', 'b' => '4', 'rfc822' => '2', 'rfc2086' => '3'],
+                ['b' => '4', 'rfc1' => '1', 'rfc2086' => '3', 'rfc822' => '2'],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider nativeKsortPhrasesProvider
+     */
+    public function testNativeKsort(array $thing, array $excepted): void
+    {
+        self::assertTrue(ksort($thing));
+        self::assertEquals($thing, $excepted);
+    }
+
+    public function queryStringLikePhrasesProvider(): array
+    {
+        return [
+            'none specific chars' => [
+                ['a' => '1', 'b' => '3', 'aa' => '2'],
+                'a=1&b=3&aa=2',
+            ],
+            'has `sign` key' => [
+                ['a' => '1', 'b' => '3', 'sign' => '2'],
+                'a=1&b=3',
+            ],
+            'has `empty` value' => [
+                ['a' => '1', 'b' => '3', 'c' => ''],
+                'a=1&b=3',
+            ],
+            'has `null` value' => [
+                ['a' => '1', 'b' => null, 'c' => '2'],
+                'a=1&c=2',
+            ],
+            'mixed `sign` key, `empty` and `null` values' => [
+                ['bob' => '1', 'alice' => null, 'tom' => '', 'sign' => 'mock'],
+                'bob=1',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider queryStringLikePhrasesProvider
+     */
+    public function testQueryStringLike(array $thing, string $excepted): void
+    {
+        $value = Formatter::queryStringLike($thing);
+        self::assertIsString($value);
+        self::assertEquals($value, $excepted);
     }
 }
