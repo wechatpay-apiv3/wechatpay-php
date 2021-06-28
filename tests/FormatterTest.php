@@ -75,11 +75,11 @@ class FormatterTest extends TestCase
         self::assertStringEndsWith('"', $value);
 
         $pattern = '/^WECHATPAY2-SHA256-RSA2048 '
-            . 'mchid="(?:[0-9A-Za-z]{1,32})",'
-            . 'nonce_str="(?:[0-9A-Za-z]{16,})",'
-            . 'signature="(?:[0-9A-Za-z+\/]+)={0,2}",'
-            . 'timestamp="(?:1[0-9]{9})",'
-            . 'serial_no="(?:[0-9A-Za-z]{8,40})"$/';
+            . 'mchid="[0-9A-Za-z]{1,32}",'
+            . 'nonce_str="[0-9A-Za-z]{16,}",'
+            . 'signature="[0-9A-Za-z\+\/]+={0,2}",'
+            . 'timestamp="1[0-9]{9}",'
+            . 'serial_no="[0-9A-Za-z]{8,40}"$/';
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
             self::assertMatchesRegularExpression($pattern, $value);
