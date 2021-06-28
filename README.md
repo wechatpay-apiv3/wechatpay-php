@@ -136,7 +136,7 @@ try {
         'notify_url' => 'https://weixin.qq.com/',
         'amount' => [
             'total' => 1,
-            'currency': 'CNY'
+            'currency' => 'CNY'
         ],
     ]]);
 
