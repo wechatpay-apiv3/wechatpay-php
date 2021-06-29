@@ -94,7 +94,7 @@ trait ClientJsonTrait
             if (!($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
                 && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp))) {
                 throw new UnexpectedValueException(sprintf(
-                    Exception\WeChatPayException::EV3_RES_HEADERS_INCOMPLATE,
+                    Exception\WeChatPayException::EV3_RES_HEADERS_INCOMPLETE,
                     WechatpayNonce, WechatpaySerial, WechatpaySignature, WechatpayTimestamp
                 ));
             }
