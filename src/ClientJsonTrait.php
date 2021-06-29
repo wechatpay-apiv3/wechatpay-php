@@ -163,7 +163,7 @@ trait ClientJsonTrait
 
         if (array_key_exists($config['serial'], $config['certs'])) {
             throw new Exception\InvalidArgumentException(sprintf(
-                Exception\ERR_INIT_CERTS_EXCLUDE_MCHSERRIAL, implode(',', array_keys($config['certs'])), $config['serial']
+                Exception\ERR_INIT_CERTS_EXCLUDE_MCHSERIAL, implode(',', array_keys($config['certs'])), $config['serial']
             ));
         }
 

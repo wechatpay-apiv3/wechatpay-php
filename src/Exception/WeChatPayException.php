@@ -8,7 +8,7 @@ const ERR_INIT_MCHID_IS_MANDATORY = 'The merchant\' ID aka `mchid` is required, 
 const ERR_INIT_SERIAL_IS_MANDATORY = 'The serial number of the merchant\'s certificate aka `serial` is required, usually hexadecial.';
 const ERR_INIT_PRIVATEKEY_IS_MANDATORY = 'The merchant\'s private key aka `privateKey` is required, usual as pem format.';
 const ERR_INIT_CERTS_IS_MANDATORY = 'The platform certificate(s) aka `certs` is required, paired as of `[$serial => $certificate]`.';
-const ERR_INIT_CERTS_EXCLUDE_MCHSERRIAL = 'The `certs(%1$s)` contains the merchant\'s certificate serial number(%2$s) which is not allowed here.';
+const ERR_INIT_CERTS_EXCLUDE_MCHSERIAL = 'The `certs(%1$s)` contains the merchant\'s certificate serial number(%2$s) which is not allowed here.';
 
 const EV2_REQ_XML_NOTMATCHED_MCHID = 'The xml\'s structure[mch_id(%1$s)] doesn\'t matched the init one mchid(%2$s).';
 
