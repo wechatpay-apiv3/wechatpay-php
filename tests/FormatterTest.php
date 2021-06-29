@@ -17,6 +17,9 @@ const LINE_FEED = "\n";
 
 class FormatterTest extends TestCase
 {
+    /**
+     * @return array<string,array{int,string}>
+     */
     public function nonceRulesProvider(): array
     {
         return [
@@ -90,6 +93,9 @@ class FormatterTest extends TestCase
         }
     }
 
+    /**
+     * @return array<string,array{string,string,string}>
+     */
     public function requestPhrasesProvider(): array
     {
         return [
@@ -133,6 +139,9 @@ class FormatterTest extends TestCase
         }
     }
 
+    /**
+     * @return array<string,array{string}>
+     */
     public function responsePhrasesProvider(): array
     {
         return [
@@ -180,6 +189,9 @@ class FormatterTest extends TestCase
         }
     }
 
+    /**
+     * @return array<string,array{string|int|bool|null|float}>
+     */
     public function joinedByLineFeedPhrasesProvider(): array
     {
         return [
@@ -190,6 +202,7 @@ class FormatterTest extends TestCase
     }
 
     /**
+     * @param string $data
      * @dataProvider joinedByLineFeedPhrasesProvider
      */
     public function testJoinedByLineFeed(...$data): void
@@ -214,6 +227,9 @@ class FormatterTest extends TestCase
         self::assertTrue(strlen($value) == 0);
     }
 
+    /**
+     * @return array<string,array<array<string,string>>>
+     */
     public function ksortByFlagNaturePhrasesProvider(): array
     {
         return [
@@ -229,6 +245,8 @@ class FormatterTest extends TestCase
     }
 
     /**
+     * @param array<string,string> $thing
+     * @param array<string,string> $excepted
      * @dataProvider ksortByFlagNaturePhrasesProvider
      */
     public function testKsort(array $thing, array $excepted): void
@@ -236,6 +254,9 @@ class FormatterTest extends TestCase
         self::assertEquals(Formatter::ksort($thing), $excepted);
     }
 
+    /**
+     * @return array<string,array<array<string,string>>>
+     */
     public function nativeKsortPhrasesProvider(): array
     {
         return [
@@ -251,6 +272,8 @@ class FormatterTest extends TestCase
     }
 
     /**
+     * @param array<string,string> $thing
+     * @param array<string,string> $excepted
      * @dataProvider nativeKsortPhrasesProvider
      */
     public function testNativeKsort(array $thing, array $excepted): void
@@ -259,6 +282,9 @@ class FormatterTest extends TestCase
         self::assertEquals($thing, $excepted);
     }
 
+    /**
+     * @return array<string,array{array<string,string|null>,string}>
+     */
     public function queryStringLikePhrasesProvider(): array
     {
         return [
@@ -286,6 +312,8 @@ class FormatterTest extends TestCase
     }
 
     /**
+     * @param array<string,string|null> $thing
+     * @param string $excepted
      * @dataProvider queryStringLikePhrasesProvider
      */
     public function testQueryStringLike(array $thing, string $excepted): void
