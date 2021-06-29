@@ -14,10 +14,11 @@ interface ClientDecoratorInterface
     /**
      * @var string - This library version
      */
-    const VERSION = '1.0.2';
+    const VERSION = '1.0.3';
 
     /**
      * @var string - The HTTP transfer `xml` based protocol
+     * @deprecated 1.0 - @see \WeChatPay\Exception\WeChatPayException::DEP_XML_PROTOCOL_UNDER_END_OF_LIFE
      */
     const XML_BASED = 'v2';
 

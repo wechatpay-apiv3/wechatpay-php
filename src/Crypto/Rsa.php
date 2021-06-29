@@ -39,7 +39,7 @@ class Rsa
      * Encrypts text with `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @param string $plaintext - Cleartext to encode.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string $publicKey - A PEM encoded public key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $publicKey - A PEM encoded public key.
      *
      * @return string - The base64-encoded ciphertext.
      * @throws UnexpectedValueException
@@ -58,7 +58,7 @@ class Rsa
      *
      * @param string $message - Content will be `openssl_verify`.
      * @param string $signature - The base64-encoded ciphertext.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string $publicKey - A PEM encoded public key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $publicKey - A PEM encoded public key.
      *
      * @return boolean - True is passed, false is failed.
      * @throws UnexpectedValueException
@@ -78,7 +78,7 @@ class Rsa
      * Creates and returns a `base64_encode` string that uses `sha256WithRSAEncryption`.
      *
      * @param string $message - Content will be `openssl_sign`.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string $privateKey - A PEM encoded private key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $privateKey - A PEM encoded private key.
      *
      * @return string - The base64-encoded signature.
      * @throws UnexpectedValueException
@@ -98,7 +98,7 @@ class Rsa
      * Decrypts base64 encoded string with `privateKey` with `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @param string $ciphertext - Was previously encrypted string using the corresponding public key.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string $privateKey - A PEM encoded private key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $privateKey - A PEM encoded private key.
      *
      * @return string - The utf-8 plaintext.
      * @throws UnexpectedValueException

@@ -1,6 +1,6 @@
 {
     "name": "wechatpay/wechatpay",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "[A]Sync Chainable WeChatPay v2&v3's OpenAPI SDK for PHP",
     "type": "library",
     "keywords": [
@@ -36,11 +36,15 @@
     "autoload": {
         "psr-4": { "WeChatPay\\" : "src/" }
     },
+    "autoload-dev": {
+        "psr-4": { "WeChatPay\\Tests\\" : "tests/" }
+    },
     "bin": [
         "bin/CertificateDownloader.php"
     ],
     "scripts": {
         "v3-certificates": "bin/CertificateDownloader.php",
+        "test": "vendor/bin/phpunit",
         "phpstan": "vendor/bin/phpstan analyse --no-progress",
         "phpstan-7": "vendor/bin/phpstan analyse --no-progress -c phpstan-php7.neon"
     }

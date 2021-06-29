@@ -11,6 +11,8 @@ use function is_object;
 use function is_array;
 use function count;
 use function sprintf;
+use function array_key_exists;
+use function array_keys;
 
 use UnexpectedValueException;
 
@@ -91,7 +93,10 @@ trait ClientJsonTrait
         return static function (ResponseInterface $response) use (&$certs): ResponseInterface {
             if (!($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
                 && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp))) {
-                throw new UnexpectedValueException(sprintf(Exception\EV3_RES_HEADERS_INCOMPLATE, WechatpayNonce, WechatpaySerial, WechatpaySignature, WechatpayTimestamp));
+                throw new UnexpectedValueException(sprintf(
+                    Exception\WeChatPayException::EV3_RES_HEADERS_INCOMPLETE,
+                    WechatpayNonce, WechatpaySerial, WechatpaySignature, WechatpayTimestamp
+                ));
             }
 
             list($nonce) = $response->getHeader(WechatpayNonce);
@@ -102,15 +107,24 @@ trait ClientJsonTrait
             $localTimestamp = Formatter::timestamp();
 
             if (abs($localTimestamp - intval($timestamp)) > MAXIMUM_CLOCK_OFFSET) {
-                throw new UnexpectedValueException(
-                    sprintf(Exception\EV3_RES_HEADER_TIMESTAMP_OFFSET, MAXIMUM_CLOCK_OFFSET, $timestamp, $localTimestamp)
-                );
+                throw new UnexpectedValueException(sprintf(
+                    Exception\WeChatPayException::EV3_RES_HEADER_TIMESTAMP_OFFSET,
+                    MAXIMUM_CLOCK_OFFSET, $timestamp, $localTimestamp
+                ));
+            }
+
+            if (!array_key_exists($serial, $certs)) {
+                throw new UnexpectedValueException(sprintf(
+                    Exception\WeChatPayException::EV3_RES_HEADER_PLATFORM_SERIAL,
+                    $serial, WechatpaySerial, implode(',', array_keys($certs))
+                ));
             }
 
             if (!Crypto\Rsa::verify(Formatter::response($timestamp, $nonce, static::body($response)), $signature, $certs[$serial])) {
-                throw new UnexpectedValueException(
-                    sprintf(Exception\EV3_RES_HEADER_SIGNATURE_DEGIST, $timestamp, $nonce, $signature, $serial)
-                );
+                throw new UnexpectedValueException(sprintf(
+                    Exception\WeChatPayException::EV3_RES_HEADER_SIGNATURE_DEGIST,
+                    $timestamp, $nonce, $signature, $serial
+                ));
             }
 
             return $response;
@@ -147,6 +161,13 @@ trait ClientJsonTrait
             isset($config['certs']) && is_array($config['certs']) && count($config['certs'])
         )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_CERTS_IS_MANDATORY); }
 
+        if (array_key_exists($config['serial'], $config['certs'])) {
+            throw new Exception\InvalidArgumentException(sprintf(
+                Exception\ERR_INIT_CERTS_EXCLUDE_MCHSERIAL, implode(',', array_keys($config['certs'])), $config['serial']
+            ));
+        }
+
+        /** @var \GuzzleHttp\HandlerStack $handler */
         $handler = $config['handler'] ?? HandlerStack::create();
         $handler->unshift(Middleware::mapRequest(static::signer((string)$config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
         $handler->unshift(Middleware::mapResponse(static::verifier($config['certs'])), 'verifier');

@@ -63,7 +63,7 @@ class CertificateDownloader
         $instance = Builder::factory([
             'mchid' => $opts['mchid'],
             'serial' => $opts['serialno'],
-            'privateKey' => \file_get_contents($opts['privatekey']),
+            'privateKey' => \file_get_contents((string)$opts['privatekey']),
             'certs' => &$certs,
         ]);
 
@@ -75,17 +75,18 @@ class CertificateDownloader
             \array_map(static function($row) use ($apiv3Key, &$certs) {
                 $cert = $row->encrypt_certificate;
                 $certs[$row->serial_no] = AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_data);
-            }, $json->data);
+            }, \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : []);
 
             return $response;
         }), 'injector');
 
         $instance->chain('v3/certificates')->getAsync(['debug' => true])->then(static function($response) use ($outputDir, &$certs) {
             $body = $response->getBody()->getContents();
+            $timeZone = new \DateTimeZone('Asia/Shanghai');
             /** @var object{data:array<object{effective_time:string,expire_time:string:serial_no:string}>} $json */
             $json = Utils::jsonDecode($body);
-            $timeZone = new \DateTimeZone('Asia/Shanghai');
-            \array_walk($json->data, static function($row, $index, $certs) use ($outputDir, $timeZone) {
+            $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
+            \array_walk($data, static function($row, $index, $certs) use ($outputDir, $timeZone) {
                 $serialNo = $row->serial_no;
                 $outpath = $outputDir . DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
 

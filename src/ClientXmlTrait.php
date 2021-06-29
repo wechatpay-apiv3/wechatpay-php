@@ -19,8 +19,6 @@ use Psr\Http\Message\MessageInterface;
 
 /**
  * XML based Client interface for sending HTTP requests.
- *
- * @deprecated 1.0 - New features are all in `APIv3`, there's no reason to continue use this kind client since v2.0.
  */
 trait ClientXmlTrait
 {
@@ -118,6 +116,8 @@ trait ClientXmlTrait
     /**
      * Create an APIv2's client
      *
+     * @deprecated 1.0 - @see \WeChatPay\Exception\WeChatPayException::DEP_XML_PROTOCOL_UNDER_END_OF_LIFE
+     *
      * Optional acceptable \$config parameters
      *   - mchid?: ?string - The merchant ID
      *   - secret?: ?string - The secret key string
@@ -129,6 +129,7 @@ trait ClientXmlTrait
      */
     public static function xmlBased(array $config = []): Client
     {
+        /** @var \GuzzleHttp\HandlerStack $handler */
         $handler = $config['handler'] ?? HandlerStack::create();
         $handler->before('prepare_body', static::transformRequest($config['mchid'] ?? null, $config['secret'] ?? '', $config['merchant'] ?? []), 'transform_request');
         $handler->before('prepare_body', static::transformResponse($config['secret'] ?? ''), 'transform_response');
