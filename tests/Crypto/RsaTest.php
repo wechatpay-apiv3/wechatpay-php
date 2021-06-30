@@ -22,7 +22,7 @@ class RsaTest extends TestCase
             'private_key_bits' => 2048,
             'private_key_type' => OPENSSL_KEYTYPE_RSA
         ]);
-        ['key' => $publicKey] = openssl_pkey_get_details($privateKey);
+        ['key' => $publicKey] = $privateKey ? openssl_pkey_get_details($privateKey) : [];
 
         return [
             'plaintext, publicKey and privateKey' => ['hello wechatpay', $publicKey, $privateKey]
@@ -31,6 +31,8 @@ class RsaTest extends TestCase
 
     /**
      * @dataProvider keysProvider
+     * @param string $plaintext
+     * @param object|resource|mixed $publicKey
      */
     public function testEncrypt(string $plaintext, $publicKey): void
     {
@@ -41,6 +43,9 @@ class RsaTest extends TestCase
 
     /**
      * @dataProvider keysProvider
+     * @param string $plaintext
+     * @param object|resource|mixed $publicKey
+     * @param object|resource|mixed $privateKey
      */
     public function testDecrypt(string $plaintext, $publicKey, $privateKey): void
     {
