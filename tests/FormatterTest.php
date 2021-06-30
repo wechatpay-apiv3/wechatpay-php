@@ -47,7 +47,7 @@ class FormatterTest extends TestCase
         self::assertTrue(strlen($nonce) === ($size > 0 ? $size : abs($size - 2)));
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
-            self::assertMatchesRegularExpression($pattern, $nonce);
+            $this->assertMatchesRegularExpression($pattern, $nonce);
         } else {
             self::assertRegExp($pattern, $nonce);
         }
