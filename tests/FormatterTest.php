@@ -65,7 +65,7 @@ class FormatterTest extends TestCase
         self::assertTrue(strlen($timestamp) === 10);
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
-            self::assertMatchesRegularExpression($pattern, $timestamp);
+            $this->assertMatchesRegularExpression($pattern, $timestamp);
         } else {
             self::assertRegExp($pattern, $timestamp);
         }
@@ -88,7 +88,7 @@ class FormatterTest extends TestCase
             . 'serial_no="[0-9A-Za-z]{8,40}"$/';
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
-            self::assertMatchesRegularExpression($pattern, $value);
+            $this->assertMatchesRegularExpression($pattern, $value);
         } else {
             self::assertRegExp($pattern, $value);
         }
@@ -134,7 +134,7 @@ class FormatterTest extends TestCase
             . '$#';
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
-            self::assertMatchesRegularExpression($pattern, $value);
+            $this->assertMatchesRegularExpression($pattern, $value);
         } else {
             self::assertRegExp($pattern, $value);
         }
@@ -184,7 +184,7 @@ class FormatterTest extends TestCase
             . '$#';
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
-            self::assertMatchesRegularExpression($pattern, $value);
+            $this->assertMatchesRegularExpression($pattern, $value);
         } else {
             self::assertRegExp($pattern, $value);
         }
