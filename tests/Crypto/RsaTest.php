@@ -17,6 +17,9 @@ use const DIRECTORY_SEPARATOR as DS;
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
 
+
+const BASE64_EXPRESSION = '#[a-zA-Z0-9\+\/]+#';
+
 class RsaTest extends TestCase
 {
     /**
@@ -39,7 +42,7 @@ class RsaTest extends TestCase
         ['key' => $publicKey] = $privateKey ? openssl_pkey_get_details($privateKey) : [];
 
         return [
-            'plaintext, publicKey and privateKey' => ['hello wechatpay', $publicKey, $privateKey]
+            'plaintext, publicKey and privateKey' => ['hello wechatpay 你好 微信支付', $publicKey, $privateKey]
         ];
     }
 
@@ -53,6 +56,12 @@ class RsaTest extends TestCase
         $ciphertext = Rsa::encrypt($plaintext, $publicKey);
         self::assertIsString($ciphertext);
         self::assertNotEquals($plaintext, $ciphertext);
+
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression(BASE64_EXPRESSION, $ciphertext);
+        } else {
+            self::assertRegExp(BASE64_EXPRESSION, $ciphertext);
+        }
     }
 
     /**
@@ -66,8 +75,57 @@ class RsaTest extends TestCase
         $ciphertext = Rsa::encrypt($plaintext, $publicKey);
         self::assertIsString($ciphertext);
         self::assertNotEquals($plaintext, $ciphertext);
+
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression(BASE64_EXPRESSION, $ciphertext);
+        } else {
+            self::assertRegExp(BASE64_EXPRESSION, $ciphertext);
+        }
+
         $mytext = Rsa::decrypt($ciphertext, $privateKey);
         self::assertIsString($mytext);
         self::assertEquals($plaintext, $mytext);
+    }
+
+    /**
+     * @dataProvider keysProvider
+     * @param string $plaintext
+     * @param object|resource|mixed $publicKey
+     * @param object|resource|mixed $privateKey
+     */
+    public function testSign(string $plaintext, $publicKey, $privateKey): void
+    {
+        $signature = Rsa::sign($plaintext, $privateKey);
+
+        self::assertIsString($signature);
+        self::assertNotEquals($plaintext, $signature);
+
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression(BASE64_EXPRESSION, $signature);
+        } else {
+            self::assertRegExp(BASE64_EXPRESSION, $signature);
+        }
+    }
+
+    /**
+     * @dataProvider keysProvider
+     * @param string $plaintext
+     * @param object|resource|mixed $publicKey
+     * @param object|resource|mixed $privateKey
+     */
+    public function testVerify(string $plaintext, $publicKey, $privateKey): void
+    {
+        $signature = Rsa::sign($plaintext, $privateKey);
+
+        self::assertIsString($signature);
+        self::assertNotEquals($plaintext, $signature);
+
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression(BASE64_EXPRESSION, $signature);
+        } else {
+            self::assertRegExp(BASE64_EXPRESSION, $signature);
+        }
+
+        self::assertTrue(Rsa::verify($plaintext, $signature, $publicKey));
     }
 }
