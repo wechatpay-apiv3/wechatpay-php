@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace WeChatPay\Tests\Crypto;
 
@@ -16,7 +16,6 @@ use const DIRECTORY_SEPARATOR as DS;
 
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
-
 
 const BASE64_EXPRESSION = '#[a-zA-Z0-9\+\/]+#';
 
