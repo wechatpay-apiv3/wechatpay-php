@@ -2,6 +2,7 @@
 
 namespace WeChatPay\Tests;
 
+use function method_exists;
 use function strlen;
 use function abs;
 use function strval;
