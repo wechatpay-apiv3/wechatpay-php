@@ -6,11 +6,13 @@ use function openssl_pkey_new;
 use function openssl_pkey_get_details;
 use function openssl_error_string;
 use function fwrite;
+use function dirname;
 
 use const PHP_EOL;
 use const PHP_SAPI;
 use const STDERR;
 use const OPENSSL_KEYTYPE_RSA;
+use const DIRECTORY_SEPARATOR as DS;
 
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
@@ -26,11 +28,12 @@ class RsaTest extends TestCase
             'digest_alg' => 'sha256',
             'default_bits' => 2048,
             'private_key_bits' => 2048,
-            'private_key_type' => OPENSSL_KEYTYPE_RSA
+            'private_key_type' => OPENSSL_KEYTYPE_RSA,
+            'config' => dirname(__DIR__) . DS . 'fixtures' . DS . 'openssl.conf',
         ]);
 
         while ($msg = openssl_error_string()) {
-            'cli' === PHP_SAPI && fwrite(STDERR, 'OpenSSL did something wrong with those message:' . $msg . PHP_EOL . PHP_EOL);
+            'cli' === PHP_SAPI && fwrite(STDERR, 'OpenSSL ' . $msg . PHP_EOL);
         }
 
         ['key' => $publicKey] = $privateKey ? openssl_pkey_get_details($privateKey) : [];
