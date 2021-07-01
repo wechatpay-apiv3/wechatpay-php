@@ -17,10 +17,10 @@ use const DIRECTORY_SEPARATOR as DS;
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
 
-const BASE64_EXPRESSION = '#^[a-zA-Z0-9][a-zA-Z0-9\+/]*={0,2}$#';
-
 class RsaTest extends TestCase
 {
+    const BASE64_EXPRESSION = '#^[a-zA-Z0-9][a-zA-Z0-9\+/]*={0,2}$#';
+
     /**
      * @return array<string,array{string,string|resource|mixed,resource|mixed}>
      */
@@ -57,9 +57,9 @@ class RsaTest extends TestCase
         self::assertNotEquals($plaintext, $ciphertext);
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
-            $this->assertMatchesRegularExpression(BASE64_EXPRESSION, $ciphertext);
+            $this->assertMatchesRegularExpression(self::BASE64_EXPRESSION, $ciphertext);
         } else {
-            self::assertRegExp(BASE64_EXPRESSION, $ciphertext);
+            self::assertRegExp(self::BASE64_EXPRESSION, $ciphertext);
         }
     }
 
@@ -76,9 +76,9 @@ class RsaTest extends TestCase
         self::assertNotEquals($plaintext, $ciphertext);
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
-            $this->assertMatchesRegularExpression(BASE64_EXPRESSION, $ciphertext);
+            $this->assertMatchesRegularExpression(self::BASE64_EXPRESSION, $ciphertext);
         } else {
-            self::assertRegExp(BASE64_EXPRESSION, $ciphertext);
+            self::assertRegExp(self::BASE64_EXPRESSION, $ciphertext);
         }
 
         $mytext = Rsa::decrypt($ciphertext, $privateKey);
@@ -100,9 +100,9 @@ class RsaTest extends TestCase
         self::assertNotEquals($plaintext, $signature);
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
-            $this->assertMatchesRegularExpression(BASE64_EXPRESSION, $signature);
+            $this->assertMatchesRegularExpression(self::BASE64_EXPRESSION, $signature);
         } else {
-            self::assertRegExp(BASE64_EXPRESSION, $signature);
+            self::assertRegExp(self::BASE64_EXPRESSION, $signature);
         }
     }
 
@@ -120,9 +120,9 @@ class RsaTest extends TestCase
         self::assertNotEquals($plaintext, $signature);
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
-            $this->assertMatchesRegularExpression(BASE64_EXPRESSION, $signature);
+            $this->assertMatchesRegularExpression(self::BASE64_EXPRESSION, $signature);
         } else {
-            self::assertRegExp(BASE64_EXPRESSION, $signature);
+            self::assertRegExp(self::BASE64_EXPRESSION, $signature);
         }
 
         self::assertTrue(Rsa::verify($plaintext, $signature, $publicKey));
