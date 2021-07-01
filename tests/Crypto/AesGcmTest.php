@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 class AesGcmTest extends TestCase
 {
-    const BASE64_EXPRESSION = '#^[a-zA-Z0-9][a-zA-Z0-9\+/]*={0,2}$#';
+    const BASE64_EXPRESSION = '#^[a-zA-Z0-9\+/]+={0,2}$#';
 
     public function testImplementsAesInterface(): void
     {

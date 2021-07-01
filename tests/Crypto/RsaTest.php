@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 
 class RsaTest extends TestCase
 {
-    const BASE64_EXPRESSION = '#^[a-zA-Z0-9][a-zA-Z0-9\+/]*={0,2}$#';
+    const BASE64_EXPRESSION = '#^[a-zA-Z0-9\+/]+={0,2}$#';
 
     /**
      * @return array<string,array{string,string|resource|mixed,resource|mixed}>
