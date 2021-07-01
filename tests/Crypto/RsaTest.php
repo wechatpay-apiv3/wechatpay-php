@@ -17,7 +17,7 @@ use const DIRECTORY_SEPARATOR as DS;
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
 
-const BASE64_EXPRESSION = '#[a-zA-Z0-9\+\/]+#';
+const BASE64_EXPRESSION = '#^[a-zA-Z0-9][a-zA-Z0-9\+/]*={0,2}$#';
 
 class RsaTest extends TestCase
 {
