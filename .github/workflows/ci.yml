@@ -3,8 +3,8 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  phpstan:
-    name: PHPStan
+  ci:
+    name: PHPStan & PHPUnit
     strategy:
       fail-fast: false
       matrix:

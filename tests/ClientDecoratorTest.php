@@ -4,6 +4,7 @@ namespace WeChatPay\Tests;
 
 use function class_implements;
 use function class_uses;
+use function is_array;
 
 use ReflectionClass;
 use ReflectionMethod;
@@ -21,8 +22,8 @@ class ClientDecoratorTest extends TestCase
 
         self::assertIsArray($map);
         self::assertNotEmpty($map);
-        self::assertArrayHasKey(ClientDecoratorInterface::class, (array)$map);
-        self::assertContainsEquals(ClientDecoratorInterface::class, (array)$map);
+        self::assertArrayHasKey(ClientDecoratorInterface::class, is_array($map) ? $map : []);
+        self::assertContainsEquals(ClientDecoratorInterface::class, is_array($map) ? $map : []);
     }
 
     public function testClassUsesTraits(): void
@@ -31,8 +32,8 @@ class ClientDecoratorTest extends TestCase
 
         self::assertIsArray($traits);
         self::assertNotEmpty($traits);
-        self::assertContains(\WeChatPay\ClientJsonTrait::class, $traits);
-        self::assertContains(\WeChatPay\ClientXmlTrait::class, $traits);
+        self::assertContains(\WeChatPay\ClientJsonTrait::class, is_array($traits) ? $traits : []);
+        self::assertContains(\WeChatPay\ClientXmlTrait::class, is_array($traits) ? $traits : []);
     }
 
     public function testClassConstants(): void
