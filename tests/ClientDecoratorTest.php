@@ -7,6 +7,7 @@ use function class_uses;
 use function is_array;
 use function openssl_pkey_new;
 use function openssl_pkey_get_details;
+use function strval;
 
 use const OPENSSL_KEYTYPE_RSA;
 use const DIRECTORY_SEPARATOR as DS;
@@ -263,7 +264,7 @@ class ClientDecoratorTest extends TestCase
                 new Response(200, [
                     'Wechatpay-Nonce' => Formatter::nonce(),
                     'Wechatpay-Serial' => $platSerial,
-                    'Wechatpay-Timestamp' => Formatter::timestamp() - 60 * 6,
+                    'Wechatpay-Timestamp' => strval(Formatter::timestamp() - 60 * 6),
                     'Wechatpay-Signature' => Formatter::nonce(200),
                 ]), UnexpectedValueException::class, 'DELETE', 'v3/pay/transcations',
             ],
@@ -272,7 +273,7 @@ class ClientDecoratorTest extends TestCase
                 new Response(200, [
                     'Wechatpay-Nonce' => Formatter::nonce(),
                     'Wechatpay-Serial' => $platSerial,
-                    'Wechatpay-Timestamp' => Formatter::timestamp() + 60 * 6,
+                    'Wechatpay-Timestamp' => strval(Formatter::timestamp() + 60 * 6),
                     'Wechatpay-Signature' => Formatter::nonce(200),
                 ]), UnexpectedValueException::class, 'PUT', 'v3/pay/transcations',
             ],
@@ -281,7 +282,7 @@ class ClientDecoratorTest extends TestCase
                 new Response(200, [
                     'Wechatpay-Nonce' => Formatter::nonce(),
                     'Wechatpay-Serial' => Formatter::nonce(40),
-                    'Wechatpay-Timestamp' => Formatter::timestamp(),
+                    'Wechatpay-Timestamp' => strval(Formatter::timestamp()),
                     'Wechatpay-Signature' => Formatter::nonce(200),
                 ]), UnexpectedValueException::class, 'PATCH', 'v3/pay/transcations',
             ],
@@ -290,7 +291,7 @@ class ClientDecoratorTest extends TestCase
                 new Response(200, [
                     'Wechatpay-Nonce' => Formatter::nonce(),
                     'Wechatpay-Serial' => $platSerial,
-                    'Wechatpay-Timestamp' => Formatter::timestamp(),
+                    'Wechatpay-Timestamp' => strval(Formatter::timestamp()),
                     'Wechatpay-Signature' => Formatter::nonce(200),
                 ]), UnexpectedValueException::class, 'POST', 'v3/pay/transcations',
             ],
