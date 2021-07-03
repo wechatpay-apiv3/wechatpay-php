@@ -86,7 +86,7 @@ class ClientDecoratorTest extends TestCase
             ],
             '`mchid`, `serial`, `priviateKey` and bad `certs` in' => [
                 ['mchid' => '1230000109', 'serial' => 'MCH123SERIAL', 'privateKey' => '------ BEGIN PRIVATE ------', 'certs' => ['MCH123SERIAL' => '']],
-                '#the merchant\'s certificate serial number.*? is not allowed here#',
+                '#the merchant\'s certificate serial number\(MCH123SERIAL\) which is not allowed here#',
             ],
         ];
     }
