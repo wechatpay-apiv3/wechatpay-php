@@ -8,7 +8,11 @@ use function is_array;
 use function openssl_pkey_new;
 use function openssl_pkey_get_details;
 use function strval;
+use function abs;
+use function json_encode;
 
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 use const OPENSSL_KEYTYPE_RSA;
 use const DIRECTORY_SEPARATOR as DS;
 
@@ -27,6 +31,8 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\RequestInterface;
+use WeChatPay\Crypto\Rsa;
 
 class ClientDecoratorTest extends TestCase
 {
@@ -369,6 +375,181 @@ class ClientDecoratorTest extends TestCase
             }
             self::assertStringEndsWith($uri, $req->getRequestTarget());
             self::assertInstanceOf($expectedGuzzleException, $actual);
+        })->wait();
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private static function parseAuthorization(string $value): array
+    {
+        [$type, $credentials] = explode(' ', $value, 2);
+
+        return array_reduce(array_map(static function($item) {
+            [$key, $value] = explode('=', $item, 2);
+            return [$key => trim($value, '"')];
+        }, explode(',', $credentials)), static function($carry, $item) {
+            return $carry + $item;
+        }, ['type' => $type]);
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param string $mchid
+     * @param string $mchSerial
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $publicKey
+     */
+    private static function verification(RequestInterface $request, string $mchid, string $mchSerial, $publicKey): void
+    {
+        static::assertTrue($request->hasHeader('Authorization'));
+
+        [$authorization] = $request->getHeader('Authorization');
+
+        static::assertIsString($authorization);
+        $rules = static::parseAuthorization($authorization);
+
+        static::assertIsArray($rules);
+        static::assertNotEmpty($rules);
+        static::assertArrayHasKey('type', $rules);
+        static::assertArrayHasKey('mchid', $rules);
+        static::assertArrayHasKey('nonce_str', $rules);
+        static::assertArrayHasKey('timestamp', $rules);
+        static::assertArrayHasKey('signature', $rules);
+        static::assertArrayHasKey('serial_no', $rules);
+
+        ['type' => $type] = $rules;
+        static::assertEquals('WECHATPAY2-SHA256-RSA2048', $type);
+
+        ['mchid' => $mchId, 'nonce_str' => $nonceStr, 'timestamp' => $timestamp, 'serial_no' => $serialNo, 'signature' => $signature] = $rules;
+        static::assertEquals($mchId, $mchid);
+        static::assertEquals($serialNo, $mchSerial);
+        static::assertTrue(abs(Formatter::timestamp() - intval($timestamp)) < 300);
+        static::assertTrue(Rsa::verify(Formatter::request(
+            $request->getMethod(),
+            $request->getRequestTarget(),
+            $timestamp,
+            $nonceStr,
+            $request->getBody()->getContents()
+        ), $signature, $publicKey));
+    }
+
+    /**
+     * @param string $serial
+     * @param string $body
+     * @param \OpenSSLAsymmetricKey|resource|string|mixed $privateKey
+     */
+    private static function pickResponse(string $serial, string $body, $privateKey): ResponseInterface
+    {
+        return new Response(200, [
+            'Wechatpay-Nonce' => $nonce = Formatter::nonce(),
+            'Wechatpay-Serial' => $serial,
+            'Wechatpay-Timestamp' => $timestamp = strval(Formatter::timestamp()),
+            'Wechatpay-Signature' => Rsa::sign(Formatter::response($timestamp, $nonce, $body), $privateKey),
+        ], $body);
+    }
+
+    /**
+     * @return array<string,array{string,resource|mixed,string|resource|mixed,string,string,string,string,string,callable<ResponseInterface>}>
+     */
+    public function normalRequestsDataProvider(): array
+    {
+        [$mchid, $privateKey, $publicKey, $mchSerial, $platSerial] = $this->configGenerator();
+
+        return [
+            'HTTP 204 STATUS' => [
+                $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
+                'PATCH', 'v3/pay/transcations',
+                $body = '',
+                static function(RequestInterface $request) use ($privateKey, $platSerial, $body, $mchid, $mchSerial, $publicKey): ResponseInterface {
+                    static::verification($request, $mchid, $mchSerial, $publicKey);
+
+                    return static::pickResponse($platSerial, $body, $privateKey);
+                },
+            ],
+            'HTTP 202 STATUS' => [
+                $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
+                'PUT', 'v3/pay/transcations',
+                $body = '',
+                static function(RequestInterface $request) use ($privateKey, $platSerial, $body, $mchid, $mchSerial, $publicKey): ResponseInterface {
+                    static::verification($request, $mchid, $mchSerial, $publicKey);
+
+                    return static::pickResponse($platSerial, $body, $privateKey);
+                },
+            ],
+            'HTTP 200 STATUS' => [
+                $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
+                'POST', 'v3/pay/transcations',
+                $body = (string)json_encode(['code_url' => 'weixin://wxpay/bizpayurl?pr=qnu8GBtzz'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+                static function(RequestInterface $request) use ($privateKey, $platSerial, $body, $mchid, $mchSerial, $publicKey): ResponseInterface {
+                    static::verification($request, $mchid, $mchSerial, $publicKey);
+
+                    return static::pickResponse($platSerial, $body, $privateKey);
+                },
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider normalRequestsDataProvider
+     *
+     * @param string $mchid
+     * @param resource|mixed $privateKey
+     * @param string|resource|mixed $publicKey
+     * @param string $mchSerial
+     * @param string $platSerial
+     * @param string $expected
+     * @param string $method
+     * @param string $uri
+     * @param callable $respondor
+     */
+    public function testRequest(
+        string $mchid, $privateKey, $publicKey, string $mchSerial, string $platSerial,
+        string $method, string $uri, string $expected, callable $respondor): void
+    {
+        $instance = new ClientDecorator([
+            'mchid' => $mchid,
+            'serial' => $mchSerial,
+            'privateKey' => $privateKey,
+            'certs' => [$platSerial => $publicKey],
+            'handler' => $this->guzzleMockStack(),
+        ]);
+
+        $this->mock->reset();
+        $this->mock->append($respondor);
+
+        self::assertEquals($expected, $instance->request($method, $uri)->getBody()->getContents());
+    }
+
+    /**
+     * @dataProvider normalRequestsDataProvider
+     *
+     * @param string $mchid
+     * @param resource|mixed $privateKey
+     * @param string|resource|mixed $publicKey
+     * @param string $mchSerial
+     * @param string $platSerial
+     * @param string $expected
+     * @param string $method
+     * @param string $uri
+     * @param callable $respondor
+     */
+    public function testRequestAsync(
+        string $mchid, $privateKey, $publicKey, string $mchSerial, string $platSerial,
+        string $method, string $uri, string $expected, callable $respondor): void
+    {
+        $instance = new ClientDecorator([
+            'mchid' => $mchid,
+            'serial' => $mchSerial,
+            'privateKey' => $privateKey,
+            'certs' => [$platSerial => $publicKey],
+            'handler' => $this->guzzleMockStack(),
+        ]);
+
+        $this->mock->reset();
+        $this->mock->append($respondor);
+
+        $instance->requestAsync($method, $uri)->then(static function(ResponseInterface $response) use($expected) {
+            self::assertEquals($expected, $response->getBody()->getContents());
         })->wait();
     }
 }
