@@ -15,6 +15,7 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use ReflectionClass;
 use ReflectionMethod;
+use UnexpectedValueException;
 
 use WeChatPay\Formatter;
 use WeChatPay\ClientDecorator;
@@ -196,9 +197,9 @@ class ClientDecoratorTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,resource|mixed,string|resource|mixed,string,string,object|mixed,string,string,string}>
+     * @return array{string,\OpenSSLAsymmetricKey|resource|string|mixed,\OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed,string,string}
      */
-    public function withMockHandlerProvider(): array
+    private function configGenerator(): array
     {
         $privateKey = openssl_pkey_new([
             'digest_alg' => 'sha256',
@@ -210,9 +211,15 @@ class ClientDecoratorTest extends TestCase
 
         ['key' => $publicKey] = $privateKey ? openssl_pkey_get_details($privateKey) : [];
 
-        $mchid = '1230000109';
-        $mchSerial = Formatter::nonce(40);
-        $platSerial = Formatter::nonce(40);
+        return ['1230000109', $privateKey, $publicKey, Formatter::nonce(40), Formatter::nonce(40)];
+    }
+
+    /**
+     * @return array<string,array{string,resource|mixed,string|resource|mixed,string,string,object|mixed,string,string,string}>
+     */
+    public function withMockHandlerProvider(): array
+    {
+        [$mchid, $privateKey, $publicKey, $mchSerial, $platSerial] = $this->configGenerator();
 
         return [
             'HTTP 400 STATUS' => [
@@ -246,6 +253,46 @@ class ClientDecoratorTest extends TestCase
             'HTTP 503 STATUS' => [
                 $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
                 new Response(503), ServerException::class, 'PUT', 'frog-over-miniprogram/pay',
+            ],
+            'HTTP 200 STATUS without mandatory headers' => [
+                $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
+                new Response(200), UnexpectedValueException::class, 'GET', 'v3/pay/transcations',
+            ],
+            'HTTP 200 STATUS with bad clock offset(in the server late)' => [
+                $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
+                new Response(200, [
+                    'Wechatpay-Nonce' => Formatter::nonce(),
+                    'Wechatpay-Serial' => $platSerial,
+                    'Wechatpay-Timestamp' => Formatter::timestamp() - 60 * 6,
+                    'Wechatpay-Signature' => Formatter::nonce(200),
+                ]), UnexpectedValueException::class, 'DELETE', 'v3/pay/transcations',
+            ],
+            'HTTP 200 STATUS with bad clock offset(in the server ahead)' => [
+                $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
+                new Response(200, [
+                    'Wechatpay-Nonce' => Formatter::nonce(),
+                    'Wechatpay-Serial' => $platSerial,
+                    'Wechatpay-Timestamp' => Formatter::timestamp() + 60 * 6,
+                    'Wechatpay-Signature' => Formatter::nonce(200),
+                ]), UnexpectedValueException::class, 'PUT', 'v3/pay/transcations',
+            ],
+            'HTTP 200 STATUS with unreachable platform certificate serial number' => [
+                $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
+                new Response(200, [
+                    'Wechatpay-Nonce' => Formatter::nonce(),
+                    'Wechatpay-Serial' => Formatter::nonce(40),
+                    'Wechatpay-Timestamp' => Formatter::timestamp(),
+                    'Wechatpay-Signature' => Formatter::nonce(200),
+                ]), UnexpectedValueException::class, 'PATCH', 'v3/pay/transcations',
+            ],
+            'HTTP 200 STATUS with bad digest signature' => [
+                $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
+                new Response(200, [
+                    'Wechatpay-Nonce' => Formatter::nonce(),
+                    'Wechatpay-Serial' => $platSerial,
+                    'Wechatpay-Timestamp' => Formatter::timestamp(),
+                    'Wechatpay-Signature' => Formatter::nonce(200),
+                ]), UnexpectedValueException::class, 'POST', 'v3/pay/transcations',
             ],
         ];
     }
@@ -307,10 +354,19 @@ class ClientDecoratorTest extends TestCase
             'handler' => $this->guzzleMockStack(),
         ]);
 
-        $this->mock->reset();
-        $this->mock->append($response);
+        $mock = $this->mock;
+        $mock->reset();
+        $mock->append($response);
 
-        $instance->requestAsync($method, $uri)->otherwise(static function($actual) use ($expectedGuzzleException) {
+        $instance->requestAsync($method, $uri)->otherwise(static function($actual) use ($expectedGuzzleException, $mock, $method, $uri) {
+            /** @var \GuzzleHttp\Psr7\Request $req */
+            $req = $mock->getLastRequest();
+            self::assertInstanceOf(\GuzzleHttp\Psr7\Request::class, $req);
+            self::assertEquals($method, $req->getMethod());
+            if (self::stringStartsWith('/')->evaluate($uri, '', true)) {
+                self::assertEquals($uri, $req->getRequestTarget());
+            }
+            self::assertStringEndsWith($uri, $req->getRequestTarget());
             self::assertInstanceOf($expectedGuzzleException, $actual);
         })->wait();
     }
