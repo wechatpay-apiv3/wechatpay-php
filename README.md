@@ -30,7 +30,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 + PHP >=7.2
 + guzzlehttp/guzzle ^7.0
 
-
+**Notes:** 当前随`Guzzle7`支持的PHP版本为最低7.2.5，另PHP官方已于`30 Nov 2020`停止维护`PHP7.2`，详情见附注链接说明。
 ## 安装
 
 推荐使用PHP包管理工具`composer`引入SDK到项目中：
@@ -377,6 +377,8 @@ print_r($res);
 
 ## 链接
 
+- [GuzzleHttp官方版本支持](https://docs.guzzlephp.org/en/stable/overview.html#requirements)
+- [PHP官方版本支持](https://www.php.net/supported-versions.php)
 - [变更历史](CHANGELOG.md)
 
 ## License
