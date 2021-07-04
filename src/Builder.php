@@ -2,8 +2,7 @@
 
 namespace WeChatPay;
 
-use function preg_replace;
-use function preg_replace_callback;
+use function preg_replace_callback_array;
 use function strtolower;
 use function implode;
 use function array_filter;
@@ -92,11 +91,11 @@ final class Builder
              */
             protected function normalize(string $thing = ''): string
             {
-                return (string)preg_replace('#^_(.*)_$#', '{\1}', (string)preg_replace_callback('#[A-Z]#', static function($piece) {
-                    return '-' . strtolower($piece[0]);
-                }, (string)preg_replace_callback('#^[A-Z]#', static function($piece) {
-                    return strtolower($piece);
-                }, $thing)));
+                return (string)preg_replace_callback_array([
+                    '#^[A-Z]#'   => static function(array $piece): string { return strtolower($piece[0]); },
+                    '#[A-Z]#'    => static function(array $piece): string { return '-' . strtolower($piece[0]); },
+                    '#^_(.*)_$#' => static function(array $piece): string { return '{' . $piece[1] . '}'; },
+                ], $thing);
             }
 
             /**
