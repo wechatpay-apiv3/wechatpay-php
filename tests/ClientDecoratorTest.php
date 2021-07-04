@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace WeChatPay\Tests;
 
@@ -10,32 +10,39 @@ use function openssl_pkey_get_details;
 use function strval;
 use function abs;
 use function json_encode;
+use function explode;
+use function array_reduce;
+use function array_map;
+use function trim;
 
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 use const OPENSSL_KEYTYPE_RSA;
 use const DIRECTORY_SEPARATOR as DS;
 
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\ServerException;
 use ReflectionClass;
 use ReflectionMethod;
 use UnexpectedValueException;
 
 use WeChatPay\Formatter;
+use WeChatPay\Crypto\Rsa;
 use WeChatPay\ClientDecorator;
 use WeChatPay\ClientDecoratorInterface;
 use WeChatPay\Exception\InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ServerException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
-use WeChatPay\Crypto\Rsa;
+use PHPUnit\Framework\TestCase;
 
 class ClientDecoratorTest extends TestCase
 {
+    /** @var int - The maximum clock offset in second */
+    const MAXIMUM_CLOCK_OFFSET = 300;
+
     public function testImplementsClientDecoratorInterface(): void
     {
         $map = class_implements(ClientDecorator::class);
@@ -165,7 +172,7 @@ class ClientDecoratorTest extends TestCase
      *
      * @param array<string,mixed> $config
      */
-    public function testConstructorSuccess(array $config): void
+    public function testSelect(array $config): void
     {
         $instance = new ClientDecorator($config);
 
@@ -181,10 +188,12 @@ class ClientDecoratorTest extends TestCase
         /** @var HandlerStack $stack */
         ['handler' => $stack] = $settings;
         self::assertInstanceOf(HandlerStack::class, $stack);
-        self::assertStringContainsString('verifier', $stack);
-        self::assertStringContainsString('signer', $stack);
-        self::assertStringNotContainsString('transform_request', $stack);
-        self::assertStringNotContainsString('transform_response', $stack);
+
+        $stackDebugInfo = strval($stack);
+        self::assertStringContainsString('verifier', $stackDebugInfo);
+        self::assertStringContainsString('signer', $stackDebugInfo);
+        self::assertStringNotContainsString('transform_request', $stackDebugInfo);
+        self::assertStringNotContainsString('transform_response', $stackDebugInfo);
 
         $client = $instance->select(ClientDecoratorInterface::XML_BASED);
         self::assertInstanceOf(\GuzzleHttp\Client::class, $client);
@@ -197,10 +206,12 @@ class ClientDecoratorTest extends TestCase
         /** @var HandlerStack $stack */
         ['handler' => $stack] = $settings;
         self::assertInstanceOf(HandlerStack::class, $stack);
-        self::assertStringNotContainsString('verifier', $stack);
-        self::assertStringNotContainsString('signer', $stack);
-        self::assertStringContainsString('transform_request', $stack);
-        self::assertStringContainsString('transform_response', $stack);
+
+        $stackDebugInfo = strval($stack);
+        self::assertStringNotContainsString('verifier', $stackDebugInfo);
+        self::assertStringNotContainsString('signer', $stackDebugInfo);
+        self::assertStringContainsString('transform_request', $stackDebugInfo);
+        self::assertStringContainsString('transform_response', $stackDebugInfo);
     }
 
     /**
@@ -368,13 +379,13 @@ class ClientDecoratorTest extends TestCase
         $instance->requestAsync($method, $uri)->otherwise(static function($actual) use ($expectedGuzzleException, $mock, $method, $uri) {
             /** @var \GuzzleHttp\Psr7\Request $req */
             $req = $mock->getLastRequest();
-            self::assertInstanceOf(\GuzzleHttp\Psr7\Request::class, $req);
-            self::assertEquals($method, $req->getMethod());
-            if (self::stringStartsWith('/')->evaluate($uri, '', true)) {
-                self::assertEquals($uri, $req->getRequestTarget());
+            static::assertInstanceOf(\GuzzleHttp\Psr7\Request::class, $req);
+            static::assertEquals($method, $req->getMethod());
+            if (static::stringStartsWith('/')->evaluate($uri, '', true)) {
+                static::assertEquals($uri, $req->getRequestTarget());
             }
-            self::assertStringEndsWith($uri, $req->getRequestTarget());
-            self::assertInstanceOf($expectedGuzzleException, $actual);
+            static::assertStringEndsWith($uri, $req->getRequestTarget());
+            static::assertInstanceOf($expectedGuzzleException, $actual);
         })->wait();
     }
 
@@ -423,7 +434,7 @@ class ClientDecoratorTest extends TestCase
         ['mchid' => $mchId, 'nonce_str' => $nonceStr, 'timestamp' => $timestamp, 'serial_no' => $serialNo, 'signature' => $signature] = $rules;
         static::assertEquals($mchId, $mchid);
         static::assertEquals($serialNo, $mchSerial);
-        static::assertTrue(abs(Formatter::timestamp() - intval($timestamp)) < 300);
+        static::assertFalse(abs(Formatter::timestamp() - intval($timestamp)) > static::MAXIMUM_CLOCK_OFFSET);
         static::assertTrue(Rsa::verify(Formatter::request(
             $request->getMethod(),
             $request->getRequestTarget(),
@@ -434,13 +445,14 @@ class ClientDecoratorTest extends TestCase
     }
 
     /**
+     * @param int $status
      * @param string $serial
      * @param string $body
      * @param \OpenSSLAsymmetricKey|resource|string|mixed $privateKey
      */
-    private static function pickResponse(string $serial, string $body, $privateKey): ResponseInterface
+    private static function pickResponse(int $status, string $serial, string $body, $privateKey): ResponseInterface
     {
-        return new Response(200, [
+        return new Response($status, [
             'Wechatpay-Nonce' => $nonce = Formatter::nonce(),
             'Wechatpay-Serial' => $serial,
             'Wechatpay-Timestamp' => $timestamp = strval(Formatter::timestamp()),
@@ -463,7 +475,7 @@ class ClientDecoratorTest extends TestCase
                 static function(RequestInterface $request) use ($privateKey, $platSerial, $body, $mchid, $mchSerial, $publicKey): ResponseInterface {
                     static::verification($request, $mchid, $mchSerial, $publicKey);
 
-                    return static::pickResponse($platSerial, $body, $privateKey);
+                    return static::pickResponse(204, $platSerial, $body, $privateKey);
                 },
             ],
             'HTTP 202 STATUS' => [
@@ -473,7 +485,7 @@ class ClientDecoratorTest extends TestCase
                 static function(RequestInterface $request) use ($privateKey, $platSerial, $body, $mchid, $mchSerial, $publicKey): ResponseInterface {
                     static::verification($request, $mchid, $mchSerial, $publicKey);
 
-                    return static::pickResponse($platSerial, $body, $privateKey);
+                    return static::pickResponse(202, $platSerial, $body, $privateKey);
                 },
             ],
             'HTTP 200 STATUS' => [
@@ -483,7 +495,7 @@ class ClientDecoratorTest extends TestCase
                 static function(RequestInterface $request) use ($privateKey, $platSerial, $body, $mchid, $mchSerial, $publicKey): ResponseInterface {
                     static::verification($request, $mchid, $mchSerial, $publicKey);
 
-                    return static::pickResponse($platSerial, $body, $privateKey);
+                    return static::pickResponse(200, $platSerial, $body, $privateKey);
                 },
             ],
         ];
@@ -549,7 +561,7 @@ class ClientDecoratorTest extends TestCase
         $this->mock->append($respondor);
 
         $instance->requestAsync($method, $uri)->then(static function(ResponseInterface $response) use($expected) {
-            self::assertEquals($expected, $response->getBody()->getContents());
+            static::assertEquals($expected, $response->getBody()->getContents());
         })->wait();
     }
 }
