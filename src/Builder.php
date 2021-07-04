@@ -91,11 +91,11 @@ final class Builder
              */
             protected function normalize(string $thing = ''): string
             {
-                return (string)preg_replace_callback_array([
+                return preg_replace_callback_array([
                     '#^[A-Z]#'   => static function(array $piece): string { return strtolower($piece[0]); },
                     '#[A-Z]#'    => static function(array $piece): string { return '-' . strtolower($piece[0]); },
                     '#^_(.*)_$#' => static function(array $piece): string { return '{' . $piece[1] . '}'; },
-                ], $thing);
+                ], $thing) ?? $thing;
             }
 
             /**
