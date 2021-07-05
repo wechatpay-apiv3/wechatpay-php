@@ -15,7 +15,7 @@ const EV2_REQ_XML_NOTMATCHED_MCHID = 'The xml\'s structure[mch_id(%1$s)] doesn\'
 const EV3_RES_HEADERS_INCOMPLETE = 'The response\'s Headers incomplete, must have(`%1$s`, `%2$s`, `%3$s` and `%4$s`).';
 const EV3_RES_HEADER_TIMESTAMP_OFFSET = 'It\'s allowed time offset in ± %1$s seconds, the response was on %2$s, your\'s localtime on %3$s.';
 const EV3_RES_HEADER_PLATFORM_SERIAL = 'Cannot found the serial(`%1$s`)\'s configuration, which\'s from the response(header:%2$s), your\'s %3$s.';
-const EV3_RES_HEADER_SIGNATURE_DEGIST = 'Verify the response\'s data with: timestamp=%1$s, nonce=%2$s, signature=%3$s, cert=[%4$s => ...] failed.';
+const EV3_RES_HEADER_SIGNATURE_DIGEST = 'Verify the response\'s data with: timestamp=%1$s, nonce=%2$s, signature=%3$s, cert=[%4$s => ...] failed.';
 
 interface WeChatPayException
 {
@@ -23,5 +23,5 @@ interface WeChatPayException
     const EV3_RES_HEADERS_INCOMPLETE = EV3_RES_HEADERS_INCOMPLETE;
     const EV3_RES_HEADER_TIMESTAMP_OFFSET = EV3_RES_HEADER_TIMESTAMP_OFFSET;
     const EV3_RES_HEADER_PLATFORM_SERIAL = EV3_RES_HEADER_PLATFORM_SERIAL;
-    const EV3_RES_HEADER_SIGNATURE_DEGIST = EV3_RES_HEADER_SIGNATURE_DEGIST;
+    const EV3_RES_HEADER_SIGNATURE_DIGEST = EV3_RES_HEADER_SIGNATURE_DIGEST;
 }

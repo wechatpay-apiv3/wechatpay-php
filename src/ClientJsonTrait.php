@@ -122,7 +122,7 @@ trait ClientJsonTrait
 
             if (!Crypto\Rsa::verify(Formatter::response($timestamp, $nonce, static::body($response)), $signature, $certs[$serial])) {
                 throw new UnexpectedValueException(sprintf(
-                    Exception\WeChatPayException::EV3_RES_HEADER_SIGNATURE_DEGIST,
+                    Exception\WeChatPayException::EV3_RES_HEADER_SIGNATURE_DIGEST,
                     $timestamp, $nonce, $signature, $serial
                 ));
             }
@@ -168,7 +168,7 @@ trait ClientJsonTrait
         }
 
         /** @var \GuzzleHttp\HandlerStack $handler */
-        $handler = $config['handler'] ?? HandlerStack::create();
+        $handler = isset($config['handler']) && ($config['handler'] instanceof HandlerStack) ? (clone $config['handler']) : HandlerStack::create();
         $handler->unshift(Middleware::mapRequest(static::signer((string)$config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
         $handler->unshift(Middleware::mapResponse(static::verifier($config['certs'])), 'verifier');
         $config['handler'] = $handler;

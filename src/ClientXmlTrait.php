@@ -130,7 +130,7 @@ trait ClientXmlTrait
     public static function xmlBased(array $config = []): Client
     {
         /** @var \GuzzleHttp\HandlerStack $handler */
-        $handler = $config['handler'] ?? HandlerStack::create();
+        $handler = isset($config['handler']) && ($config['handler'] instanceof HandlerStack) ? (clone $config['handler']) : HandlerStack::create();
         $handler->before('prepare_body', static::transformRequest($config['mchid'] ?? null, $config['secret'] ?? '', $config['merchant'] ?? []), 'transform_request');
         $handler->before('prepare_body', static::transformResponse($config['secret'] ?? ''), 'transform_response');
         $config['handler'] = $handler;

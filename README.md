@@ -20,7 +20,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.0.3`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`1.0.4`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 
 ## 环境要求
@@ -30,7 +30,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 + PHP >=7.2
 + guzzlehttp/guzzle ^7.0
 
-
+**注:** 随`Guzzle7`支持的PHP版本最低为`7.2.5`，另PHP官方已于`30 Nov 2020`停止维护`PHP7.2`，详见附注链接。
 ## 安装
 
 推荐使用PHP包管理工具`composer`引入SDK到项目中：
@@ -50,7 +50,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.0.3"
+    "wechatpay/wechatpay": "^1.0.4"
 }
 ```
 
@@ -377,6 +377,8 @@ print_r($res);
 
 ## 链接
 
+- [GuzzleHttp官方版本支持](https://docs.guzzlephp.org/en/stable/overview.html#requirements)
+- [PHP官方版本支持](https://www.php.net/supported-versions.php)
 - [变更历史](CHANGELOG.md)
 
 ## License

@@ -3,8 +3,8 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  phpstan:
-    name: PHPStan
+  ci:
+    name: CI
     strategy:
       fail-fast: false
       matrix:
@@ -26,7 +26,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           coverage: none
-          extensions: curl, libxml, simplexml, openssl
+          extensions: json, curl, libxml, simplexml, openssl
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict --no-check-version
