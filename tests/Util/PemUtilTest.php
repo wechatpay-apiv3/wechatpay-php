@@ -54,13 +54,12 @@ class PemUtilTest extends TestCase
 
         /** openssl v1.1.1 won't need anymore RANDFILE config {@link https://github.com/openssl/openssl/issues/7754} */
         'cli' === PHP_SAPI && fwrite(STDERR, PHP_EOL . 'OpenSSL Version: ' . OPENSSL_VERSION_TEXT . PHP_EOL);
-        'cli' === PHP_SAPI && 70205 < PHP_VERSION_ID && PHP_VERSION_ID < 70400 && putenv("OPENSSL_CONF={$baseDir}openssl.conf");
+        'cli' === PHP_SAPI && 70205 < PHP_VERSION_ID && PHP_VERSION_ID < 70400 && putenv("SSLEAY_CONF={$baseDir}openssl.cnf");
 
         $privateKey = openssl_pkey_new($baseAlgo + [
-            'default_bits'     => 2048,
             'private_key_bits' => 2048,
             'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            'config'           => $baseDir . 'openssl.conf',
+            'config'           => $baseDir . 'openssl.cnf',
         ]);
 
         $serial     = mt_rand(1000, 9999);
