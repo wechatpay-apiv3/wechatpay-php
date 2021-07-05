@@ -2,10 +2,15 @@
 
 namespace WeChatPay\Tests\Util;
 
+use const PHP_EOL;
+use const PHP_SAPI;
+use const STDERR;
 use const PHP_MAJOR_VERSION;
 use const OPENSSL_KEYTYPE_RSA;
+use const OPENSSL_VERSION_TEXT;
 use const DIRECTORY_SEPARATOR;
 
+use function fwrite;
 use function tempnam;
 use function sys_get_temp_dir;
 use function dirname;
@@ -44,6 +49,9 @@ class PemUtilTest extends TestCase
     {
         $baseDir  = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR;
         $baseAlgo = ['digest_alg' => 'sha256'];
+
+        /** openssl v1.1.1 won't need anymore RANDFILE config {@link https://github.com/openssl/openssl/issues/7754} */
+        'cli' === PHP_SAPI && fwrite(STDERR, 'OpenSSL Version: ' . OPENSSL_VERSION_TEXT . PHP_EOL);
 
         $privateKey = openssl_pkey_new($baseAlgo + [
             'default_bits'     => 2048,
