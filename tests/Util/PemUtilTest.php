@@ -11,8 +11,6 @@ use const OPENSSL_VERSION_TEXT;
 use const DIRECTORY_SEPARATOR;
 
 use function fwrite;
-use function tempnam;
-use function sys_get_temp_dir;
 use function dirname;
 use function sprintf;
 use function openssl_pkey_new;
@@ -61,9 +59,8 @@ class PemUtilTest extends TestCase
         ]);
 
         $serial     = mt_rand(1000, 9999);
-        $tmpname    = tempnam(sys_get_temp_dir(), 'wechatpay_ci_');
-        $certFile   = sprintf('%s%s', $tmpname, '.pem');
-        $privFile   = sprintf('%s%s', $tmpname, '.key');
+        $certFile   = sprintf('%s%s%d%s', $baseDir, 'ci_', $serial, '.pem');
+        $privFile   = sprintf('%s%s%d%s', $baseDir, 'ci_', $serial, '.key');
         $certString = '';
         $privString = '';
 
@@ -72,9 +69,11 @@ class PemUtilTest extends TestCase
 
         false !== $cert && openssl_x509_export_to_file($cert, $certFile);
         false !== $cert && openssl_x509_export($cert, $certString);
+        'cli' === PHP_SAPI && fwrite(STDERR, sprintf('%s%30s%s', 'Certificate: ', $certString, PHP_EOL));
 
         false !== $privateKey && openssl_pkey_export_to_file($privateKey, $privFile);
         false !== $privateKey && openssl_pkey_export($privateKey, $privString);
+        'cli' === PHP_SAPI && fwrite(STDERR, sprintf('%s%30s%s', 'PrivateKey: ', $privString, PHP_EOL));
 
         self::$environment = [sprintf('%04X', $serial), $certFile, $certString, $privFile, $privString];
     }
