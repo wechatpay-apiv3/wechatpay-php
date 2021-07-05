@@ -6,6 +6,8 @@ use const PHP_MAJOR_VERSION;
 use const OPENSSL_KEYTYPE_RSA;
 use const DIRECTORY_SEPARATOR;
 
+use function tempnam;
+use function sys_get_temp_dir;
 use function dirname;
 use function sprintf;
 use function openssl_pkey_new;
@@ -51,8 +53,9 @@ class PemUtilTest extends TestCase
         ]);
 
         $serial     = mt_rand(1000, 9999);
-        $certFile   = sprintf('%s%s%d%s', $baseDir, 'ci_', $serial, '.pem');
-        $privFile   = sprintf('%s%s%d%s', $baseDir, 'ci_', $serial, '.key');
+        $tmpname    = tempnam(sys_get_temp_dir(), 'wechatpay_ci_');
+        $certFile   = sprintf('%s%s', $tmpname, '.pem');
+        $privFile   = sprintf('%s%s', $tmpname, '.key');
         $certString = '';
         $privString = '';
 
