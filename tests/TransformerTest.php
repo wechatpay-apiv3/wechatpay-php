@@ -142,6 +142,11 @@ class TransformerTest extends TestCase
         }
 
         $tag = preg_quote($root);
-        self::assertMatchesRegularExpression('#(?:<\?xml[^>]+\?>\n?)?<' . $tag . '>.*</' . $tag . '>\n?#smu', $xml);
+        $pattern = '#(?:<\?xml[^>]+\?>\n?)?<' . $tag . '>.*</' . $tag . '>\n?#smu';
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression($pattern, $xml);
+        } else {
+            self::assertRegExp($pattern, $xml);
+        }
     }
 }
