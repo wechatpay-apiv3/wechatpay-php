@@ -2,19 +2,10 @@
 
 namespace WeChatPay\Tests\Util;
 
-use const PHP_EOL;
-use const PHP_SAPI;
-use const PHP_VERSION_ID;
-use const STDERR;
 use const PHP_MAJOR_VERSION;
 use const OPENSSL_KEYTYPE_RSA;
-use const OPENSSL_VERSION_TEXT;
 use const DIRECTORY_SEPARATOR;
 
-use function is_resource;
-use function is_object;
-use function putenv;
-use function fwrite;
 use function dirname;
 use function sprintf;
 use function openssl_pkey_new;
@@ -52,14 +43,11 @@ class PemUtilTest extends TestCase
         $baseDir  = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR;
         $baseAlgo = ['digest_alg' => 'sha256'];
 
-        /** openssl v1.1.1 won't need anymore RANDFILE config {@link https://github.com/openssl/openssl/issues/7754} */
-        'cli' === PHP_SAPI && fwrite(STDERR, PHP_EOL . 'OpenSSL Version: ' . OPENSSL_VERSION_TEXT . PHP_EOL);
-        'cli' === PHP_SAPI && 70205 < PHP_VERSION_ID && PHP_VERSION_ID < 70400 && putenv("SSLEAY_CONF={$baseDir}openssl.cnf");
-
         $privateKey = openssl_pkey_new($baseAlgo + [
+            'default_bits'     => 2048,
             'private_key_bits' => 2048,
             'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            'config'           => $baseDir . 'openssl.cnf',
+            'config'           => $baseDir . 'openssl.conf',
         ]);
 
         $serial     = mt_rand(1000, 9999);
@@ -70,15 +58,12 @@ class PemUtilTest extends TestCase
 
         $csr  = false !== $privateKey ? openssl_csr_new(self::$certSubject, $privateKey, $baseAlgo) : false;
         $cert = false !== $csr ? openssl_csr_sign($csr, null, $privateKey, 1, $baseAlgo, $serial) : false;
-        'cli' === PHP_SAPI && fwrite(STDERR, sprintf('%.10s %.10s %s', $csr ? 'CSR-OK' : $csr, $cert ? 'CERT-OK' : $cert, PHP_EOL));
 
         false !== $cert && openssl_x509_export_to_file($cert, $certFile);
         false !== $cert && openssl_x509_export($cert, $certString);
-        'cli' === PHP_SAPI && fwrite(STDERR, sprintf('%s%.27s%s', 'Certificate: ', $certString, PHP_EOL));
 
         false !== $privateKey && openssl_pkey_export_to_file($privateKey, $privFile);
         false !== $privateKey && openssl_pkey_export($privateKey, $privString);
-        'cli' === PHP_SAPI && fwrite(STDERR, sprintf('%s%.27s%s', 'PrivateKey: ', $privString, PHP_EOL));
 
         self::$environment = [sprintf('%04X', $serial), $certFile, $certString, $privFile, $privString];
     }
