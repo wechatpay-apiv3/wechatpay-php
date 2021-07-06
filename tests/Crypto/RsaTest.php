@@ -12,14 +12,14 @@ use const PHP_EOL;
 use const PHP_SAPI;
 use const STDERR;
 use const OPENSSL_KEYTYPE_RSA;
-use const DIRECTORY_SEPARATOR as DS;
+use const DIRECTORY_SEPARATOR;
 
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
 
 class RsaTest extends TestCase
 {
-    const BASE64_EXPRESSION = '#^[a-zA-Z0-9\+/]+={0,2}$#';
+    private const BASE64_EXPRESSION = '#^[a-zA-Z0-9\+/]+={0,2}$#';
 
     /**
      * @return array<string,array{string,string|resource|mixed,resource|mixed}>
@@ -31,7 +31,7 @@ class RsaTest extends TestCase
             'default_bits' => 2048,
             'private_key_bits' => 2048,
             'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            'config' => dirname(__DIR__) . DS . 'fixtures' . DS . 'openssl.conf',
+            'config' => dirname(__DIR__) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'openssl.conf',
         ]);
 
         while ($msg = openssl_error_string()) {

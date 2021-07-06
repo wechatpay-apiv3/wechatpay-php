@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace WeChatPay\Tests\Crypto;
 
@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 class AesEcbTest extends TestCase
 {
-    const BASE64_EXPRESSION = '#^[a-zA-Z0-9\+/]+={0,2}$#';
+    private const BASE64_EXPRESSION = '#^[a-zA-Z0-9\+/]+={0,2}$#';
 
     public function testImplementsAesInterface(): void
     {

@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 
 class FormatterTest extends TestCase
 {
-    const LINE_FEED = "\n";
+    private const LINE_FEED = "\n";
 
     /**
      * @return array<string,array{int,string}>

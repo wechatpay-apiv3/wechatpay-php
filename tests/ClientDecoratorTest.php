@@ -41,7 +41,7 @@ use PHPUnit\Framework\TestCase;
 class ClientDecoratorTest extends TestCase
 {
     /** @var int - The maximum clock offset in second */
-    const MAXIMUM_CLOCK_OFFSET = 300;
+    private const MAXIMUM_CLOCK_OFFSET = 300;
 
     public function testImplementsClientDecoratorInterface(): void
     {
