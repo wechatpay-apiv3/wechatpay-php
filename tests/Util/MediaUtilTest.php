@@ -5,6 +5,10 @@ namespace WeChatPay\Tests\Util;
 use const DIRECTORY_SEPARATOR;
 
 use function dirname;
+use function hash;
+use function hash_file;
+use function base64_decode;
+use function json_decode;
 
 use WeChatPay\Util\MediaUtil;
 use GuzzleHttp\Psr7\LazyOpenStream;
