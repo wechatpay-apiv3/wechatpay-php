@@ -3,6 +3,9 @@
 namespace WeChatPay\Tests\Util;
 
 use const PHP_MAJOR_VERSION;
+use const PHP_MINOR_VERSION;
+use const PHP_SHLIB_SUFFIX;
+use const PHP_EOL;
 use const OPENSSL_KEYTYPE_RSA;
 use const DIRECTORY_SEPARATOR;
 
@@ -26,6 +29,22 @@ class PemUtilTest extends TestCase
     private const SUBJECT_O  = 'WeChatPay Community';
     private const SUBJECT_ST = 'Shanghai';
     private const SUBJECT_C  = 'CN';
+
+    /** FIXME: On Windows PHP7.2/7.3 */
+    protected function setUp(): void
+    {
+        [, , $certString, , $privString] = self::$environment;
+        if (7 === PHP_MAJOR_VERSION && in_array(PHP_MINOR_VERSION, [2, 3]) && 'dll' === PHP_SHLIB_SUFFIX
+            && '' === $certString && '' === $privString) {
+            $this->markTestSkipped(
+                'Known issues were there on the `openssl_csr_new` and `openssl_csr_sign` functions.'
+                . PHP_EOL
+                . 'Those may not works well on the Windows\'s PHP7.2 & PHP7.3 series.'
+                . PHP_EOL
+                . 'And caused the `$environment` in bad phrases.'
+            );
+        }
+    }
 
     /** @var array<string,string> */
     private static $certSubject = [
