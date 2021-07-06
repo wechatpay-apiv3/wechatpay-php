@@ -27,11 +27,11 @@ class RsaTest extends TestCase
     public function keysProvider(): array
     {
         $privateKey = openssl_pkey_new([
-            'digest_alg' => 'sha256',
-            'default_bits' => 2048,
+            'digest_alg'       => 'sha256',
+            'default_bits'     => 2048,
             'private_key_bits' => 2048,
             'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            'config' => dirname(__DIR__) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'openssl.conf',
+            'config'           => dirname(__DIR__) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'openssl.conf',
         ]);
 
         while ($msg = openssl_error_string()) {
