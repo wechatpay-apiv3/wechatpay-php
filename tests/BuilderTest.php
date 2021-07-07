@@ -86,7 +86,7 @@ class BuilderTest extends TestCase
         /** @phpstan-ignore-next-line */
         self::assertInstanceOf(BuilderChainable::class, $instance->v3->pay->transcations->native);
         /** @phpstan-ignore-next-line */
-        self::assertInstanceOf(BuilderChainable::class, $instance->v3->combineTransactions->{'{combin_out_trade_no}'});
+        self::assertInstanceOf(BuilderChainable::class, $instance->v3->combineTransactions->{'{combine_out_trade_no}'});
         /** @phpstan-ignore-next-line */
         self::assertInstanceOf(BuilderChainable::class, $instance->V3->Marketing->Busifavor->Users['{openid}/coupons/{coupon_code}']->Appids['{appid}']);
 
@@ -98,7 +98,7 @@ class BuilderTest extends TestCase
         self::assertInstanceOf(BuilderChainable::class, $instance->chain('what_ever_endpoints/with-anyDepths_segments/also/contains/{uri_template}/{blah}/blah/'));
 
         /** @phpstan-ignore-next-line */
-        $copy = iterator_to_array($instance->v3->combineTransactions->{'{combin_out_trade_no}'});
+        $copy = iterator_to_array($instance->v3->combineTransactions->{'{combine_out_trade_no}'});
         self::assertIsArray($copy);
         self::assertNotEmpty($copy);
         self::assertNotContains('combineTransactions', $copy);
