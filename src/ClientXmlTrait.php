@@ -122,8 +122,8 @@ trait ClientXmlTrait
      *   - mchid?: ?string - The merchant ID
      *   - secret?: ?string - The secret key string
      *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
-     *   - merchant<?key, string> - The merchant private key(file path string). (optional)
-     *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
+     *   - merchant<?key, string|string[]> - The merchant private key(file path string). (optional)
+     *   - merchant<?cert, string|string[]> - The merchant certificate(file path string). (optional)
      *
      * @param array<string,string|int|bool|array|mixed> $config - The configuration
      */

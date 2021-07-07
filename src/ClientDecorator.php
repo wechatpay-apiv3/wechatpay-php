@@ -87,8 +87,8 @@ final class ClientDecorator implements ClientDecoratorInterface
      *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string> - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *   - secret?: string - The secret key string (optional)
      *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
-     *   - merchant<?key, string> - The merchant private key(file path string). (optional)
-     *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
+     *   - merchant<?key, string|string[]> - The merchant private key(file path string). (optional)
+     *   - merchant<?cert, string|string[]> - The merchant certificate(file path string). (optional)
      *
      * @param array<string,string|int|bool|array|mixed> $config - `\GuzzleHttp\Client`, `APIv3` and `APIv2` configuration settings.
      */
@@ -103,7 +103,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      *
      * @param string $uri - The uri string.
      *
-     * @return array<string> - the first element is the API version ask `protocol`, the second is the real `uri`
+     * @return string[] - the first element is the API version aka `protocol`, the second is the real `uri`
      */
     private static function prepare(string $uri): array
     {

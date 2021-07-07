@@ -2,6 +2,7 @@
 
 [A]Sync Chainable WeChatPay v2&v3's OpenAPI SDK for PHP
 
+[![GitHub actions](https://github.com/wechatpay-apiv3/wechatpay-php/workflows/CI/badge.svg)](https://github.com/wechatpay-apiv3/wechatpay-php/actions)
 [![Packagist Stars](https://img.shields.io/packagist/stars/wechatpay/wechatpay)](https://packagist.org/packages/wechatpay/wechatpay)
 [![Packagist Downloads](https://img.shields.io/packagist/dm/wechatpay/wechatpay)](https://packagist.org/packages/wechatpay/wechatpay)
 [![Packagist Version](https://img.shields.io/packagist/v/wechatpay/wechatpay)](https://packagist.org/packages/wechatpay/wechatpay)
@@ -140,13 +141,13 @@ try {
         ],
     ]]);
 
-    echo $resp->getStatusCode() .' ' . $resp->getReasonPhrase()."\n";
-    echo $resp->getBody() . "\n";
-} catch (RequestException $e) {
+    echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
+    echo $resp->getBody(), PHP_EOL;
+} catch (Exception $e) {
     // 进行错误处理
-    echo $e->getMessage()."\n";
-    if ($e->hasResponse()) {
-        echo $e->getResponse()->getStatusCode().' '.$e->getResponse()->getReasonPhrase()."\n";
+    echo $e->getMessage(), PHP_EOL;
+    if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
+        echo $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase(), PHP_EOL;
         echo $e->getResponse()->getBody();
     }
 }
@@ -162,15 +163,17 @@ $res = $instance->v3->pay->transactions->id->{'{transaction_id}'}
     // uri_template 字面量参数
     'transaction_id' => '1217752501201407033233368018',
 ])
-->then(function($response) {
+->then(static function($response) {
     // 正常逻辑回调处理
     echo $response->getBody()->getContents(), PHP_EOL;
     return $response;
 })
-->otherwise(function($exception) {
+->otherwise(static function($exception) {
     // 异常错误处理
-    $body = $exception->getResponse()->getBody();
-    echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    if ($exception instanceof \Psr\Http\Message\ResponseInterface) {
+        $body = $exception->getResponse()->getBody();
+        echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    }
     echo $exception->getTraceAsString(), PHP_EOL;
 })
 ->wait();
@@ -186,15 +189,17 @@ $res = $instance->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
     // uri_template 字面量参数
     'out_trade_no' => '1217752501201407033233368018',
 ])
-->then(function($response) {
+->then(static function($response) {
     // 正常逻辑回调处理
     echo $response->getBody()->getContents(), PHP_EOL;
     return $response;
 })
-->otherwise(function($exception) {
+->otherwise(static function($exception) {
     // 异常错误处理
-    $body = $exception->getResponse()->getBody();
-    echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    if ($exception instanceof \Psr\Http\Message\ResponseInterface) {
+        $body = $exception->getResponse()->getBody();
+        echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    }
     echo $exception->getTraceAsString(), PHP_EOL;
 })
 ->wait();
@@ -215,15 +220,17 @@ $res = $instance->chain('v3/refund/domestic/refunds')
         ],
     ],
 ])
-->then(function($response) {
+->then(static function($response) {
     // 正常逻辑回调处理
     echo $response->getBody()->getContents(), PHP_EOL;
     return $response;
 })
-->otherwise(function($exception) {
+->otherwise(static function($exception) {
     // 异常错误处理
-    $body = $exception->getResponse()->getBody();
-    echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    if ($exception instanceof \Psr\Http\Message\ResponseInterface) {
+        $body = $exception->getResponse()->getBody();
+        echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    }
     echo $exception->getTraceAsString(), PHP_EOL;
 })
 ->wait();
@@ -235,7 +242,7 @@ $res = $instance->chain('v3/refund/domestic/refunds')
 // 参考上述指引说明，并引入 `MediaUtil` 正常初始化，无额外条件
 use WeChatPay\Util\MediaUtil;
 // 实例化一个媒体文件流，注意文件后缀名需符合接口要求
-$media = new MediaUtil('/your/file/path/with.extension');
+$media = new MediaUtil('/your/file/path/video.mp4');
 
 try {
     $resp = $instance['v3/merchant/media/video_upload']->post([
@@ -244,12 +251,12 @@ try {
             'content-type' => $media->getContentType(),
         ]
     ]);
-    echo $resp->getStatusCode().' '.$resp->getReasonPhrase()."\n";
-    echo $resp->getBody()."\n";
+    echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
+    echo $resp->getBody(), PHP_EOL;
 } catch (Exception $e) {
-    echo $e->getMessage()."\n";
-    if ($e->hasResponse()) {
-        echo $e->getResponse()->getStatusCode().' '.$e->getResponse()->getReasonPhrase()."\n";
+    echo $e->getMessage(), PHP_EOL;
+    if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
+        echo $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase(), PHP_EOL;
         echo $e->getResponse()->getBody();
     }
 }
@@ -258,6 +265,8 @@ try {
 ### 图片上传
 
 ```php
+use WeChatPay\Util\MediaUtil;
+$media = new MediaUtil('/your/file/path/image.jpg');
 $resp = $instance->v3->marketing->favor->media->imageUpload
 ->postAsync([
     'body'    => $media->getStream(),
@@ -265,13 +274,15 @@ $resp = $instance->v3->marketing->favor->media->imageUpload
         'content-type' => $media->getContentType(),
     ]
 ])
-->then(function($response) {
+->then(static function($response) {
     echo $response->getBody()->getContents(), PHP_EOL;
     return $response;
 })
-->otherwise(function($exception) {
-    $body = $exception->getResponse()->getBody();
-    echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+->otherwise(static function($exception) {
+    if ($exception instanceof \Psr\Http\Message\ResponseInterface) {
+        $body = $exception->getResponse()->getBody();
+        echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    }
     echo $exception->getTraceAsString(), PHP_EOL;
 })
 ->wait();
@@ -308,12 +319,12 @@ try {
             'Wechatpay-Serial' => '下载的平台证书序列号',
         ],
     ]);
-    echo $resp->getStatusCode().' '.$resp->getReasonPhrase()."\n";
-    echo $resp->getBody()."\n";
+    echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
+    echo $resp->getBody(), PHP_EOL;
 } catch (Exception $e) {
-    echo $e->getMessage()."\n";
-    if ($e->hasResponse()) {
-        echo $e->getResponse()->getStatusCode().' '.$e->getResponse()->getReasonPhrase()."\n";
+    echo $e->getMessage(), PHP_EOL;
+    if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
+        echo $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase(), PHP_EOL;
         echo $e->getResponse()->getBody();
     }
     return;
@@ -322,7 +333,7 @@ try {
 
 ## APIv2
 
-末尾驱动的 `HTTP METHOD` 方法入参 `array $options`，接受两个自定义参数，释义如下：
+末尾驱动的 `HTTP METHOD(POST)` 方法入参 `array $options`，接受两个自定义参数，释义如下：
 
 - `$options['nonceless']` - 标量 `scalar` 任意值，语义上即，本次请求不用自动添加`nonce_str`参数，推荐 `boolean(True)`
 - `$options['security']` - 布尔量`True`，语义上即，本次请求需要加载ssl证书，对应的是初始化 `array $config['merchant']` 结构体

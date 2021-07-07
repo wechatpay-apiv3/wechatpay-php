@@ -69,7 +69,7 @@ class MediaUtil
     private function composeStream(): void
     {
         $basename = basename($this->filepath);
-        $stream = $this->fileStream ?? new LazyOpenStream($this->filepath, 'r');
+        $stream = $this->fileStream ?? new LazyOpenStream($this->filepath, 'rb');
         if ($stream instanceof StreamInterface && !($stream->isSeekable())) {
             $stream = new CachingStream($stream);
         }
