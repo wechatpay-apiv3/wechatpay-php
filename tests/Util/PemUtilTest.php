@@ -11,6 +11,9 @@ use const DIRECTORY_SEPARATOR;
 
 use function dirname;
 use function sprintf;
+use function mt_rand;
+use function touch;
+use function unlink;
 use function openssl_pkey_new;
 use function openssl_csr_new;
 use function openssl_csr_sign;
@@ -75,6 +78,9 @@ class PemUtilTest extends TestCase
         $certString = '';
         $privString = '';
 
+        touch($certFile);
+        touch($privFile);
+
         $csr  = false !== $privateKey ? openssl_csr_new(self::$certSubject, $privateKey, $baseAlgo) : false;
         $cert = false !== $csr ? openssl_csr_sign($csr, null, $privateKey, 1, $baseAlgo, $serial) : false;
 
@@ -89,13 +95,12 @@ class PemUtilTest extends TestCase
 
     public static function tearDownAfterClass(): void
     {
-        try {
-            [, $certFile, , $privFile] = self::$environment;
-            unlink($certFile);
-            unlink($privFile);
-        } finally {
-            self::$environment = null;
-        }
+        [, $certFile, , $privFile] = self::$environment;
+
+        unlink($certFile);
+        unlink($privFile);
+
+        self::$environment = null;
     }
 
     public function testLoadCertificate(): void

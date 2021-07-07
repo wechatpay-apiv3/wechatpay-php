@@ -21,7 +21,7 @@ class AesEcb implements AesInterface
      */
     public static function encrypt(string $plaintext, string $key, string $iv = ''): string
     {
-        $ciphertext = openssl_encrypt($plaintext, static::ALGO_AES_256_ECB, $key, OPENSSL_RAW_DATA, $iv);
+        $ciphertext = openssl_encrypt($plaintext, static::ALGO_AES_256_ECB, $key, OPENSSL_RAW_DATA, $iv = '');
 
         if (false === $ciphertext) {
             throw new UnexpectedValueException('Encrypting the input $plaintext failed, please checking your $key and $iv whether or nor correct.');
@@ -35,7 +35,7 @@ class AesEcb implements AesInterface
      */
     public static function decrypt(string $ciphertext, string $key, string $iv = ''): string
     {
-        $plaintext = openssl_decrypt(base64_decode($ciphertext), static::ALGO_AES_256_ECB, $key, OPENSSL_RAW_DATA, $iv);
+        $plaintext = openssl_decrypt(base64_decode($ciphertext), static::ALGO_AES_256_ECB, $key, OPENSSL_RAW_DATA, $iv = '');
 
         if (false === $plaintext) {
             throw new UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $key and $iv whether or nor correct.');

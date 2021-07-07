@@ -25,8 +25,8 @@ final class Builder
      *   - certs: array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string> - The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
      *   - secret?: string - The secret key string (optional)
      *   - merchant?: array{key?: string, cert?: string} - The merchant private key and certificate array. (optional)
-     *   - merchant<?key, string> - The merchant private key(file path string). (optional)
-     *   - merchant<?cert, string> - The merchant certificate(file path string). (optional)
+     *   - merchant<?key, string|string[]> - The merchant private key(file path string). (optional)
+     *   - merchant<?cert, string|string[]> - The merchant certificate(file path string). (optional)
      *
      * ```php
      * // usage samples

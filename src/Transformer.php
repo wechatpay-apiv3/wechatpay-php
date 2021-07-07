@@ -180,6 +180,6 @@ class Transformer
      */
     protected static function needsCdataWrapping(string $value = ''): bool
     {
-        return 0 < preg_match('#[>&"<]#', $value);
+        return $value && 0 < preg_match('#[>&"<]#', $value);
     }
 }
