@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace WeChatPay;
 
@@ -125,7 +125,7 @@ class Transformer
     protected static function walk(XMLWriter &$writer, array $data, string $item): void
     {
         foreach ($data as $key => $value) {
-            $tag = static::isElementNameValid($key) ? $key : $item;
+            $tag = is_string($key) && static::isElementNameValid($key) ? $key : $item;
             $writer->startElement($tag);
             if (is_array($value) || (is_object($value) && $value instanceof Traversable)) {
                 static::walk($writer, (array) $value, $item);

@@ -5,7 +5,6 @@ namespace WeChatPay\Tests\Util;
 use const PHP_MAJOR_VERSION;
 use const PHP_MINOR_VERSION;
 use const PHP_SHLIB_SUFFIX;
-use const PHP_EOL;
 use const OPENSSL_KEYTYPE_RSA;
 use const DIRECTORY_SEPARATOR;
 
@@ -40,10 +39,8 @@ class PemUtilTest extends TestCase
         if (7 === PHP_MAJOR_VERSION && in_array(PHP_MINOR_VERSION, [2, 3]) && 'dll' === PHP_SHLIB_SUFFIX
             && '' === $certString && '' === $privString) {
             $this->markTestSkipped(
-                'Known issues were there on the `openssl_csr_new` and `openssl_csr_sign` functions.'
-                . PHP_EOL
+                'Known issues were there about the `openssl_csr_new` and `openssl_csr_sign` functions.'
                 . 'Those may not works well on the Windows\'s PHP7.2 & PHP7.3 series.'
-                . PHP_EOL
                 . 'And caused the `$environment` in bad phrases.'
             );
         }

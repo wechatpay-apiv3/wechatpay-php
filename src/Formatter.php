@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace WeChatPay;
 
@@ -58,7 +58,7 @@ class Formatter
     public static function authorization(string $mchid, string $nonce, string $signature, string $timestamp, string $serial): string
     {
         return sprintf(
-            'WECHATPAY2-SHA256-RSA2048 mchid="%s",nonce_str="%s",signature="%s",timestamp="%s",serial_no="%s"',
+            'WECHATPAY2-SHA256-RSA2048 mchid="%1$s",serial_no="%5$s",timestamp="%4$s",nonce_str="%2$s",signature="%3$s"',
             $mchid, $nonce, $signature, $timestamp, $serial
         );
     }
