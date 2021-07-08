@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace WeChatPay;
 
@@ -42,7 +42,7 @@ class Transformer
 
         $el = simplexml_load_string(static::sanitize($xml), SimpleXMLElement::class, LIBXML_NONET | LIBXML_COMPACT | LIBXML_NOCDATA | LIBXML_NOBLANKS);
 
-        LIBXML_VERSION < 20900 && libxml_disable_entity_loader($previous); /** @phpstan-ignore-line */
+        LIBXML_VERSION < 20900 && isset($previous) && libxml_disable_entity_loader($previous);
 
         return static::cast($el);
     }
@@ -125,7 +125,7 @@ class Transformer
     protected static function walk(XMLWriter &$writer, array $data, string $item): void
     {
         foreach ($data as $key => $value) {
-            $tag = static::isElementNameValid($key) ? $key : $item;
+            $tag = is_string($key) && static::isElementNameValid($key) ? $key : $item;
             $writer->startElement($tag);
             if (is_array($value) || (is_object($value) && $value instanceof Traversable)) {
                 static::walk($writer, (array) $value, $item);
@@ -180,6 +180,6 @@ class Transformer
      */
     protected static function needsCdataWrapping(string $value = ''): bool
     {
-        return 0 < preg_match('#[>&"<]#', $value);
+        return $value && 0 < preg_match('#[>&"<]#', $value);
     }
 }

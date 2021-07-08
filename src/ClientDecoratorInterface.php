@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace WeChatPay;
 
@@ -14,7 +14,7 @@ interface ClientDecoratorInterface
     /**
      * @var string - This library version
      */
-    const VERSION = '1.0.4';
+    const VERSION = '1.0.5';
 
     /**
      * @var string - The HTTP transfer `xml` based protocol

@@ -5,12 +5,14 @@ namespace WeChatPay\Tests\Util;
 use const PHP_MAJOR_VERSION;
 use const PHP_MINOR_VERSION;
 use const PHP_SHLIB_SUFFIX;
-use const PHP_EOL;
 use const OPENSSL_KEYTYPE_RSA;
 use const DIRECTORY_SEPARATOR;
 
 use function dirname;
 use function sprintf;
+use function mt_rand;
+use function touch;
+use function unlink;
 use function openssl_pkey_new;
 use function openssl_csr_new;
 use function openssl_csr_sign;
@@ -37,10 +39,8 @@ class PemUtilTest extends TestCase
         if (7 === PHP_MAJOR_VERSION && in_array(PHP_MINOR_VERSION, [2, 3]) && 'dll' === PHP_SHLIB_SUFFIX
             && '' === $certString && '' === $privString) {
             $this->markTestSkipped(
-                'Known issues were there on the `openssl_csr_new` and `openssl_csr_sign` functions.'
-                . PHP_EOL
+                'Known issues were there about the `openssl_csr_new` and `openssl_csr_sign` functions.'
                 . 'Those may not works well on the Windows\'s PHP7.2 & PHP7.3 series.'
-                . PHP_EOL
                 . 'And caused the `$environment` in bad phrases.'
             );
         }
@@ -75,6 +75,9 @@ class PemUtilTest extends TestCase
         $certString = '';
         $privString = '';
 
+        touch($certFile);
+        touch($privFile);
+
         $csr  = false !== $privateKey ? openssl_csr_new(self::$certSubject, $privateKey, $baseAlgo) : false;
         $cert = false !== $csr ? openssl_csr_sign($csr, null, $privateKey, 1, $baseAlgo, $serial) : false;
 
@@ -89,13 +92,12 @@ class PemUtilTest extends TestCase
 
     public static function tearDownAfterClass(): void
     {
-        try {
-            [, $certFile, , $privFile] = self::$environment;
-            unlink($certFile);
-            unlink($privFile);
-        } finally {
-            self::$environment = null;
-        }
+        [, $certFile, , $privFile] = self::$environment;
+
+        unlink($certFile);
+        unlink($privFile);
+
+        self::$environment = null;
     }
 
     public function testLoadCertificate(): void
