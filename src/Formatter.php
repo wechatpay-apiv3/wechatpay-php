@@ -58,8 +58,8 @@ class Formatter
     public static function authorization(string $mchid, string $nonce, string $signature, string $timestamp, string $serial): string
     {
         return sprintf(
-            'WECHATPAY2-SHA256-RSA2048 mchid="%1$s",serial_no="%5$s",timestamp="%4$s",nonce_str="%2$s",signature="%3$s"',
-            $mchid, $nonce, $signature, $timestamp, $serial
+            'WECHATPAY2-SHA256-RSA2048 mchid="%s",serial_no="%s",timestamp="%s",nonce_str="%s",signature="%s"',
+            $mchid, $serial, $timestamp, $nonce, $signature
         );
     }
 
