@@ -42,7 +42,7 @@ class Transformer
 
         $el = simplexml_load_string(static::sanitize($xml), SimpleXMLElement::class, LIBXML_NONET | LIBXML_COMPACT | LIBXML_NOCDATA | LIBXML_NOBLANKS);
 
-        LIBXML_VERSION < 20900 && libxml_disable_entity_loader($previous); /** @phpstan-ignore-line */
+        LIBXML_VERSION < 20900 && isset($previous) && libxml_disable_entity_loader($previous);
 
         return static::cast($el);
     }
