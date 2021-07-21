@@ -29,7 +29,7 @@ class FormatterTest extends TestCase
             'half-default $size=16'  => [16,  '/[a-zA-Z0-9]{16}/'],
             'hundred $size=100'      => [100, '/[a-zA-Z0-9]{100}/'],
             'one $size=1'            => [1,   '/[a-zA-Z0-9]{1}/'],
-            'zero $size=0'           => [0,   '/[a-zA-Z0-9]{2}/'],
+            'zero $size=0'           => [0,   '#Size must be a positive integer\.#'],
             'negative $size=-1'      => [-1,  '#Size must be a positive integer\.#'],
             'negative $size=-16'     => [-16, '#Size must be a positive integer\.#'],
             'negative $size=-32'     => [-32, '#Size must be a positive integer\.#'],
