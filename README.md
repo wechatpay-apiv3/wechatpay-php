@@ -25,11 +25,11 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 **版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本号我们遵循[语义化版本号](https://semver.org/lang/zh-CN/)。
 
-为了向广大开发者提供更好的使用体验，我们诚挚邀请您将 **使用微信支付 API v3 SDK** 中的感受反馈给我们。本问卷可能会占用您不超过2分钟的时间，感谢您的支持。
+为了向广大开发者提供更好的使用体验，微信支付诚挚邀请您将**使用微信支付 API v3 SDK**中的感受反馈给我们。本问卷可能会占用您不超过2分钟的时间，感谢您的支持。
 
-您可以点击[这里](https://wj.qq.com/s2/8779987/8dae/)，或者扫描以下二维码参与调查。
+问卷系统使用的腾讯问卷，您可以点击[这里](https://wj.qq.com/s2/8779987/8dae/)，或者扫描以下二维码参与调查。
 
-<img src="https://user-images.githubusercontent.com/1812516/126434257-834ef6ab-e66b-4aa2-9104-8e37d7a14b93.png" alt="PHP SDK Questionnaire"/>
+[![PHP SDK Questionnaire](https://user-images.githubusercontent.com/1812516/126434257-834ef6ab-e66b-4aa2-9104-8e37d7a14b93.png)](https://wj.qq.com/s2/8779987/8dae/)
 
 ## 环境要求
 
