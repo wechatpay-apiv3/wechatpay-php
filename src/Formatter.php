@@ -5,6 +5,7 @@ namespace WeChatPay;
 use function str_split;
 use function array_map;
 use function ord;
+use function random_bytes;
 use function time;
 use function sprintf;
 use function implode;
