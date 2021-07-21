@@ -11,6 +11,7 @@ use function substr_count;
 use function count;
 use function ksort;
 
+use InvalidArgumentException;
 use WeChatPay\Formatter;
 use PHPUnit\Framework\TestCase;
 
@@ -28,10 +29,10 @@ class FormatterTest extends TestCase
             'half-default $size=16'  => [16,  '/[a-zA-Z0-9]{16}/'],
             'hundred $size=100'      => [100, '/[a-zA-Z0-9]{100}/'],
             'one $size=1'            => [1,   '/[a-zA-Z0-9]{1}/'],
-            'zero $size=0'           => [0,   '/[a-zA-Z0-9]{2}/'],
-            'negative $size=-1'      => [-1,  '/[a-zA-Z0-9]{3}/'],
-            'negative $size=-16'     => [-16, '/[a-zA-Z0-9]{18}/'],
-            'negative $size=-32'     => [-32, '/[a-zA-Z0-9]{34}/'],
+            'zero $size=0'           => [0,   '#Size must be a positive integer\.#'],
+            'negative $size=-1'      => [-1,  '#Size must be a positive integer\.#'],
+            'negative $size=-16'     => [-16, '#Size must be a positive integer\.#'],
+            'negative $size=-32'     => [-32, '#Size must be a positive integer\.#'],
         ];
     }
 
@@ -40,11 +41,16 @@ class FormatterTest extends TestCase
      */
     public function testNonce(int $size, string $pattern): void
     {
+        if ($size < 1) {
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessageMatches($pattern);
+        }
+
         $nonce = Formatter::nonce($size);
 
         self::assertIsString($nonce);
 
-        self::assertTrue(strlen($nonce) === ($size > 0 ? $size : abs($size - 2)));
+        self::assertTrue(strlen($nonce) === $size);
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
             $this->assertMatchesRegularExpression($pattern, $nonce);
