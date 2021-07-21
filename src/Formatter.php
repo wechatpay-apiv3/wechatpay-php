@@ -16,6 +16,8 @@ use function is_null;
 use const SORT_FLAG_CASE;
 use const SORT_NATURAL;
 
+use InvalidArgumentException;
+
 /**
  * Provides easy used methods using in this project.
  */
@@ -30,9 +32,13 @@ class Formatter
      */
     public static function nonce(int $size = 32): string
     {
+        if ($size < 1) {
+            throw new InvalidArgumentException('Size must be a positive integer.');
+        }
+
         return implode('', array_map(static function(string $c): string {
             return '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'[ord($c) % 62];
-        }, str_split(random_bytes($size > 0 ? $size : 2 - $size))));
+        }, str_split(random_bytes($size))));
     }
 
     /**
