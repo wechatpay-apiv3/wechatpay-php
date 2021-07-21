@@ -27,7 +27,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 为了向广大开发者提供更好的使用体验，我们诚挚邀请您将 **使用微信支付 API v3 SDK** 中的感受反馈给我们。本问卷可能会占用您不超过2分钟的时间，感谢您的支持。
 
-问卷地址，请点击[这里](https://wj.qq.com/s2/8779987/8dae/)。你也可以扫描以下二维码参与调查。
+您可以点击[这里](https://wj.qq.com/s2/8779987/8dae/)，或者扫描以下二维码参与调查。
 
 <img src="https://user-images.githubusercontent.com/1812516/126434257-834ef6ab-e66b-4aa2-9104-8e37d7a14b93.png" alt="PHP SDK Questionnaire"/>
 
