@@ -2,9 +2,9 @@
 
 namespace WeChatPay;
 
-use function array_reduce;
-use function mt_rand;
-use function range;
+use function str_split;
+use function array_map;
+use function ord;
 use function time;
 use function sprintf;
 use function implode;
@@ -21,7 +21,7 @@ use const SORT_NATURAL;
 class Formatter
 {
     /**
-     * Generate a random ASCII string aka `nonce`, similar as `random_bytes`.
+     * Generate a random BASE62 string aka `nonce`, similar as `random_bytes`.
      *
      * @param int $size - Nonce string length, default is 32.
      *
@@ -29,9 +29,9 @@ class Formatter
      */
     public static function nonce(int $size = 32): string
     {
-        return array_reduce(range(1, $size), static function(string $char) {
-            return $char .= 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[mt_rand(0, 61)];
-        }, '');
+        return implode('', array_map(static function(string $c): string {
+            return '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'[ord($c) % 62];
+        }, str_split(random_bytes($size > 0 ? $size : 2 - $size))));
     }
 
     /**
