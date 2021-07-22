@@ -95,26 +95,43 @@ composer install
 use WeChatPay\Builder;
 use WeChatPay\Util\PemUtil;
 
+// 商户私钥，文件路径假定为 `/path/to/merchant/apiclient_key.pem`
+$merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
+// 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
+$merchantCertificateFilePath = '/path/to/merchant/apiclient_cert.pem';
+// 加载商户证书
+$merchantCertificateInstance = PemUtil::loadCertificate($merchantCertificateFilePath);
+// 解析商户证书序列号
+$merchantCertificateSerial = PemUtil::parseCertificateSerialNo($merchantCertificateInstance);
+// 加载商户私钥
+$merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
+
+// 平台证书，可由下载器 `./bin/CertificateDownloader.php` 生成并假定保存为 `/path/to/wechatpay/cert.pem`
+$platformCertificateFilePath = '/path/to/wechatpay/cert.pem';
+// 加载平台证书
+$platformCertificateInstance = PemUtil::loadCertificate($platformCertificateFilePath);
+// 解析平台证书序列号
+$platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateInstance);
+
 // 工厂方法构造一个实例
 $instance = Builder::factory([
     // 商户号
     'mchid' => '1000100',
     // 商户证书序列号
-    'serial' => 'XXXXXXXXXX',
+    'serial' => $merchantCertificateSerial,
     // 商户API私钥 PEM格式的文本字符串或者文件resource
-    'privateKey' => PemUtil::loadPrivateKey('/path/to/mch/apiclient_key.pem'),
+    'privateKey' => $merchantPrivateKeyInstance,
     'certs' => [
-        // 可由内置的平台证书下载器 `./bin/CertificateDownloader.php` 生成
-        'YYYYYYYYYY' => PemUtil::loadCertificate('/path/to/wechatpay/cert.pem')
+        $platformCertificateSerial => $platformCertificateInstance,
     ],
     // APIv2密钥(32字节)--不使用APIv2可选
-    'secret' => 'ZZZZZZZZZZ',
-    'merchant' => [// --不使用APIv2可选
-        // 商户证书 文件路径 --不使用APIv2可选
-        'cert' => '/path/to/mch/apiclient_cert.pem',
-        // 商户API私钥 文件路径 --不使用APIv2可选
-        'key' => '/path/to/mch/apiclient_key.pem',
-    ],
+    // 'secret' => 'ZZZZZZZZZZ',// `ZZZZZZZZZZ` 为变量占位符，如需使用APIv2请替换为实际值
+    // 'merchant' => [// --不使用APIv2可选
+    //     // 商户证书 文件路径 --不使用APIv2可选
+    //     'cert' => $merchantCertificateFilePath,
+    //     // 商户API私钥 文件路径 --不使用APIv2可选
+    //     'key' => $merchantPrivateKeyFilePath,
+    // ],
 ]);
 ```
 
