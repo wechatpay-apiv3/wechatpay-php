@@ -95,6 +95,8 @@ composer install
 use WeChatPay\Builder;
 use WeChatPay\Util\PemUtil;
 
+// 商户号，假定为`1000100`
+$merchantId = '1000100';
 // 商户私钥，文件路径假定为 `/path/to/merchant/apiclient_key.pem`
 $merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
 // 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
@@ -115,13 +117,10 @@ $platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertific
 
 // 工厂方法构造一个实例
 $instance = Builder::factory([
-    // 商户号
-    'mchid' => '1000100',
-    // 商户证书序列号
-    'serial' => $merchantCertificateSerial,
-    // 商户API私钥 PEM格式的文本字符串或者文件resource
+    'mchid'      => $merchantId,
+    'serial'     => $merchantCertificateSerial,
     'privateKey' => $merchantPrivateKeyInstance,
-    'certs' => [
+    'certs'      => [
         $platformCertificateSerial => $platformCertificateInstance,
     ],
     // APIv2密钥(32字节)--不使用APIv2可选
@@ -361,6 +360,46 @@ try {
 
 - `$options['nonceless']` - 标量 `scalar` 任意值，语义上即，本次请求不用自动添加`nonce_str`参数，推荐 `boolean(True)`
 - `$options['security']` - 布尔量`True`，语义上即，本次请求需要加载ssl证书，对应的是初始化 `array $config['merchant']` 结构体
+
+### 初始化
+
+```php
+use WeChatPay\Builder;
+
+// 商户号，假定为`1000100`
+$merchantId = '1000100';
+// APIv2密钥(32字节) 假定为`ZZZZZZZZZZ`，使用请替换为实际值
+$apiv2Secret = 'ZZZZZZZZZZ';
+// 商户私钥，文件路径假定为 `/path/to/merchant/apiclient_key.pem`
+$merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
+// 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
+$merchantCertificateFilePath = '/path/to/merchant/apiclient_cert.pem';
+
+// 工厂方法构造一个实例
+$instance = Builder::factory([
+    'mchid'      => $merchantId,
+    'serial'     => 'nop',
+    'privateKey' => 'any',
+    'certs'      => ['any' => null],
+    'secret'     => $apiv2Secret,
+    'merchant' => [
+        'cert' => $merchantCertificateFilePath,
+        'key'  => $merchantPrivateKeyFilePath,
+    ],
+]);
+```
+
+初始化字典说明如下：
+
+- `mchid` 为你的`商户号`，一般是10字节纯数字
+- `serial` 为你的`商户证书序列号`，不使用APIv3可填任意值
+- `privateKey` 为你的`商户API私钥`，不使用APIv3可填任意值
+- `certs[$serial_number => #resource]` 不使用APIv3可填任意值, `$serial_number` 注意不要与商户证书序列号`serial`相同
+- `secret` 为APIv2版的`密钥`，商户平台上设置的32字节字符串
+- `merchant[cert => $path]` 为你的`商户证书`,一般是文件名为`apiclient_cert.pem`文件路径，接受`[$path, $passphrase]` 格式，其中`$passphrase`为证书密码
+- `merchant[key => $path]` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件路径，接受`[$path, $passphrase]` 格式，其中`$passphrase`为私钥密码
+
+**注：** `APIv3`, `APIv2` 以及 `GuzzleHttp\Client` 的 `$config = []` 初始化参数，均融合在一个型参上。
 
 ### 企业付款到零钱
 
