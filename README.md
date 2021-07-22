@@ -99,14 +99,16 @@ use WeChatPay\Util\PemUtil;
 $merchantId = '1000100';
 // 商户私钥，文件路径假定为 `/path/to/merchant/apiclient_key.pem`
 $merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
-// 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
-$merchantCertificateFilePath = '/path/to/merchant/apiclient_cert.pem';
-// 加载商户证书
-$merchantCertificateInstance = PemUtil::loadCertificate($merchantCertificateFilePath);
-// 解析商户证书序列号
-$merchantCertificateSerial = PemUtil::parseCertificateSerialNo($merchantCertificateInstance);
 // 加载商户私钥
 $merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
+$merchantCertificateSerial = '可以从商户平台直接获取到';// API证书不重置，商户证书序列号就是个常量
+// // 或者从以下代码也可以直接加载
+// // 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
+// $merchantCertificateFilePath = '/path/to/merchant/apiclient_cert.pem';
+// // 加载商户证书
+// $merchantCertificateInstance = PemUtil::loadCertificate($merchantCertificateFilePath);
+// // 解析商户证书序列号
+// $merchantCertificateSerial = PemUtil::parseCertificateSerialNo($merchantCertificateInstance);
 
 // 平台证书，可由下载器 `./bin/CertificateDownloader.php` 生成并假定保存为 `/path/to/wechatpay/cert.pem`
 $platformCertificateFilePath = '/path/to/wechatpay/cert.pem';
