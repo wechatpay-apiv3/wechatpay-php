@@ -2,6 +2,8 @@
 
 namespace WeChatPay\Crypto;
 
+use function random_bytes;
+use function hash_equals;
 use function hash_init;
 use function hash_update;
 use function hash_final;
@@ -63,6 +65,19 @@ class Hash
         hash_update($ctx, $thing) && hash_update($ctx, '&key=') && hash_update($ctx, $key);
 
         return hash_final($ctx);
+    }
+
+    /**
+     * Wrapping the `hash_equals`, keeping sure those arguments have the same length by `static::md5`.
+     *
+     * @param string $known - The string of known length to compare against.
+     * @param ?string $user - The user-supplied, `random_bytes(16)` instead of `null`.
+     *
+     * @return bool - Returns true when the two are equal, false otherwise.
+     */
+    public static function equals(string $known, ?string $user = null): bool
+    {
+        return hash_equals(static::md5($known), static::md5($user ?? random_bytes(16)));
     }
 
     /**

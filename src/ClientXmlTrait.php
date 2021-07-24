@@ -102,8 +102,10 @@ trait ClientXmlTrait
 
                     $sign = $result['sign'] ?? null;
                     $type = $sign && strlen($sign) === 64 ? Crypto\Hash::ALGO_HMAC_SHA256 : Crypto\Hash::ALGO_MD5;
+                    /** @var string $calc - calculated digest string, it's naver `null` here because of \$type known. */
+                    $calc = Crypto\Hash::sign($type, Formatter::queryStringLike(Formatter::ksort($result)), $secret);
 
-                    if ($sign !== Crypto\Hash::sign($type, Formatter::queryStringLike(Formatter::ksort($result)), $secret)) {
+                    if (!Crypto\Hash::equals($calc, $sign)) {
                         return P\Create::rejectionFor($response);
                     }
 

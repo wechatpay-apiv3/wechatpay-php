@@ -6,6 +6,7 @@ use function md5;
 use function hash_hmac;
 use function strlen;
 use function is_null;
+use function random_bytes;
 
 use WeChatPay\Formatter;
 use WeChatPay\Crypto\Hash;
@@ -131,6 +132,32 @@ class HashTest extends TestCase
         self::assertNotEquals($thing, $digest);
         self::assertEquals(strlen($digest), $length);
         self::{$action}($digest, $excepted);
+    }
+
+    /**
+     * @return array<string,array{string,string|null,bool}>
+     */
+    public function equalsDataProvider(): array
+    {
+        return [
+            'empty string equals to empty string' => ['', '', true],
+            'empty string not equals to null'     => ['', null, false],
+            'random_bytes(16) not equals to null' => [random_bytes(16), null, false],
+        ];
+    }
+
+    /**
+     * @dataProvider equalsDataProvider
+     *
+     * @param string $known
+     * @param ?string $user
+     * @param bool $excepted
+     */
+    public function testEquals(string $known, ?string $user = null, bool $excepted = false): void
+    {
+        $result = Hash::equals($known, $user);
+        self::assertIsBool($result);
+        self::assertThat($result, $excepted ? self::isTrue() : self::isFalse());
     }
 
     /**
