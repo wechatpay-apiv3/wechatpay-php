@@ -2,6 +2,8 @@
 
 namespace WeChatPay\Crypto;
 
+use function is_null;
+use function hash_equals;
 use function hash_init;
 use function hash_update;
 use function hash_final;
@@ -63,6 +65,19 @@ class Hash
         hash_update($ctx, $thing) && hash_update($ctx, '&key=') && hash_update($ctx, $key);
 
         return hash_final($ctx);
+    }
+
+    /**
+     * Wrapping the builtins `hash_equals` function.
+     *
+     * @param string $known_string - The string of known length to compare against.
+     * @param ?string $user_string - The user-supplied string.
+     *
+     * @return bool - Returns true when the two are equal, false otherwise.
+     */
+    public static function equals(string $known_string, ?string $user_string = null): bool
+    {
+        return is_null($user_string) ? false : hash_equals($known_string, $user_string);
     }
 
     /**

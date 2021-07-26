@@ -21,7 +21,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.0.7`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`1.0.8`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 **版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本号我们遵循[语义化版本号](https://semver.org/lang/zh-CN/)。
 
@@ -58,7 +58,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.0.7"
+    "wechatpay/wechatpay": "^1.0.8"
 }
 ```
 
@@ -102,6 +102,8 @@ $merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
 // 加载商户私钥
 $merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
 $merchantCertificateSerial = '可以从商户平台直接获取到';// API证书不重置，商户证书序列号就是个常量
+// // 也可以使用openssl命令行获取证书序列号
+// // openssl x509 -in /path/to/merchant/apiclient_cert.pem -noout -serial | awk -F= '{print $2}'
 // // 或者从以下代码也可以直接加载
 // // 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
 // $merchantCertificateFilePath = '/path/to/merchant/apiclient_cert.pem';
@@ -168,7 +170,7 @@ try {
 
     echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // 进行错误处理
     echo $e->getMessage(), PHP_EOL;
     if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
@@ -278,7 +280,7 @@ try {
     ]);
     echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage(), PHP_EOL;
     if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
         echo $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase(), PHP_EOL;
@@ -318,14 +320,10 @@ $resp = $instance->v3->marketing->favor->media->imageUpload
 ```php
 // 参考上上述说明，引入 `WeChatPay\Crypto\Rsa`
 use WeChatPay\Crypto\Rsa;
-// 加载最新的平台证书
-$publicKey = PemUtil::loadCertificate('/path/to/wechatpay/cert.pem');
-// 做一个匿名方法，供后续方便使用
-$encryptor = function($msg) use ($publicKey) { return Rsa::encrypt($msg, $publicKey); };
+// 做一个匿名方法，供后续方便使用，$platformCertificateInstance 见初始化章节
+$encryptor = function($msg) use ($platformCertificateInstance) { return Rsa::encrypt($msg, $platformCertificateInstance); };
 
-// 正常使用Guzzle发起API请求
 try {
-    // POST 语法糖
     $resp = $instance->chain('v3/applyment4sub/applyment/')->post([
         'json' => [
             'business_code' => 'APL_98761234',
@@ -338,15 +336,13 @@ try {
             //...
         ],
         'headers' => [
-            // 命令行获取证书序列号
-            // openssl x509 -in /path/to/wechatpay/cert.pem -noout -serial | awk -F= '{print $2}'
-            // 或者使用工具类获取证书序列号 `PemUtil::parseCertificateSerialNo($certificate)`
-            'Wechatpay-Serial' => '下载的平台证书序列号',
+            // $platformCertificateSerial 见初始化章节
+            'Wechatpay-Serial' => $platformCertificateSerial,
         ],
     ]);
     echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage(), PHP_EOL;
     if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
         echo $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase(), PHP_EOL;
