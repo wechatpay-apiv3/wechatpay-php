@@ -1,5 +1,12 @@
 # 变更历史
 
+## 1.0.8 - 2021-07-26
+
+[变更细节](../../compare/v1.0.7...v1.0.8)
+
+- 增加`WeChatPay\Crypto\Hash::equals`方法，用于比较`APIv2`哈希签名值是否相等;
+- 建议使用`APIv2`的商户，在回调通知场景中，使用此方法来验签，相关说明见PHP[hash_equals](https://www.php.net/manual/zh/function.hash-equals.php)说明；
+
 ## 1.0.7 - 2021-07-22
 
 [变更细节](../../compare/v1.0.6...v1.0.7)
