@@ -1,5 +1,12 @@
 # 变更历史
 
+## 1.0.9 - 2021-08-05
+
+[变更细节](../../compare/v1.0.8...v1.0.9)
+
+- 优化平台证书下载器`CertificateDownloader`异常处理逻辑部分，详见[#22](https://github.com/wechatpay-apiv3/wechatpay-php/issues/20);
+- 优化`README`使用示例的异常处理部分；
+
 ## 1.0.8 - 2021-07-26
 
 [变更细节](../../compare/v1.0.7...v1.0.8)
