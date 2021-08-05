@@ -18,6 +18,7 @@ Usage: 微信支付平台证书下载工具 [-hV]
   -k, --key=<apiV3key>       ApiV3Key
   -o, --output=[outputFilePath]
                              下载成功后保存证书的路径，可选参数，默认为临时文件目录夹
+  -u, --baseuri=[baseUri]    接入点，默认为 https://api.mch.weixin.qq.com/
   -V, --version              Print version information and exit.
   -h, --help                 Show this help message and exit.
 ```
@@ -38,6 +39,12 @@ vendor/bin/CertificateDownloader.php -k ${apiV3key} -m ${mchId} -f ${mchPrivateK
 
 ```shell
 composer v3-certificates -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
+```
+
+支持从海外接入点下载，命令如下：
+
+```shell
+composer v3-certificates -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath} -u https://apihk.mch.weixin.qq.com/
 ```
 
 ## 常见问题

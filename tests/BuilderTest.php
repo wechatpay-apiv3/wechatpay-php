@@ -11,7 +11,7 @@ use function array_map;
 use function iterator_to_array;
 
 use const OPENSSL_KEYTYPE_RSA;
-use const DIRECTORY_SEPARATOR as DS;
+use const DIRECTORY_SEPARATOR;
 
 use ArrayAccess;
 use WeChatPay\Builder;
@@ -33,11 +33,11 @@ class BuilderTest extends TestCase
     public function configurationDataProvider(): array
     {
         $privateKey = openssl_pkey_new([
-            'digest_alg' => 'sha256',
-            'default_bits' => 2048,
+            'digest_alg'       => 'sha256',
+            'default_bits'     => 2048,
             'private_key_bits' => 2048,
             'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            'config' => __DIR__ . DS . 'fixtures' . DS . 'openssl.conf',
+            'config'           => __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'openssl.conf',
         ]);
 
         ['key' => $publicKey] = $privateKey ? openssl_pkey_get_details($privateKey) : [];

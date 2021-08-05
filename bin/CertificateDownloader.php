@@ -19,6 +19,8 @@ unset($possibleFiles, $possibleFile, $file);
 
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Utils;
+use GuzzleHttp\Exception\RequestException;
+use Psr\Http\Message\ResponseInterface;
 use WeChatPay\Builder;
 use WeChatPay\ClientDecoratorInterface;
 use WeChatPay\Crypto\AesGcm;
@@ -32,12 +34,7 @@ class CertificateDownloader
     {
         $opts = $this->parseOpts();
 
-        if (!$opts) {
-            $this->printHelp();
-            return;
-        }
-
-        if (isset($opts['help'])) {
+        if (!$opts || isset($opts['help'])) {
             $this->printHelp();
             return;
         }
@@ -46,6 +43,29 @@ class CertificateDownloader
             return;
         }
         $this->job($opts);
+    }
+
+    /**
+     * Before `verifier` executing, decrypt and put the platform certificate(s) into the `$certs` reference.
+     *
+     * @param string $apiv3Key
+     * @param array<string,?string> $certs
+     *
+     * @return callable(ResponseInterface)
+     */
+    private static function certsInjector(string $apiv3Key, array &$certs): callable {
+        return static function(ResponseInterface $response) use ($apiv3Key, &$certs): ResponseInterface {
+            $body = $response->getBody()->getContents();
+            /** @var object{data:array<object{encrypt_certificate:object{serial_no:string,nonce:string,associated_data:string}}>} $json */
+            $json = Utils::jsonDecode($body);
+            $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
+            \array_map(static function($row) use ($apiv3Key, &$certs) {
+                $cert = $row->encrypt_certificate;
+                $certs[$row->serial_no] = AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_data);
+            }, $data);
+
+            return $response;
+        };
     }
 
     /**
@@ -61,39 +81,53 @@ class CertificateDownloader
         $apiv3Key = (string) $opts['key'];
 
         $instance = Builder::factory([
-            'mchid' => $opts['mchid'],
-            'serial' => $opts['serialno'],
+            'mchid'      => $opts['mchid'],
+            'serial'     => $opts['serialno'],
             'privateKey' => \file_get_contents((string)$opts['privatekey']),
-            'certs' => &$certs,
+            'certs'      => &$certs,
+            'base_uri'   => (string)($opts['baseuri'] ?? 'https://api.mch.weixin.qq.com/'),
         ]);
 
         $handler = $instance->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
-        $handler->after('verifier', Middleware::mapResponse(static function($response) use ($apiv3Key, &$certs) {
-            $body = $response->getBody()->getContents();
-            /** @var object{data:array<object{encrypt_certificate:object{serial_no:string,nonce:string,associated_data:string}}>} $json */
-            $json = Utils::jsonDecode($body);
-            \array_map(static function($row) use ($apiv3Key, &$certs) {
-                $cert = $row->encrypt_certificate;
-                $certs[$row->serial_no] = AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_data);
-            }, \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : []);
+        // The response middle stacks were executed one by one on `FILO` order.
+        $handler->after('verifier', Middleware::mapResponse(static::certsInjector($apiv3Key, $certs)), 'injector');
+        $handler->before('verifier', Middleware::mapResponse(static::certsRecorder((string) $outputDir, $certs)), 'recorder');
 
-            return $response;
-        }), 'injector');
+        $instance->chain('v3/certificates')->getAsync(
+            ['debug' => true]
+        )->otherwise(static function($exception) {
+            echo $exception->getMessage(), PHP_EOL;
+            if ($exception instanceof RequestException && $exception->hasResponse()) {
+                /** @var ResponseInterface $body */
+                $body = $exception->getResponse();
+                echo $body->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+            }
+            echo $exception->getTraceAsString(), PHP_EOL;
+        })->wait();
+    }
 
-        $instance->chain('v3/certificates')->getAsync(['debug' => true])->then(static function($response) use ($outputDir, &$certs) {
+    /**
+     * After `verifier` executed, wrote the platform certificate(s) onto disk.
+     *
+     * @param string $outputDir
+     * @param array<string,?string> $certs
+     *
+     * @return callable(ResponseInterface)
+     */
+    private static function certsRecorder(string $outputDir, array &$certs): callable {
+        return static function(ResponseInterface $response) use ($outputDir, &$certs): ResponseInterface {
             $body = $response->getBody()->getContents();
-            $timeZone = new \DateTimeZone('Asia/Shanghai');
             /** @var object{data:array<object{effective_time:string,expire_time:string:serial_no:string}>} $json */
             $json = Utils::jsonDecode($body);
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
-            \array_walk($data, static function($row, $index, $certs) use ($outputDir, $timeZone) {
+            \array_walk($data, static function($row, $index, $certs) use ($outputDir) {
                 $serialNo = $row->serial_no;
                 $outpath = $outputDir . DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
 
                 echo 'Certificate #', $index, ' {', PHP_EOL;
                 echo '    Serial Number: ', $serialNo, PHP_EOL;
-                echo '    Not Before: ', (new \DateTime($row->effective_time, $timeZone))->format('Y-m-d H:i:s'), PHP_EOL;
-                echo '    Not After: ', (new \DateTime($row->expire_time, $timeZone))->format('Y-m-d H:i:s'), PHP_EOL;
+                echo '    Not Before: ', (new \DateTime($row->effective_time))->format(\DateTime::W3C), PHP_EOL;
+                echo '    Not After: ', (new \DateTime($row->expire_time))->format(\DateTime::W3C), PHP_EOL;
                 echo '    Saved to: ', $outpath, PHP_EOL;
                 echo '    Content: ', PHP_EOL, PHP_EOL, $certs[$serialNo], PHP_EOL, PHP_EOL;
                 echo '}', PHP_EOL;
@@ -102,11 +136,7 @@ class CertificateDownloader
             }, $certs);
 
             return $response;
-        })->otherwise(static function($exception) {
-            $body = $exception->getResponse()->getBody();
-            echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
-            echo $exception->getTraceAsString(), PHP_EOL;
-        })->wait();
+        };
     }
 
     /**
@@ -120,6 +150,8 @@ class CertificateDownloader
             [ 'privatekey', 'f', true ],
             [ 'serialno', 's', true ],
             [ 'output', 'o', false ],
+            // baseuri can be one of 'https://api2.mch.weixin.qq.com/', 'https://apihk.mch.weixin.qq.com/'
+            [ 'baseuri', 'u', false ],
         ];
 
         $shortopts = 'hV';
@@ -140,7 +172,7 @@ class CertificateDownloader
             list($key, $alias, $mandatory) = $opt;
             if (isset($parsed[$key]) || isset($parsed[$alias])) {
                 $possiable = $parsed[$key] ?? $parsed[$alias] ?? '';
-                $args[$key] = (string) (is_array($possiable) ? $possiable[0] : $possiable);
+                $args[$key] = (string) (\is_array($possiable) ? $possiable[0] : $possiable);
             } elseif ($mandatory) {
                 return null;
             }
@@ -160,7 +192,7 @@ class CertificateDownloader
         echo <<<EOD
 Usage: 微信支付平台证书下载工具 [-hV]
                     -f=<privateKeyFilePath> -k=<apiv3Key> -m=<merchantId>
-                    -o=[outputFilePath] -s=<serialNo>
+                    -s=<serialNo> -o=[outputFilePath] -u=[baseUri]
   -m, --mchid=<merchantId>   商户号
   -s, --serialno=<serialNo>  商户证书的序列号
   -f, --privatekey=<privateKeyFilePath>
@@ -168,6 +200,7 @@ Usage: 微信支付平台证书下载工具 [-hV]
   -k, --key=<apiv3Key>       API v3密钥
   -o, --output=[outputFilePath]
                              下载成功后保存证书的路径，可选参数，默认为临时文件目录夹
+  -u, --baseuri=[baseUri]    接入点，默认为 https://api.mch.weixin.qq.com/
   -V, --version              Print version information and exit.
   -h, --help                 Show this help message and exit.
 
