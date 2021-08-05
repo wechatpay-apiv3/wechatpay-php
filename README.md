@@ -21,7 +21,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.0.8`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`1.0.9`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 **版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本号我们遵循[语义化版本号](https://semver.org/lang/zh-CN/)。
 
@@ -58,7 +58,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.0.8"
+    "wechatpay/wechatpay": "^1.0.9"
 }
 ```
 
@@ -156,14 +156,16 @@ $instance = Builder::factory([
 
 ```php
 try {
-    $resp = $instance->v3->pay->transactions->native->post(['json' => [
-        'mchid' => '1900006XXX',
+    $resp = $instance
+    ->v3->pay->transactions->native
+    ->post(['json' => [
+        'mchid'        => '1900006XXX',
         'out_trade_no' => 'native12177525012014070332333',
-        'appid' => 'wxdace645e0bc2cXXX',
-        'description' => 'Image形象店-深圳腾大-QQ公仔',
-        'notify_url' => 'https://weixin.qq.com/',
-        'amount' => [
-            'total' => 1,
+        'appid'        => 'wxdace645e0bc2cXXX',
+        'description'  => 'Image形象店-深圳腾大-QQ公仔',
+        'notify_url'   => 'https://weixin.qq.com/',
+        'amount'       => [
+            'total'    => 1,
             'currency' => 'CNY'
         ],
     ]]);
@@ -173,17 +175,20 @@ try {
 } catch (\Exception $e) {
     // 进行错误处理
     echo $e->getMessage(), PHP_EOL;
-    if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
-        echo $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase(), PHP_EOL;
-        echo $e->getResponse()->getBody();
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        $r = $e->getResponse();
+        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
+        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
+    echo $e->getTraceAsString(), PHP_EOL;
 }
 ```
 
 ### 查单
 
 ```php
-$res = $instance->v3->pay->transactions->id->{'{transaction_id}'}
+$res = $instance
+->v3->pay->transactions->id->{'{transaction_id}'}
 ->getAsync([
     // 查询参数结构
     'query' => ['mchid' => '1230000109'],
@@ -195,13 +200,15 @@ $res = $instance->v3->pay->transactions->id->{'{transaction_id}'}
     echo $response->getBody()->getContents(), PHP_EOL;
     return $response;
 })
-->otherwise(static function($exception) {
+->otherwise(static function($e) {
     // 异常错误处理
-    if ($exception instanceof \Psr\Http\Message\ResponseInterface) {
-        $body = $exception->getResponse()->getBody();
-        echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    echo $e->getMessage(), PHP_EOL;
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        $r = $e->getResponse();
+        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
+        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
-    echo $exception->getTraceAsString(), PHP_EOL;
+    echo $e->getTraceAsString(), PHP_EOL;
 })
 ->wait();
 ```
@@ -209,7 +216,8 @@ $res = $instance->v3->pay->transactions->id->{'{transaction_id}'}
 ### 关单
 
 ```php
-$res = $instance->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
+$res = $instance
+->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
 ->postAsync([
     // 请求参数结构
     'json' => ['mchid' => '1230000109'],
@@ -221,13 +229,15 @@ $res = $instance->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
     echo $response->getBody()->getContents(), PHP_EOL;
     return $response;
 })
-->otherwise(static function($exception) {
+->otherwise(static function($e) {
     // 异常错误处理
-    if ($exception instanceof \Psr\Http\Message\ResponseInterface) {
-        $body = $exception->getResponse()->getBody();
-        echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    echo $e->getMessage(), PHP_EOL;
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        $r = $e->getResponse();
+        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
+        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
-    echo $exception->getTraceAsString(), PHP_EOL;
+    echo $e->getTraceAsString(), PHP_EOL;
 })
 ->wait();
 ```
@@ -235,14 +245,15 @@ $res = $instance->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
 ### 退款
 
 ```php
-$res = $instance->chain('v3/refund/domestic/refunds')
+$res = $instance
+->chain('v3/refund/domestic/refunds')
 ->postAsync([
     'json' => [
         'transaction_id' => '1217752501201407033233368018',
-        'out_refund_no' => '1217752501201407033233368018',
-        'amount' => [
-            'refund' => 888,
-            'total' => 888,
+        'out_refund_no'  => '1217752501201407033233368018',
+        'amount'         => [
+            'refund'   => 888,
+            'total'    => 888,
             'currency' => 'CNY',
         ],
     ],
@@ -252,13 +263,15 @@ $res = $instance->chain('v3/refund/domestic/refunds')
     echo $response->getBody()->getContents(), PHP_EOL;
     return $response;
 })
-->otherwise(static function($exception) {
+->otherwise(static function($e) {
     // 异常错误处理
-    if ($exception instanceof \Psr\Http\Message\ResponseInterface) {
-        $body = $exception->getResponse()->getBody();
-        echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+    echo $e->getMessage(), PHP_EOL;
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        $r = $e->getResponse();
+        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
+        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
-    echo $exception->getTraceAsString(), PHP_EOL;
+    echo $e->getTraceAsString(), PHP_EOL;
 })
 ->wait();
 ```
@@ -272,7 +285,8 @@ use WeChatPay\Util\MediaUtil;
 $media = new MediaUtil('/your/file/path/video.mp4');
 
 try {
-    $resp = $instance['v3/merchant/media/video_upload']->post([
+    $resp = $instance['v3/merchant/media/video_upload']
+    ->post([
         'body'    => $media->getStream(),
         'headers' => [
             'content-type' => $media->getContentType(),
@@ -281,11 +295,14 @@ try {
     echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
 } catch (\Exception $e) {
+    // 异常错误处理
     echo $e->getMessage(), PHP_EOL;
-    if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
-        echo $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase(), PHP_EOL;
-        echo $e->getResponse()->getBody();
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        $r = $e->getResponse();
+        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
+        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
+    echo $e->getTraceAsString(), PHP_EOL;
 }
 ```
 
@@ -298,19 +315,22 @@ $resp = $instance->v3->marketing->favor->media->imageUpload
 ->postAsync([
     'body'    => $media->getStream(),
     'headers' => [
-        'content-type' => $media->getContentType(),
+        'Content-Type' => $media->getContentType(),
     ]
 ])
 ->then(static function($response) {
     echo $response->getBody()->getContents(), PHP_EOL;
     return $response;
 })
-->otherwise(static function($exception) {
-    if ($exception instanceof \Psr\Http\Message\ResponseInterface) {
-        $body = $exception->getResponse()->getBody();
-        echo $body->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+->otherwise(static function($e) {
+    // 异常错误处理
+    echo $e->getMessage(), PHP_EOL;
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        $r = $e->getResponse();
+        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
+        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
-    echo $exception->getTraceAsString(), PHP_EOL;
+    echo $e->getTraceAsString(), PHP_EOL;
 })
 ->wait();
 ```
@@ -324,7 +344,8 @@ use WeChatPay\Crypto\Rsa;
 $encryptor = function($msg) use ($platformCertificateInstance) { return Rsa::encrypt($msg, $platformCertificateInstance); };
 
 try {
-    $resp = $instance->chain('v3/applyment4sub/applyment/')->post([
+    $resp = $instance->chain('v3/applyment4sub/applyment/')
+    ->post([
         'json' => [
             'business_code' => 'APL_98761234',
             'contact_info'  => [
@@ -343,12 +364,14 @@ try {
     echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
 } catch (\Exception $e) {
+    // 异常错误处理
     echo $e->getMessage(), PHP_EOL;
     if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
-        echo $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase(), PHP_EOL;
-        echo $e->getResponse()->getBody();
+        $r = $e->getResponse();
+        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
+        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
-    return;
+    echo $e->getTraceAsString(), PHP_EOL;
 }
 ```
 
@@ -403,17 +426,18 @@ $instance = Builder::factory([
 
 ```php
 use WeChatPay\Transformer;
-$res = $instance->v2->mmpaymkttransfers->promotion->transfers
+$res = $instance
+->v2->mmpaymkttransfers->promotion->transfers
 ->postAsync([
     'xml' => [
-      'appid' => 'wx8888888888888888',
-      'mch_id' => '1900000109',
+      'appid'            => 'wx8888888888888888',
+      'mch_id'           => '1900000109',
       'partner_trade_no' => '10000098201411111234567890',
-      'openid' => 'oxTWIuGaIt6gTKsQRLau2M0yL16E',
-      'check_name' => 'FORCE_CHECK',
-      're_user_name' => '王小王',
-      'amount' => 10099,
-      'desc' => '理赔',
+      'openid'           => 'oxTWIuGaIt6gTKsQRLau2M0yL16E',
+      'check_name'       => 'FORCE_CHECK',
+      're_user_name'     => '王小王',
+      'amount'           => 10099,
+      'desc'             => '理赔',
       'spbill_create_ip' => '192.168.0.1',
     ],
     'security' => true,

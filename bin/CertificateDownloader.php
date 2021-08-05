@@ -34,12 +34,7 @@ class CertificateDownloader
     {
         $opts = $this->parseOpts();
 
-        if (!$opts) {
-            $this->printHelp();
-            return;
-        }
-
-        if (isset($opts['help'])) {
+        if (!$opts || isset($opts['help'])) {
             $this->printHelp();
             return;
         }
@@ -54,7 +49,7 @@ class CertificateDownloader
      * Before `verifier` executing, decrypt and put the platform certificate(s) into the `$certs` reference.
      *
      * @param string $apiv3Key
-     * @param (null|string)[] $certs
+     * @param array<string,?string> $certs
      *
      * @return callable(ResponseInterface)
      */
@@ -63,10 +58,11 @@ class CertificateDownloader
             $body = $response->getBody()->getContents();
             /** @var object{data:array<object{encrypt_certificate:object{serial_no:string,nonce:string,associated_data:string}}>} $json */
             $json = Utils::jsonDecode($body);
+            $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
             \array_map(static function($row) use ($apiv3Key, &$certs) {
                 $cert = $row->encrypt_certificate;
                 $certs[$row->serial_no] = AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_data);
-            }, \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : []);
+            }, $data);
 
             return $response;
         };
@@ -89,7 +85,7 @@ class CertificateDownloader
             'serial'     => $opts['serialno'],
             'privateKey' => \file_get_contents((string)$opts['privatekey']),
             'certs'      => &$certs,
-            'base_uri'   => $opts['baseuri'] ?? 'https://api.mch.weixin.qq.com/',
+            'base_uri'   => (string)($opts['baseuri'] ?? 'https://api.mch.weixin.qq.com/'),
         ]);
 
         $handler = $instance->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
@@ -102,7 +98,7 @@ class CertificateDownloader
         )->otherwise(static function($exception) {
             echo $exception->getMessage(), PHP_EOL;
             if ($exception instanceof RequestException && $exception->hasResponse()) {
-                /** @var \Psr\Http\Message\ResponseInterface $body */
+                /** @var ResponseInterface $body */
                 $body = $exception->getResponse();
                 echo $body->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
             }
@@ -114,7 +110,8 @@ class CertificateDownloader
      * After `verifier` executed, wrote the platform certificate(s) onto disk.
      *
      * @param string $outputDir
-     * @param (null|string)[] $certs
+     * @param array<string,?string> $certs
+     *
      * @return callable(ResponseInterface)
      */
     private static function certsRecorder(string $outputDir, array &$certs): callable {
@@ -129,8 +126,8 @@ class CertificateDownloader
 
                 echo 'Certificate #', $index, ' {', PHP_EOL;
                 echo '    Serial Number: ', $serialNo, PHP_EOL;
-                echo '    Not Before: ', (new DateTime($row->effective_time))->format(DateTime::W3C), PHP_EOL;
-                echo '    Not After: ', (new DateTime($row->expire_time))->format(DateTime::W3C), PHP_EOL;
+                echo '    Not Before: ', (new \DateTime($row->effective_time))->format(\DateTime::W3C), PHP_EOL;
+                echo '    Not After: ', (new \DateTime($row->expire_time))->format(\DateTime::W3C), PHP_EOL;
                 echo '    Saved to: ', $outpath, PHP_EOL;
                 echo '    Content: ', PHP_EOL, PHP_EOL, $certs[$serialNo], PHP_EOL, PHP_EOL;
                 echo '}', PHP_EOL;
@@ -175,7 +172,7 @@ class CertificateDownloader
             list($key, $alias, $mandatory) = $opt;
             if (isset($parsed[$key]) || isset($parsed[$alias])) {
                 $possiable = $parsed[$key] ?? $parsed[$alias] ?? '';
-                $args[$key] = (string) (is_array($possiable) ? $possiable[0] : $possiable);
+                $args[$key] = (string) (\is_array($possiable) ? $possiable[0] : $possiable);
             } elseif ($mandatory) {
                 return null;
             }
