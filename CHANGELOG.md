@@ -6,6 +6,7 @@
 
 - 调整内部中间件栈顺序，并对`APIv3`的正常返回内容(`20X`)做精细判断，逻辑异常时使用`\GuzzleHttp\Exception\RequestException`抛出，应用端可捕获源返回内容;
 - 对于`30X`及`4XX`,`5XX`返回，`Guzzle`基础中间件默认已处理，具体用法及使用，可参考`\GuzzleHttp\RedirectMiddleware`及`\GuzzleHttp\Middleware::httpErrors`说明；
+- 详细变化可见[1.0至1.1升级指南](UPGRADING.md)
 
 ## 1.0.9 - 2021-08-05
 

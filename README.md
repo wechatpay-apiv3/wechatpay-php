@@ -478,6 +478,7 @@ print_r($res);
 - [GuzzleHttp官方版本支持](https://docs.guzzlephp.org/en/stable/overview.html#requirements)
 - [PHP官方版本支持](https://www.php.net/supported-versions.php)
 - [变更历史](CHANGELOG.md)
+- [升级指南](UPGRADING.md)
 
 ## License
 
