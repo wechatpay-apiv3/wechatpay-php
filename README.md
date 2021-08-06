@@ -21,9 +21,9 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.0.9`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`1.1.0`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
-**版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本号我们遵循[语义化版本号](https://semver.org/lang/zh-CN/)。
+**版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本遵循[语义化版本号](https://semver.org/lang/zh-CN/)规则。
 
 为了向广大开发者提供更好的使用体验，微信支付诚挚邀请您将**使用微信支付 API v3 SDK**中的感受反馈给我们。本问卷可能会占用您不超过2分钟的时间，感谢您的支持。
 
@@ -58,7 +58,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.0.9"
+    "wechatpay/wechatpay": "^1.1.0"
 }
 ```
 
@@ -311,7 +311,8 @@ try {
 ```php
 use WeChatPay\Util\MediaUtil;
 $media = new MediaUtil('/your/file/path/image.jpg');
-$resp = $instance->v3->marketing->favor->media->imageUpload
+$resp = $instance
+->v3->marketing->favor->media->imageUpload
 ->postAsync([
     'body'    => $media->getStream(),
     'headers' => [
@@ -344,7 +345,8 @@ use WeChatPay\Crypto\Rsa;
 $encryptor = function($msg) use ($platformCertificateInstance) { return Rsa::encrypt($msg, $platformCertificateInstance); };
 
 try {
-    $resp = $instance->chain('v3/applyment4sub/applyment/')
+    $resp = $instance
+    ->chain('v3/applyment4sub/applyment/')
     ->post([
         'json' => [
             'business_code' => 'APL_98761234',
