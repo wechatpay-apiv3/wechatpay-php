@@ -154,6 +154,8 @@ $instance = Builder::factory([
 
 ### Native下单
 
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_1.shtml)
+
 ```php
 try {
     $resp = $instance
@@ -186,6 +188,8 @@ try {
 
 ### 查单
 
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_2.shtml)
+
 ```php
 $res = $instance
 ->v3->pay->transactions->id->{'{transaction_id}'}
@@ -215,6 +219,8 @@ $res = $instance
 
 ### 关单
 
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml)
+
 ```php
 $res = $instance
 ->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
@@ -243,6 +249,8 @@ $res = $instance
 ```
 
 ### 退款
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_9.shtml)
 
 ```php
 $res = $instance
@@ -278,6 +286,8 @@ $res = $instance
 
 ### 视频文件上传
 
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
+
 ```php
 // 参考上述指引说明，并引入 `MediaUtil` 正常初始化，无额外条件
 use WeChatPay\Util\MediaUtil;
@@ -306,7 +316,9 @@ try {
 }
 ```
 
-### 图片上传
+### 营销图片上传
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter9_0_1.shtml)
 
 ```php
 use WeChatPay\Util\MediaUtil;
@@ -337,6 +349,8 @@ $resp = $instance
 ```
 
 ### 敏感信息加/解密
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter11_1_1.shtml)
 
 ```php
 // 参考上上述说明，引入 `WeChatPay\Crypto\Rsa`
@@ -427,6 +441,8 @@ $instance = Builder::factory([
 **注：** `APIv3`, `APIv2` 以及 `GuzzleHttp\Client` 的 `$config = []` 初始化参数，均融合在一个型参上。
 
 ### 企业付款到零钱
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=14_2)
 
 ```php
 use WeChatPay\Transformer;
