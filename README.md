@@ -170,7 +170,7 @@ try {
         ],
     ]]);
 
-    echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
+    echo $resp->getStatusCode(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
 } catch (\Exception $e) {
     // 进行错误处理
@@ -178,7 +178,7 @@ try {
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 }
@@ -197,7 +197,7 @@ $res = $instance
 ])
 ->then(static function($response) {
     // 正常逻辑回调处理
-    echo $response->getBody()->getContents(), PHP_EOL;
+    echo $response->getBody(), PHP_EOL;
     return $response;
 })
 ->otherwise(static function($e) {
@@ -206,7 +206,7 @@ $res = $instance
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 })
@@ -226,7 +226,7 @@ $res = $instance
 ])
 ->then(static function($response) {
     // 正常逻辑回调处理
-    echo $response->getBody()->getContents(), PHP_EOL;
+    echo $response->getBody(), PHP_EOL;
     return $response;
 })
 ->otherwise(static function($e) {
@@ -235,7 +235,7 @@ $res = $instance
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 })
@@ -260,7 +260,7 @@ $res = $instance
 ])
 ->then(static function($response) {
     // 正常逻辑回调处理
-    echo $response->getBody()->getContents(), PHP_EOL;
+    echo $response->getBody(), PHP_EOL;
     return $response;
 })
 ->otherwise(static function($e) {
@@ -269,7 +269,7 @@ $res = $instance
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 })
@@ -292,7 +292,7 @@ try {
             'content-type' => $media->getContentType(),
         ]
     ]);
-    echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
+    echo $resp->getStatusCode(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
 } catch (\Exception $e) {
     // 异常错误处理
@@ -300,7 +300,7 @@ try {
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 }
@@ -320,7 +320,7 @@ $resp = $instance
     ]
 ])
 ->then(static function($response) {
-    echo $response->getBody()->getContents(), PHP_EOL;
+    echo $response->getBody(), PHP_EOL;
     return $response;
 })
 ->otherwise(static function($e) {
@@ -329,7 +329,7 @@ $resp = $instance
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 })
@@ -342,7 +342,9 @@ $resp = $instance
 // 参考上上述说明，引入 `WeChatPay\Crypto\Rsa`
 use WeChatPay\Crypto\Rsa;
 // 做一个匿名方法，供后续方便使用，$platformCertificateInstance 见初始化章节
-$encryptor = function($msg) use ($platformCertificateInstance) { return Rsa::encrypt($msg, $platformCertificateInstance); };
+$encryptor = function($msg) use ($platformCertificateInstance) {
+    return Rsa::encrypt($msg, $platformCertificateInstance);
+};
 
 try {
     $resp = $instance
@@ -363,15 +365,15 @@ try {
             'Wechatpay-Serial' => $platformCertificateSerial,
         ],
     ]);
-    echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
+    echo $resp->getStatusCode(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
 } catch (\Exception $e) {
     // 异常错误处理
     echo $e->getMessage(), PHP_EOL;
-    if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 }
@@ -445,22 +447,29 @@ $res = $instance
     'security' => true,
     'debug' => true //开启调试模式
 ])
-->then(static function($response) { return Transformer::toArray($response->getBody()->getContents()); })
-->otherwise(static function($exception) { return Transformer::toArray($exception->getResponse()->getBody()->getContents()); })
+->then(static function($response) {
+    return Transformer::toArray((string)$response->getBody());
+})
+->otherwise(static function($e) {
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        return Transformer::toArray((string)$e->getResponse()->getBody());
+    }
+    return [];
+})
 ->wait();
 print_r($res);
 ```
 
 ## 异常处理
 
-`SDK` 未干预 `Guzzle` 默认就提供的基础中间件`\GuzzleHttp\Middleware::http_errors`，文档可见[这里](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions)。
-v1.1版对返回结果做了调整，各场景抛送出的异常如下：
+`Guzzle` 默认已提供基础中间件`\GuzzleHttp\Middleware::http_errors`来处理异常，文档可见[这里](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions)。
+本SDK自`v1.1`对异常处理做了微调，各场景抛送出的异常如下：
 
 - `HTTP`网络错误，如网络连接超时、DNS解析失败等，送出`\GuzzleHttp\Exception\RequestException`；
 - 服务器端返回了 `5xx HTTP` 状态码，送出`\GuzzleHttp\Exception\ServerException`;
 - 服务器端返回了 `4xx HTTP` 状态码，送出`\GuzzleHttp\Exception\ClientException`;
 - 服务器端返回了 `30x HTTP` 状态码，如超出SDK客户端重定向设置阈值，送出`\GuzzleHttp\Exception\TooManyRedirectsException`;
-- 服务器端返回了 `20x HTTP` 状态码，而SDK客户端逻辑处理失败，如应答签名验证失败，送出`\GuzzleHttp\Exception\RequestException`；
+- 服务器端返回了 `20x HTTP` 状态码，如SDK客户端逻辑处理失败，例如应答签名验证失败，送出`\GuzzleHttp\Exception\RequestException`；
 - 请求签名准备阶段，`HTTP`请求未发生之前，如PHP环境异常、商户私钥异常等，送出`\UnexpectedValueException`;
 - 初始化时，如把`商户证书序列号`配置成`平台证书序列号`，送出`\InvalidArgumentException`;
 

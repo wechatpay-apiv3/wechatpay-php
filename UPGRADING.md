@@ -192,7 +192,7 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 
 #### 定制部分
 
-本类库重新设计了`请求签名`及`返回验签`为独立两个中间件，以下示例使用PHP内置的`Generator`实现远程`请求签名`及`结果验签`，供商户参考实现。
+本类库重新设计了`请求签名`及`返回验签`为独立两个中间件，以下示例用来演示如何替换SDK内置中间件，来实现远程`请求签名`及`结果验签`，供商户参考实现。
 
 ```php
 use GuzzleHttp\Client;
@@ -201,34 +201,35 @@ use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-$client = new Client();
+// 假设集中管理服务器接入点为内网`http://192.168.169.170:8080/`地址，并提供两个URI供签名及验签
+// - `/wechatpay-merchant-request-signature` 为请求签名
+// - `/wechatpay-response-merchant-validation` 为响应验签
+$client = new Client(['base_uri' => 'http://192.168.169.170:8080/']);
 
-// 请求签名生成器Generator函数，返回字符串形如`\WeChatPay\Formatter::authorization`返回的字符串
+// 请求参数签名，返回字符串形如`\WeChatPay\Formatter::authorization`返回的字符串
 $remoteSigner = function (RequestInterface $request) use ($client, $merchantId): string {
-    $uri = 'http://192.168.169.170:8080/wechatpay-merchant-request-signature';
-    yield $client->postAsync($uri, ['json' => [
+    return (string)$client->post('/wechatpay-merchant-request-signature', ['json' => [
         'mchid' => $merchantId,
         'verb'  => $request->getMethod(),
         'uri'   => $request->getRequestTarget(),
         'body'  => (string)$request->getBody(),
-    ]]);
+    ]])->getBody();
 };
 
-// 返回结果验签生成器Generator函数，返回可以是4xx,5xx，与验签中间件约定返回字符串'OK'为验签通过
+// 返回结果验签，返回可以是4xx,5xx，与验签中间件约定返回字符串'OK'为验签通过
 $remoteVerifier = function (ResponseInterface $response) use ($client, $merchantId): string {
-    $uri = 'http://192.168.169.170:8080/wechatpay-response-merchant-validation';
     [$nonce]     = $response->getHeader('Wechatpay-Nonce');
     [$serial]    = $response->getHeader('Wechatpay-Serial');
     [$signature] = $response->getHeader('Wechatpay-Signature');
     [$timestamp] = $response->getHeader('Wechatpay-Timestamp');
-    yield $client->postAsync($uri, ['json' => [
+    return (string)$client->post('/wechatpay-response-merchant-validation', ['json' => [
         'mchid'     => $merchantId,
         'nonce'     => $nonce,
         'serial'    => $serial,
         'signature' => $signature,
         'timestamp' => $timestamp,
         'body'      => (string)$response->getBody(),
-    ]]);
+    ]])->getBody();
 };
 
 $stack = $instance->getDriver()->select()->getConfig('handler');
