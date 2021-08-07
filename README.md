@@ -478,7 +478,7 @@ print_r($res);
 
 ## 异常处理
 
-`Guzzle` 默认已提供基础中间件`\GuzzleHttp\Middleware::http_errors`来处理异常，文档可见[这里](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions)。
+`Guzzle` 默认已提供基础中间件`\GuzzleHttp\Middleware::httpErrors`来处理异常，文档可见[这里](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions)。
 本SDK自`v1.1`对异常处理做了微调，各场景抛送出的异常如下：
 
 - `HTTP`网络错误，如网络连接超时、DNS解析失败等，送出`\GuzzleHttp\Exception\RequestException`；
