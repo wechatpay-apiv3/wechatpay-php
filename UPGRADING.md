@@ -198,17 +198,25 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 use GuzzleHttp\Client;
 $client = new Client();
 
-$resp = $client->get('http://192.168.169.170:8080/keys-manager/wechatpay/' . $merchantId, ['query' => ['type' => 'merchant_private_key']]);
+// 内网远程获取商户私钥
+$resp = $client->get(
+    'http://192.168.169.170:8080/keys-manager/wechatpay/' . $merchantId,
+    ['query' => ['type' => 'merchant_private_key']]
+);
 $merchantPrivateKey = PemUtil::loadPrivateKeyFromString(string)$resp->getBody());
 
-$resp = $client->get('http://192.168.169.170:8080/keys-manager/wechatpay/' . $merchantId, ['query' => ['type' => 'platform_certificate']]);
+// 内网远程获取平台证书
+$resp = $client->get(
+    'http://192.168.169.170:8080/keys-manager/wechatpay/' . $merchantId,
+    ['query' => ['type' => 'platform_certificate']]
+);
 $wechatpayCertificate = PemUtil::loadCertificateFromString((string)$resp->getBody());
 ```
 
 #### 平台证书下载工具
 
-在第一次下载平台证书时，本类库充分利用了`\GuzzleHttp\HandlerStack`中间件管理器能力支持，按照栈执行顺序，在返回结果验签中间件`verifier`之前注册`certsInjector`，之后注册`certsRecorder`来**"破解"**"死循环"问题。
-本类库提供的下载工具未改变**返回结果验签**逻辑，完整实现可参考[bin/CertificateDownloader.php](bin/CertificateDownloader.php)。
+在第一次下载平台证书时，本类库充分利用了`\GuzzleHttp\HandlerStack`中间件管理器能力支持，按照栈执行顺序，在返回结果验签中间件`verifier`之前注册`certsInjector`，之后注册`certsRecorder`来 **"破解"** "死循环"问题。
+本类库提供的下载工具**未改变** `返回结果验签` 逻辑，完整实现可参考[bin/CertificateDownloader.php](bin/CertificateDownloader.php)。
 
 #### AesGcm平台证书解密
 
