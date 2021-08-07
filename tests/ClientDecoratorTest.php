@@ -22,7 +22,6 @@ use const DIRECTORY_SEPARATOR;
 
 use ReflectionClass;
 use ReflectionMethod;
-use UnexpectedValueException;
 
 use WeChatPay\Formatter;
 use WeChatPay\Crypto\Rsa;
@@ -33,6 +32,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
@@ -217,7 +217,7 @@ class ClientDecoratorTest extends TestCase
     /**
      * @return array{string,\OpenSSLAsymmetricKey|resource|string|mixed,\OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed,string,string}
      */
-    private function configGenerator(): array
+    private function mockConfiguration(): array
     {
         $privateKey = openssl_pkey_new([
             'digest_alg'       => 'sha256',
@@ -237,7 +237,7 @@ class ClientDecoratorTest extends TestCase
      */
     public function withMockHandlerProvider(): array
     {
-        [$mchid, $privateKey, $publicKey, $mchSerial, $platSerial] = $this->configGenerator();
+        [$mchid, $privateKey, $publicKey, $mchSerial, $platSerial] = $this->mockConfiguration();
 
         return [
             'HTTP 400 STATUS' => [
@@ -274,7 +274,7 @@ class ClientDecoratorTest extends TestCase
             ],
             'HTTP 200 STATUS without mandatory headers' => [
                 $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
-                new Response(200), UnexpectedValueException::class, 'GET', 'v3/pay/transcations',
+                new Response(200), RequestException::class, 'GET', 'v3/pay/transcations',
             ],
             'HTTP 200 STATUS with bad clock offset(in the server late)' => [
                 $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
@@ -283,7 +283,7 @@ class ClientDecoratorTest extends TestCase
                     'Wechatpay-Serial' => $platSerial,
                     'Wechatpay-Timestamp' => strval(Formatter::timestamp() - 60 * 6),
                     'Wechatpay-Signature' => Formatter::nonce(200),
-                ]), UnexpectedValueException::class, 'DELETE', 'v3/pay/transcations',
+                ]), RequestException::class, 'DELETE', 'v3/pay/transcations',
             ],
             'HTTP 200 STATUS with bad clock offset(in the server ahead)' => [
                 $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
@@ -292,7 +292,7 @@ class ClientDecoratorTest extends TestCase
                     'Wechatpay-Serial' => $platSerial,
                     'Wechatpay-Timestamp' => strval(Formatter::timestamp() + 60 * 6),
                     'Wechatpay-Signature' => Formatter::nonce(200),
-                ]), UnexpectedValueException::class, 'PUT', 'v3/pay/transcations',
+                ]), RequestException::class, 'PUT', 'v3/pay/transcations',
             ],
             'HTTP 200 STATUS with unreachable platform certificate serial number' => [
                 $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
@@ -301,7 +301,7 @@ class ClientDecoratorTest extends TestCase
                     'Wechatpay-Serial' => Formatter::nonce(40),
                     'Wechatpay-Timestamp' => strval(Formatter::timestamp()),
                     'Wechatpay-Signature' => Formatter::nonce(200),
-                ]), UnexpectedValueException::class, 'PATCH', 'v3/pay/transcations',
+                ]), RequestException::class, 'PATCH', 'v3/pay/transcations',
             ],
             'HTTP 200 STATUS with bad digest signature' => [
                 $mchid, $privateKey, $publicKey, $mchSerial, $platSerial,
@@ -310,7 +310,7 @@ class ClientDecoratorTest extends TestCase
                     'Wechatpay-Serial' => $platSerial,
                     'Wechatpay-Timestamp' => strval(Formatter::timestamp()),
                     'Wechatpay-Signature' => Formatter::nonce(200),
-                ]), UnexpectedValueException::class, 'POST', 'v3/pay/transcations',
+                ]), RequestException::class, 'POST', 'v3/pay/transcations',
             ],
         ];
     }
@@ -465,7 +465,7 @@ class ClientDecoratorTest extends TestCase
      */
     public function normalRequestsDataProvider(): array
     {
-        [$mchid, $privateKey, $publicKey, $mchSerial, $platSerial] = $this->configGenerator();
+        [$mchid, $privateKey, $publicKey, $mchSerial, $platSerial] = $this->mockConfiguration();
 
         return [
             'HTTP 204 STATUS' => [

@@ -95,9 +95,7 @@ trait ClientXmlTrait
     {
         return static function (callable $handler) use ($secret): callable {
             return static function (RequestInterface $request, array $options = []) use ($secret, $handler): P\PromiseInterface {
-                $promise = $handler($request, $options);
-
-                return $promise->then(static function(ResponseInterface $response) use ($secret) {
+                return $handler($request, $options)->then(static function(ResponseInterface $response) use ($secret) {
                     $result = Transformer::toArray(static::body($response));
 
                     $sign = $result['sign'] ?? null;
@@ -131,10 +129,10 @@ trait ClientXmlTrait
      */
     public static function xmlBased(array $config = []): Client
     {
-        /** @var \GuzzleHttp\HandlerStack $handler */
+        /** @var HandlerStack $handler */
         $handler = isset($config['handler']) && ($config['handler'] instanceof HandlerStack) ? (clone $config['handler']) : HandlerStack::create();
         $handler->before('prepare_body', static::transformRequest($config['mchid'] ?? null, $config['secret'] ?? '', $config['merchant'] ?? []), 'transform_request');
-        $handler->before('prepare_body', static::transformResponse($config['secret'] ?? ''), 'transform_response');
+        $handler->before('http_errors', static::transformResponse($config['secret'] ?? ''), 'transform_response');
         $config['handler'] = $handler;
         $config['headers'] = array_replace_recursive(static::$headers, $config['headers'] ?? []);
 

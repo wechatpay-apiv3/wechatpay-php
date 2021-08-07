@@ -14,11 +14,13 @@ use function sprintf;
 use function array_key_exists;
 use function array_keys;
 
-use UnexpectedValueException;
+use Throwable;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\MessageInterface;
@@ -81,22 +83,24 @@ trait ClientJsonTrait
     }
 
     /**
-     * APIv3's verifier middleware stack
+     * Assert the HTTP `20X` responses fit for the business logic, otherwise thrown a `\GuzzleHttp\Exception\RequestException`.
      *
-     * @param array<string, \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string> $certs The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
+     * The `30X` responses were handled by `\GuzzleHttp\RedirectMiddleware`.
+     * The `4XX, 5XX` responses were handled by `\GuzzleHttp\Middleware::httpErrors`.
      *
-     * @return callable(ResponseInterface)
-     * @throws UnexpectedValueException
+     * @param array<string,\OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string> $certs The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
+     * @return callable(ResponseInterface,RequestInterface)
+     * @throws RequestException
      */
-    public static function verifier(array &$certs): callable
+    protected static function assertSuccessfulResponse(array &$certs): callable
     {
-        return static function (ResponseInterface $response) use (&$certs): ResponseInterface {
+        return static function (ResponseInterface $response, RequestInterface $request) use(&$certs): ResponseInterface {
             if (!($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
                 && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp))) {
-                throw new UnexpectedValueException(sprintf(
+                throw new RequestException(sprintf(
                     Exception\WeChatPayException::EV3_RES_HEADERS_INCOMPLETE,
                     WechatpayNonce, WechatpaySerial, WechatpaySignature, WechatpayTimestamp
-                ));
+                ), $request, $response);
             }
 
             list($nonce) = $response->getHeader(WechatpayNonce);
@@ -107,27 +111,52 @@ trait ClientJsonTrait
             $localTimestamp = Formatter::timestamp();
 
             if (abs($localTimestamp - intval($timestamp)) > MAXIMUM_CLOCK_OFFSET) {
-                throw new UnexpectedValueException(sprintf(
+                throw new RequestException(sprintf(
                     Exception\WeChatPayException::EV3_RES_HEADER_TIMESTAMP_OFFSET,
                     MAXIMUM_CLOCK_OFFSET, $timestamp, $localTimestamp
-                ));
+                ), $request, $response);
             }
 
             if (!array_key_exists($serial, $certs)) {
-                throw new UnexpectedValueException(sprintf(
+                throw new RequestException(sprintf(
                     Exception\WeChatPayException::EV3_RES_HEADER_PLATFORM_SERIAL,
                     $serial, WechatpaySerial, implode(',', array_keys($certs))
-                ));
+                ), $request, $response);
             }
 
-            if (!Crypto\Rsa::verify(Formatter::response($timestamp, $nonce, static::body($response)), $signature, $certs[$serial])) {
-                throw new UnexpectedValueException(sprintf(
+            $verified = false;
+            try {
+                $verified = Crypto\Rsa::verify(
+                    Formatter::response($timestamp, $nonce, static::body($response)),
+                    $signature, $certs[$serial]
+                );
+            } catch (Throwable $exception) {}
+            if ($verified === false) {
+                throw new RequestException(sprintf(
                     Exception\WeChatPayException::EV3_RES_HEADER_SIGNATURE_DIGEST,
                     $timestamp, $nonce, $signature, $serial
-                ));
+                ), $request, $response, $exception ?? null);
             }
 
             return $response;
+        };
+    }
+
+    /**
+     * APIv3's verifier middleware stack
+     *
+     * @param array<string,\OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string> $certs The wechatpay platform serial and certificate(s), `[$serial => $cert]` pair
+     * @return callable(callable(RequestInterface,array))
+     */
+    public static function verifier(array &$certs): callable
+    {
+        $assert = static::assertSuccessfulResponse($certs);
+        return static function (callable $handler) use ($assert): callable {
+            return static function (RequestInterface $request, array $options = []) use ($assert, $handler): PromiseInterface {
+                return $handler($request, $options)->then(static function(ResponseInterface $response) use ($assert, $request): ResponseInterface {
+                    return $assert($response, $request);
+                });
+            };
         };
     }
 
@@ -167,10 +196,10 @@ trait ClientJsonTrait
             ));
         }
 
-        /** @var \GuzzleHttp\HandlerStack $handler */
+        /** @var HandlerStack $handler */
         $handler = isset($config['handler']) && ($config['handler'] instanceof HandlerStack) ? (clone $config['handler']) : HandlerStack::create();
-        $handler->unshift(Middleware::mapRequest(static::signer((string)$config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
-        $handler->unshift(Middleware::mapResponse(static::verifier($config['certs'])), 'verifier');
+        $handler->before('prepare_body', Middleware::mapRequest(static::signer((string)$config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
+        $handler->before('http_errors', static::verifier($config['certs']), 'verifier');
         $config['handler'] = $handler;
 
         unset($config['mchid'], $config['serial'], $config['privateKey'], $config['certs'], $config['secret'], $config['merchant']);

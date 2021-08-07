@@ -21,9 +21,9 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.0.9`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`1.1.0`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
-**版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本号我们遵循[语义化版本号](https://semver.org/lang/zh-CN/)。
+**版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本遵循[语义化版本号](https://semver.org/lang/zh-CN/)规则。
 
 为了向广大开发者提供更好的使用体验，微信支付诚挚邀请您将**使用微信支付 API v3 SDK**中的感受反馈给我们。本问卷可能会占用您不超过2分钟的时间，感谢您的支持。
 
@@ -58,7 +58,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.0.9"
+    "wechatpay/wechatpay": "^1.1.0"
 }
 ```
 
@@ -154,6 +154,8 @@ $instance = Builder::factory([
 
 ### Native下单
 
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_1.shtml)
+
 ```php
 try {
     $resp = $instance
@@ -170,7 +172,7 @@ try {
         ],
     ]]);
 
-    echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
+    echo $resp->getStatusCode(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
 } catch (\Exception $e) {
     // 进行错误处理
@@ -178,13 +180,15 @@ try {
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 }
 ```
 
 ### 查单
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_2.shtml)
 
 ```php
 $res = $instance
@@ -197,7 +201,7 @@ $res = $instance
 ])
 ->then(static function($response) {
     // 正常逻辑回调处理
-    echo $response->getBody()->getContents(), PHP_EOL;
+    echo $response->getBody(), PHP_EOL;
     return $response;
 })
 ->otherwise(static function($e) {
@@ -206,7 +210,7 @@ $res = $instance
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 })
@@ -214,6 +218,8 @@ $res = $instance
 ```
 
 ### 关单
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml)
 
 ```php
 $res = $instance
@@ -226,7 +232,7 @@ $res = $instance
 ])
 ->then(static function($response) {
     // 正常逻辑回调处理
-    echo $response->getBody()->getContents(), PHP_EOL;
+    echo $response->getBody(), PHP_EOL;
     return $response;
 })
 ->otherwise(static function($e) {
@@ -235,7 +241,7 @@ $res = $instance
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 })
@@ -243,6 +249,8 @@ $res = $instance
 ```
 
 ### 退款
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_9.shtml)
 
 ```php
 $res = $instance
@@ -260,7 +268,7 @@ $res = $instance
 ])
 ->then(static function($response) {
     // 正常逻辑回调处理
-    echo $response->getBody()->getContents(), PHP_EOL;
+    echo $response->getBody(), PHP_EOL;
     return $response;
 })
 ->otherwise(static function($e) {
@@ -269,7 +277,7 @@ $res = $instance
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 })
@@ -277,6 +285,8 @@ $res = $instance
 ```
 
 ### 视频文件上传
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
 
 ```php
 // 参考上述指引说明，并引入 `MediaUtil` 正常初始化，无额外条件
@@ -292,7 +302,7 @@ try {
             'content-type' => $media->getContentType(),
         ]
     ]);
-    echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
+    echo $resp->getStatusCode(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
 } catch (\Exception $e) {
     // 异常错误处理
@@ -300,18 +310,21 @@ try {
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 }
 ```
 
-### 图片上传
+### 营销图片上传
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter9_0_1.shtml)
 
 ```php
 use WeChatPay\Util\MediaUtil;
 $media = new MediaUtil('/your/file/path/image.jpg');
-$resp = $instance->v3->marketing->favor->media->imageUpload
+$resp = $instance
+->v3->marketing->favor->media->imageUpload
 ->postAsync([
     'body'    => $media->getStream(),
     'headers' => [
@@ -319,7 +332,7 @@ $resp = $instance->v3->marketing->favor->media->imageUpload
     ]
 ])
 ->then(static function($response) {
-    echo $response->getBody()->getContents(), PHP_EOL;
+    echo $response->getBody(), PHP_EOL;
     return $response;
 })
 ->otherwise(static function($e) {
@@ -328,7 +341,7 @@ $resp = $instance->v3->marketing->favor->media->imageUpload
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 })
@@ -337,14 +350,19 @@ $resp = $instance->v3->marketing->favor->media->imageUpload
 
 ### 敏感信息加/解密
 
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter11_1_1.shtml)
+
 ```php
 // 参考上上述说明，引入 `WeChatPay\Crypto\Rsa`
 use WeChatPay\Crypto\Rsa;
 // 做一个匿名方法，供后续方便使用，$platformCertificateInstance 见初始化章节
-$encryptor = function($msg) use ($platformCertificateInstance) { return Rsa::encrypt($msg, $platformCertificateInstance); };
+$encryptor = function($msg) use ($platformCertificateInstance) {
+    return Rsa::encrypt($msg, $platformCertificateInstance);
+};
 
 try {
-    $resp = $instance->chain('v3/applyment4sub/applyment/')
+    $resp = $instance
+    ->chain('v3/applyment4sub/applyment/')
     ->post([
         'json' => [
             'business_code' => 'APL_98761234',
@@ -361,15 +379,15 @@ try {
             'Wechatpay-Serial' => $platformCertificateSerial,
         ],
     ]);
-    echo $resp->getStatusCode() . ' ' . $resp->getReasonPhrase(), PHP_EOL;
+    echo $resp->getStatusCode(), PHP_EOL;
     echo $resp->getBody(), PHP_EOL;
 } catch (\Exception $e) {
     // 异常错误处理
     echo $e->getMessage(), PHP_EOL;
-    if ($e instanceof \Psr\Http\Message\ResponseInterface && $e->hasResponse()) {
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 }
@@ -424,6 +442,8 @@ $instance = Builder::factory([
 
 ### 企业付款到零钱
 
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=14_2)
+
 ```php
 use WeChatPay\Transformer;
 $res = $instance
@@ -443,10 +463,108 @@ $res = $instance
     'security' => true,
     'debug' => true //开启调试模式
 ])
-->then(static function($response) { return Transformer::toArray($response->getBody()->getContents()); })
-->otherwise(static function($exception) { return Transformer::toArray($exception->getResponse()->getBody()->getContents()); })
+->then(static function($response) {
+    return Transformer::toArray((string)$response->getBody());
+})
+->otherwise(static function($e) {
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        return Transformer::toArray((string)$e->getResponse()->getBody());
+    }
+    return [];
+})
 ->wait();
 print_r($res);
+```
+
+## 异常处理
+
+`Guzzle` 默认已提供基础中间件`\GuzzleHttp\Middleware::httpErrors`来处理异常，文档可见[这里](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions)。
+本SDK自`v1.1`对异常处理做了微调，各场景抛送出的异常如下：
+
+- `HTTP`网络错误，如网络连接超时、DNS解析失败等，送出`\GuzzleHttp\Exception\RequestException`；
+- 服务器端返回了 `5xx HTTP` 状态码，送出`\GuzzleHttp\Exception\ServerException`;
+- 服务器端返回了 `4xx HTTP` 状态码，送出`\GuzzleHttp\Exception\ClientException`;
+- 服务器端返回了 `30x HTTP` 状态码，如超出SDK客户端重定向设置阈值，送出`\GuzzleHttp\Exception\TooManyRedirectsException`;
+- 服务器端返回了 `20x HTTP` 状态码，如SDK客户端逻辑处理失败，例如应答签名验证失败，送出`\GuzzleHttp\Exception\RequestException`；
+- 请求签名准备阶段，`HTTP`请求未发生之前，如PHP环境异常、商户私钥异常等，送出`\UnexpectedValueException`;
+- 初始化时，如把`商户证书序列号`配置成`平台证书序列号`，送出`\InvalidArgumentException`;
+
+以上示例代码，均含有`catch`及`otherwise`错误处理场景示例，测试用例也覆盖了[5xx/4xx/20x异常](tests/ClientDecoratorTest.php)，开发者可参考这些代码逻辑进行错误处理。
+
+## 定制
+
+当默认的本地签名和验签方式不适合你的系统时，你可以通过实现`signer`或者`verifier`中间件来定制签名和验签，比如，你的系统把商户私钥集中存储，业务系统需通过远程调用进行签名。
+以下示例用来演示如何替换SDK内置中间件，来实现远程`请求签名`及`结果验签`，供商户参考实现。
+
+```php
+use GuzzleHttp\Client;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Exception\RequestException;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+
+// 假设集中管理服务器接入点为内网`http://192.168.169.170:8080/`地址，并提供两个URI供签名及验签
+// - `/wechatpay-merchant-request-signature` 为请求签名
+// - `/wechatpay-response-merchant-validation` 为响应验签
+$client = new Client(['base_uri' => 'http://192.168.169.170:8080/']);
+
+// 请求参数签名，返回字符串形如`\WeChatPay\Formatter::authorization`返回的字符串
+$remoteSigner = function (RequestInterface $request) use ($client, $merchantId): string {
+    return (string)$client->post('/wechatpay-merchant-request-signature', ['json' => [
+        'mchid' => $merchantId,
+        'verb'  => $request->getMethod(),
+        'uri'   => $request->getRequestTarget(),
+        'body'  => (string)$request->getBody(),
+    ]])->getBody();
+};
+
+// 返回结果验签，返回可以是4xx,5xx，与验签中间件约定返回字符串'OK'为验签通过
+$remoteVerifier = function (ResponseInterface $response) use ($client, $merchantId): string {
+    [$nonce]     = $response->getHeader('Wechatpay-Nonce');
+    [$serial]    = $response->getHeader('Wechatpay-Serial');
+    [$signature] = $response->getHeader('Wechatpay-Signature');
+    [$timestamp] = $response->getHeader('Wechatpay-Timestamp');
+    return (string)$client->post('/wechatpay-response-merchant-validation', ['json' => [
+        'mchid'     => $merchantId,
+        'nonce'     => $nonce,
+        'serial'    => $serial,
+        'signature' => $signature,
+        'timestamp' => $timestamp,
+        'body'      => (string)$response->getBody(),
+    ]])->getBody();
+};
+
+$stack = $instance->getDriver()->select()->getConfig('handler');
+// 卸载SDK内置签名中间件
+$stack->remove('signer');
+// 注册内网远程请求签名中间件
+$stack->before('prepare_body', Middleware::mapRequest(
+    static function (RequestInterface $request) use ($remoteSigner): RequestInterface {
+        return $request->withHeader('Authorization', $remoteSigner($request));
+    }
+), 'signer');
+// 卸载SDK内置验签中间件
+$stack->remove('verifier');
+// 注册内网远程请求验签中间件
+$stack->before('http_errors', static function (callable $handler) use ($remoteVerifier): callable {
+    return static function (RequestInterface $request, array $options = []) use ($remoteVerifier, $handler) {
+        return $handler($request, $options)->then(
+            static function(ResponseInterface $response) use ($remoteVerifier, $request): ResponseInterface {
+                $verified = '';
+                try {
+                    $verified = $remoteVerifier($response);
+                } catch (\Throwable $exception) {}
+                if ($verified === 'OK') { //远程验签约定，返回字符串`OK`作为验签通过
+                    throw new RequestException('签名验签失败', $request, $response, $exception ?? null);
+                }
+                return $response;
+            }
+        );
+    };
+}, 'verifier');
+
+// 链式/同步/异步请求APIv3即可，例如:
+$instance->V3->Certificates->getAsync()->then(static function($res) { return $res->getBody(); })->wait();
 ```
 
 ## 常见问题
@@ -476,6 +594,7 @@ print_r($res);
 - [GuzzleHttp官方版本支持](https://docs.guzzlephp.org/en/stable/overview.html#requirements)
 - [PHP官方版本支持](https://www.php.net/supported-versions.php)
 - [变更历史](CHANGELOG.md)
+- [升级指南](UPGRADING.md)
 
 ## License
 
