@@ -475,6 +475,82 @@ print_r($res);
 
 以上示例代码，均含有`catch`及`otherwise`错误处理场景示例，测试用例也覆盖了[5xx/4xx/20x异常](tests/ClientDecoratorTest.php)，开发者可参考这些代码逻辑进行错误处理。
 
+## 定制
+
+当默认的本地签名和验签方式不适合你的系统时，你可以通过实现`signer`或者`verifier`中间件来定制签名和验签，比如，你的系统把商户私钥集中存储，业务系统需通过远程调用进行签名。
+以下示例用来演示如何替换SDK内置中间件，来实现远程`请求签名`及`结果验签`，供商户参考实现。
+
+```php
+use GuzzleHttp\Client;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Exception\RequestException;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+
+// 假设集中管理服务器接入点为内网`http://192.168.169.170:8080/`地址，并提供两个URI供签名及验签
+// - `/wechatpay-merchant-request-signature` 为请求签名
+// - `/wechatpay-response-merchant-validation` 为响应验签
+$client = new Client(['base_uri' => 'http://192.168.169.170:8080/']);
+
+// 请求参数签名，返回字符串形如`\WeChatPay\Formatter::authorization`返回的字符串
+$remoteSigner = function (RequestInterface $request) use ($client, $merchantId): string {
+    return (string)$client->post('/wechatpay-merchant-request-signature', ['json' => [
+        'mchid' => $merchantId,
+        'verb'  => $request->getMethod(),
+        'uri'   => $request->getRequestTarget(),
+        'body'  => (string)$request->getBody(),
+    ]])->getBody();
+};
+
+// 返回结果验签，返回可以是4xx,5xx，与验签中间件约定返回字符串'OK'为验签通过
+$remoteVerifier = function (ResponseInterface $response) use ($client, $merchantId): string {
+    [$nonce]     = $response->getHeader('Wechatpay-Nonce');
+    [$serial]    = $response->getHeader('Wechatpay-Serial');
+    [$signature] = $response->getHeader('Wechatpay-Signature');
+    [$timestamp] = $response->getHeader('Wechatpay-Timestamp');
+    return (string)$client->post('/wechatpay-response-merchant-validation', ['json' => [
+        'mchid'     => $merchantId,
+        'nonce'     => $nonce,
+        'serial'    => $serial,
+        'signature' => $signature,
+        'timestamp' => $timestamp,
+        'body'      => (string)$response->getBody(),
+    ]])->getBody();
+};
+
+$stack = $instance->getDriver()->select()->getConfig('handler');
+// 卸载SDK内置签名中间件
+$stack->remove('signer');
+// 注册内网远程请求签名中间件
+$stack->before('prepare_body', Middleware::mapRequest(
+    static function (RequestInterface $request) use ($remoteSigner): RequestInterface {
+        return $request->withHeader('Authorization', $remoteSigner($request));
+    }
+), 'signer');
+// 卸载SDK内置验签中间件
+$stack->remove('verifier');
+// 注册内网远程请求验签中间件
+$stack->before('http_errors', static function (callable $handler) use ($remoteVerifier): callable {
+    return static function (RequestInterface $request, array $options = []) use ($remoteVerifier, $handler) {
+        return $handler($request, $options)->then(
+            static function(ResponseInterface $response) use ($remoteVerifier, $request): ResponseInterface {
+                $verified = '';
+                try {
+                    $verified = $remoteVerifier($response);
+                } catch (\Throwable $exception) {}
+                if ($verified === 'OK') { //远程验签约定，返回字符串`OK`作为验签通过
+                    throw new RequestException('签名验签失败', $request, $response, $exception ?? null);
+                }
+                return $response;
+            }
+        );
+    };
+}, 'verifier');
+
+// 链式/同步/异步请求APIv3即可，例如:
+$instance->V3->Certificates->getAsync()->then(static function($res) { return $res->getBody(); })->wait();
+```
+
 ## 常见问题
 
 ### 如何下载平台证书？
