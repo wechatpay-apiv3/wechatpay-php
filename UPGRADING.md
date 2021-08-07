@@ -168,7 +168,7 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 
  try {
 -     $resp = $client->post('/v3/applyment4sub/applyment/', [
-+     $resp = $instance->chain('v3/applyment4sub/applyment/', [
++     $resp = $instance->chain('v3/applyment4sub/applyment/')->post([
          'json' => [
              'business_code' => 'APL_98761234',
              'contact_info'  => [
