@@ -266,7 +266,7 @@ $instance->V3->Certificates->getAsync()->then(static function($res) { return $re
 
 #### 平台证书下载工具
 
-在第一次下载平台证书时，本类库充分利用了`\GuzzleHttp\HandlerStack`中间件管理器能力支持，按照栈执行顺序，在返回结果验签中间件`verifier`之前注册`certsInjector`，之后注册`certsRecorder`来 **"破解"** "死循环"问题。
+在第一次下载平台证书时，本类库充分利用了`\GuzzleHttp\HandlerStack`中间件管理器能力，按照栈执行顺序，在返回结果验签中间件`verifier`之前注册`certsInjector`，之后注册`certsRecorder`来 **"解开"** "死循环"问题。
 本类库提供的下载工具**未改变** `返回结果验签` 逻辑，完整实现可参考[bin/CertificateDownloader.php](bin/CertificateDownloader.php)。
 
 #### AesGcm平台证书解密
