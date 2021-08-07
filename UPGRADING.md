@@ -32,14 +32,14 @@ v1.1 版本对内部中间件实现做了微调，对`APIv3的异常`做了部�
 
 如 [变更历史](CHANGELOG.md) 所述，本类库自1.0不兼容`wechatpay/wechatpay-guzzle-middleware:~0.2`，原因如下：
 
-1. 升级`Guzzle`大版本至`7`, `Guzzle7`做了许多不兼容更新，相关讨论可见[#54](https://github.com/wechatpay-apiv3/wechatpay-guzzle-middleware/issues/54)，其推移系统要求PHP最低版本至`7.2.5`，重要特性是加入了`函数参数类型签名`以及`函数返回值类型签名`功能，从开发语言层面，使类库健壮性有了显著提升；
+1. 升级`Guzzle`大版本至`7`, `Guzzle7`做了许多不兼容更新，相关讨论可见[Laravel8依赖变更](https://github.com/wechatpay-apiv3/wechatpay-guzzle-middleware/issues/54)；`Guzzle7`要求PHP最低版本为`7.2.5`，重要特性是加入了`函数参数类型签名`以及`函数返回值类型签名`功能，从开发语言层面，使类库健壮性有了显著提升；
 2. 重构并修正了原[敏感信息加解密](https://github.com/wechatpay-apiv3/wechatpay-guzzle-middleware/issues/25)过度设计问题；
 3. 重新设计了类库函数及方案，以提供[回调通知签名](https://github.com/wechatpay-apiv3/wechatpay-guzzle-middleware/issues/42)所需方法；
 4. 调整`composer.json`移动`guzzlehttp/guzzle`从`require-dev`弱依赖至`require`强依赖，开发者无须再手动添加；
 5. 缩减初始化手动拼接客户端参数至`Builder::factory`，统一由SDK来构建客户端；
 6. 新增链式调用封装器，原生提供对`APIv3`的链式调用；
 7. 新增`APIv2`支持，推荐商户可以先升级至本类库支持的`APIv2`能力，然后再按需升级至相对应的`APIv3`能力；
-8. 增加类库单元测试覆盖`Linux`,`macOs`及`Windows`运行时；
+8. 增加类库单元测试覆盖`Linux`,`macOS`及`Windows`运行时；
 9. 调整命名空间`namespace`为`WeChatPay`;
 
 ### 迁移指南
