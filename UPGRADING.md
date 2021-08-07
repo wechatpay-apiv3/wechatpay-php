@@ -96,7 +96,7 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 ```diff
  try {
 -    $resp = $client->request('GET', 'https://api.mch.weixin.qq.com/v3/...', [
-+    $resp = $instance->chain('/v3/...')->get([
++    $resp = $instance->chain('v3/...')->get([
 -         'headers' => [ 'Accept' => 'application/json' ]
      ]);
  } catch (RequestException $e) {
@@ -111,7 +111,7 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 ```diff
  try {
 -    $resp = $client->request('POST', 'https://api.mch.weixin.qq.com/v3/...', [
-+    $resp = $instance->chain('/v3/...')->post([
++    $resp = $instance->chain('v3/...')->post([
           'json' => [ // JSON请求体
               'field1' => 'value1',
               'field2' => 'value2'
