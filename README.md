@@ -451,6 +451,21 @@ $res = $instance
 print_r($res);
 ```
 
+## 异常处理
+
+`SDK` 未干预 `Guzzle` 默认就提供的基础中间件`\GuzzleHttp\Middleware::http_errors`，文档可见[这里](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions)。
+v1.1版对返回结果做了调整，各场景抛送出的异常如下：
+
+- `HTTP`网络错误，如网络连接超时、DNS解析失败等，送出`\GuzzleHttp\Exception\RequestException`；
+- 服务器端返回了 `5xx HTTP` 状态码，送出`\GuzzleHttp\Exception\ServerException`;
+- 服务器端返回了 `4xx HTTP` 状态码，送出`\GuzzleHttp\Exception\ClientException`;
+- 服务器端返回了 `30x HTTP` 状态码，如超出SDK客户端重定向设置阈值，送出`\GuzzleHttp\Exception\TooManyRedirectsException`;
+- 服务器端返回了 `20x HTTP` 状态码，而SDK客户端逻辑处理失败，如应答签名验证失败，送出`\GuzzleHttp\Exception\RequestException`；
+- 请求签名准备阶段，`HTTP`请求未发生之前，如PHP环境异常、商户私钥异常等，送出`\UnexpectedValueException`;
+- 初始化时，如把`商户证书序列号`配置成`平台证书序列号`，送出`\InvalidArgumentException`;
+
+以上示例代码，均含有`catch`及`otherwise`错误处理场景示例，测试用例也覆盖了[5xx/4xx/20x异常](tests/ClientDecoratorTest.php)，开发者可参考这些代码逻辑进行错误处理。
+
 ## 常见问题
 
 ### 如何下载平台证书？

@@ -203,7 +203,7 @@ use Psr\Http\Message\ResponseInterface;
 
 $client = new Client();
 
-// 请求签名生成器Generator函数，返回字符串形如`\WeChatPay\Formatter::authorization`返回对字符串
+// 请求签名生成器Generator函数，返回字符串形如`\WeChatPay\Formatter::authorization`返回的字符串
 $remoteSigner = function (RequestInterface $request) use ($client, $merchantId): string {
     $uri = 'http://192.168.169.170:8080/wechatpay-merchant-request-signature';
     yield $client->postAsync($uri, ['json' => [
