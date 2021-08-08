@@ -440,7 +440,7 @@ class ClientDecoratorTest extends TestCase
             $request->getRequestTarget(),
             $timestamp,
             $nonceStr,
-            $request->getBody()->getContents()
+            (string) $request->getBody()
         ), $signature, $publicKey));
     }
 
@@ -529,7 +529,7 @@ class ClientDecoratorTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        self::assertEquals($expected, $instance->request($method, $uri)->getBody()->getContents());
+        self::assertEquals($expected, (string) $instance->request($method, $uri)->getBody());
     }
 
     /**
@@ -561,7 +561,7 @@ class ClientDecoratorTest extends TestCase
         $this->mock->append($respondor);
 
         $instance->requestAsync($method, $uri)->then(static function(ResponseInterface $response) use($expected) {
-            static::assertEquals($expected, $response->getBody()->getContents());
+            static::assertEquals($expected, (string) $response->getBody());
         })->wait();
     }
 }

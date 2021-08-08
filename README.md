@@ -15,7 +15,7 @@
 APIv2已内置请求数据签名及`XML`转换器，应答做了数据`签名验签`，转换提供有`WeChatPay\Transformer::toArray`静态方法，按需转换；
 APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创新性地实现了链式面向对象同步/异步调用远程接口。
 
-如果你是使用 `Guzzle` 的商户开发者，可以使用 `WeChatPay\Builder` 工厂方法直接创建一个 `GuzzleHttp\Client` 的链式调用封装器，
+如果你是使用 `Guzzle` 的商户开发者，可以使用 `WeChatPay\Builder::factory` 工厂方法直接创建一个 `GuzzleHttp\Client` 的链式调用封装器，
 实例在执行请求时将自动携带身份认证信息，并检查应答的微信支付签名。
 
 
@@ -89,7 +89,7 @@ composer install
 
 ## 开始
 
-首先，通过 `WeChatPay\Builder` 工厂方法构建一个实例，然后如上述`约定`，链式`同步`或`异步`请求远端`OpenAPI`接口。
+首先，通过 `WeChatPay\Builder::factory` 工厂方法构建一个实例，然后如上述`约定`，链式`同步`或`异步`请求远端`OpenAPI`接口。
 
 ```php
 use WeChatPay\Builder;
@@ -356,7 +356,7 @@ $resp = $instance
 // 参考上上述说明，引入 `WeChatPay\Crypto\Rsa`
 use WeChatPay\Crypto\Rsa;
 // 做一个匿名方法，供后续方便使用，$platformCertificateInstance 见初始化章节
-$encryptor = function($msg) use ($platformCertificateInstance) {
+$encryptor = static function(string $msg) use ($platformCertificateInstance): string {
     return Rsa::encrypt($msg, $platformCertificateInstance);
 };
 
@@ -395,11 +395,8 @@ try {
 
 ## APIv2
 
-末尾驱动的 `HTTP METHOD(POST)` 方法入参 `array $options`，接受两个自定义参数，释义如下：
-
-- `$options['nonceless']` - 标量 `scalar` 任意值，语义上即，本次请求不用自动添加`nonce_str`参数，推荐 `boolean(True)`
-- `$options['security']` - 布尔量`True`，语义上即，本次请求需要加载ssl证书，对应的是初始化 `array $config['merchant']` 结构体
-
+本类库可单独用于`APIv2`的开发，希望给商户提供一个过渡，先平滑迁移至`APIv2`承接，然后再按需替换升级至`APIv3`上。
+以下代码以单独使用展开示例，供商户参考。
 ### 初始化
 
 ```php
@@ -469,6 +466,62 @@ $res = $instance
 ->otherwise(static function($e) {
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         return Transformer::toArray((string)$e->getResponse()->getBody());
+    }
+    return [];
+})
+->wait();
+print_r($res);
+```
+
+末尾驱动的 `HTTP METHOD(POST)` 方法入参 `array $options`，可接受的两个自定义参数，释义如下：
+
+- `$options['nonceless']` - 标量 `scalar` 任意值，语义上即，本次请求不用自动添加`nonce_str`参数，推荐 `boolean(True)`
+- `$options['security']` - 布尔量`True`，语义上即，本次请求需要加载ssl证书，对应的是初始化 `array $config['merchant']` 结构体
+
+### 企业付款到银行卡-获取RSA公钥
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_7&index=4)
+
+```js
+$res = $instance
+->v2->risk->getpublickey
+->post([
+    'xml' => [
+        'mch_id' => '1900000109',
+        'sign_type' => 'MD5',
+    ],
+    // 特殊接入点，仅对本次请求有效
+    'base_uri' => 'https://fraud.mch.weixin.qq.com/',
+])
+// 返回无sign字典，只能从异常通道获取返回值
+->otherwise(static function($e) {
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        return Transformer::toArray((string) $e->getResponse()->getBody());
+    }
+    return [];
+})
+->wait();
+print_r($res);
+```
+
+### v2沙箱环境-获取验签密钥API
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/sp_coupon.php?chapter=23_1&index=2)
+
+```js
+$res = $instance
+->v2->sandboxnew->pay->getsignkey
+->post([
+    'xml' => [
+        'mch_id' => '1900000109',
+    ],
+    // 通知SDK不接受沙箱环境重定向，仅对本次请求有效
+    'allow_redirects' => false,
+])
+// 返回无sign字典，只能从异常通道获取返回值
+->otherwise(static function($e) {
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        return Transformer::toArray((string) $e->getResponse()->getBody());
     }
     return [];
 })

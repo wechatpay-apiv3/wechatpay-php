@@ -55,7 +55,7 @@ class CertificateDownloader
      */
     private static function certsInjector(string $apiv3Key, array &$certs): callable {
         return static function(ResponseInterface $response) use ($apiv3Key, &$certs): ResponseInterface {
-            $body = $response->getBody()->getContents();
+            $body = (string) $response->getBody();
             /** @var object{data:array<object{encrypt_certificate:object{serial_no:string,nonce:string,associated_data:string}}>} $json */
             $json = Utils::jsonDecode($body);
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
@@ -88,10 +88,11 @@ class CertificateDownloader
             'base_uri'   => (string)($opts['baseuri'] ?? 'https://api.mch.weixin.qq.com/'),
         ]);
 
-        $handler = $instance->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
+        /** @var \GuzzleHttp\HandlerStack $stack */
+        $stack = $instance->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
         // The response middle stacks were executed one by one on `FILO` order.
-        $handler->after('verifier', Middleware::mapResponse(static::certsInjector($apiv3Key, $certs)), 'injector');
-        $handler->before('verifier', Middleware::mapResponse(static::certsRecorder((string) $outputDir, $certs)), 'recorder');
+        $stack->after('verifier', Middleware::mapResponse(static::certsInjector($apiv3Key, $certs)), 'injector');
+        $stack->before('verifier', Middleware::mapResponse(static::certsRecorder((string) $outputDir, $certs)), 'recorder');
 
         $instance->chain('v3/certificates')->getAsync(
             ['debug' => true]
@@ -100,7 +101,7 @@ class CertificateDownloader
             if ($exception instanceof RequestException && $exception->hasResponse()) {
                 /** @var ResponseInterface $body */
                 $body = $exception->getResponse();
-                echo $body->getBody()->getContents(), PHP_EOL, PHP_EOL, PHP_EOL;
+                echo $body->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
             }
             echo $exception->getTraceAsString(), PHP_EOL;
         })->wait();
@@ -116,7 +117,7 @@ class CertificateDownloader
      */
     private static function certsRecorder(string $outputDir, array &$certs): callable {
         return static function(ResponseInterface $response) use ($outputDir, &$certs): ResponseInterface {
-            $body = $response->getBody()->getContents();
+            $body = (string) $response->getBody();
             /** @var object{data:array<object{effective_time:string,expire_time:string:serial_no:string}>} $json */
             $json = Utils::jsonDecode($body);
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
@@ -125,10 +126,12 @@ class CertificateDownloader
                 $outpath = $outputDir . DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
 
                 echo 'Certificate #', $index, ' {', PHP_EOL;
-                echo '    Serial Number: ', $serialNo, PHP_EOL;
+                echo '    Serial Number: ', static::highlight($serialNo), PHP_EOL;
                 echo '    Not Before: ', (new \DateTime($row->effective_time))->format(\DateTime::W3C), PHP_EOL;
                 echo '    Not After: ', (new \DateTime($row->expire_time))->format(\DateTime::W3C), PHP_EOL;
-                echo '    Saved to: ', $outpath, PHP_EOL;
+                echo '    Saved to: ', static::highlight($outpath), PHP_EOL;
+                echo '    You may confirm the above infos again even if this library already did(by Crypto\Rsa::verify):', PHP_EOL;
+                echo '      ', static::highlight(sprintf('openssl x509 -in %s -noout -serial -dates', $outpath)), PHP_EOL;
                 echo '    Content: ', PHP_EOL, PHP_EOL, $certs[$serialNo], PHP_EOL, PHP_EOL;
                 echo '}', PHP_EOL;
 
@@ -137,6 +140,14 @@ class CertificateDownloader
 
             return $response;
         };
+    }
+
+    /**
+     * @param string $thing
+     */
+    private static function highlight(string $thing): string
+    {
+        return sprintf("\x1B[1;32m%s\x1B[0m", $thing);
     }
 
     /**

@@ -67,14 +67,12 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     protected static function body(MessageInterface $message): string
     {
-        $body = '';
-        $bodyStream = $message->getBody();
-        if ($bodyStream->isSeekable()) {
-            $body = (string)$bodyStream;
-            $bodyStream->rewind();
-        }
+        $stream = $message->getBody();
+        $content = (string) $stream;
 
-        return $body;
+        $stream->tell() && $stream->rewind();
+
+        return $content;
     }
 
     /**
