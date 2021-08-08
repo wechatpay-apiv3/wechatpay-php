@@ -485,7 +485,7 @@ print_r($res);
 ```js
 $res = $instance
 ->v2->risk->getpublickey
-->post([
+->postAsync([
     'xml' => [
         'mch_id' => '1900000109',
         'sign_type' => 'MD5',
@@ -511,7 +511,7 @@ print_r($res);
 ```js
 $res = $instance
 ->v2->sandboxnew->pay->getsignkey
-->post([
+->postAsync([
     'xml' => [
         'mch_id' => '1900000109',
     ],
