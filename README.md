@@ -562,10 +562,10 @@ $params = [
     'nonceStr'  => Formatter::nonce(),
     'package'   => 'prepay_id=wx201410272009395522657a690389285100',
 ];
-$params += [
-    'paySign'  => Rsa::sign(Formatter::joinedByLineFeed(...$params), $merchantPrivateKeyInstance),
-    'signType' => 'RSA',
-];
+$params += ['paySign' => Rsa::sign(
+    Formatter::joinedByLineFeed(...array_values($params)),
+    $merchantPrivateKeyInstance
+), 'signType' => 'RSA'];
 
 echo json_enocde($params);
 ```
