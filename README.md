@@ -482,7 +482,7 @@ print_r($res);
 
 [官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_7&index=4)
 
-```js
+```php
 $res = $instance
 ->v2->risk->getpublickey
 ->postAsync([
@@ -508,7 +508,7 @@ print_r($res);
 
 [官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/sp_coupon.php?chapter=23_1&index=2)
 
-```js
+```php
 $res = $instance
 ->v2->sandboxnew->pay->getsignkey
 ->postAsync([
@@ -527,6 +527,112 @@ $res = $instance
 })
 ->wait();
 print_r($res);
+```
+
+### v2通知应答
+
+```php
+use WeChatPay\Transformer;
+
+$xml = Transformer::toXml([
+  'return_code' => 'SUCCESS',
+  'return_msg' => 'OK',
+]);
+
+echo $xml;
+```
+
+## 数据签名
+
+### APIv3小程序/JSAPI调起支付数据签名
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_4.shtml)
+
+```php
+use WeChatPay\Formatter;
+use WeChatPay\Crypto\Rsa;
+use WeChatPay\Util\PemUtil;
+
+$merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
+$merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
+
+$params = [
+    'appId'     => 'wx8888888888888888',
+    'timeStamp' => (string)Formatter::timestamp(),
+    'nonceStr'  => Formatter::nonce(),
+    'package'   => 'prepay_id=wx201410272009395522657a690389285100',
+];
+$params += [
+    'paySign'  => Rsa::sign(Formatter::joinedByLineFeed(...$params), $merchantPrivateKeyInstance),
+    'signType' => 'RSA',
+];
+
+echo json_enocde($params);
+```
+
+### 商家券-小程序发券APIv2密钥签名
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter9_3_1.shtml)
+
+```php
+use WeChatPay\Formatter;
+use WeChatPay\Crypto\Hash;
+
+$apiv2Key = 'exposed_your_key_here_have_risks';
+
+$busiFavorFlat = static function (array $params): array {
+    $result = ['send_coupon_merchant' => $params['send_coupon_merchant']];
+    foreach ($params['send_coupon_params'] as $index => $item) {
+        foreach ($item as $key => $value) {
+            $result["{$key}{$index}"] = $value;
+        }
+    }
+    return $result;
+};
+
+// 发券小程序所需数据结构
+$busiFavor = [
+    'send_coupon_params' => [
+        ['out_request_no' => '1234567', 'stock_id' => 'abc123'],
+        ['out_request_no' => '7654321', 'stock_id' => '321cba'],
+    ],
+    'send_coupon_merchant' => '10016226'
+];
+
+$busiFavor += ['sign' => Hash::sign(
+    Hash::ALGO_HMAC_SHA256,
+    Formatter::queryStringLike(Formatter::ksort($busiFavorFlat($busiFavor))),
+    $apiv2Key
+)];
+
+echo json_encode($params);
+```
+
+### 商家券-H5发券APIv2密钥签名
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter9_4_1.shtml)
+
+```php
+use WeChatPay\Formatter;
+use WeChatPay\Crypto\Hash;
+
+$apiv2Key = 'exposed_your_key_here_have_risks';
+
+$params = [
+  'stock_id'             => '12111100000001',
+  'out_request_no'       => '20191204550002',
+  'send_coupon_merchant' => '10016226',
+  'open_id'              => 'oVvBvwEurkeUJpBzX90-6MfCHbec',
+  'coupon_code'          => '75345199',
+];
+
+$params += ['sign' => Hash::sign(
+    Hash::ALGO_HMAC_SHA256,
+    Formatter::queryStringLike(Formatter::ksort($params)),
+    $apiv2Key
+)];
+
+echo json_encode($params);
 ```
 
 ## 异常处理
