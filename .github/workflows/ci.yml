@@ -37,7 +37,7 @@ jobs:
 
       - name: Cache dependencies on PHP(=7.2)@${{ matrix.os }}
         if: matrix.php-version == '7.2'
-        id: composer-cache-72
+        id: dependencies-cache-72
         uses: actions/cache@v2
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
@@ -47,7 +47,7 @@ jobs:
 
       - name: Cache dependencies on PHP(>7.2)@${{ matrix.os }}
         if: matrix.php-version != '7.2'
-        id: composer-cache
+        id: dependencies-cache
         uses: actions/cache@v2
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
