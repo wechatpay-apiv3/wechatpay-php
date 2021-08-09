@@ -567,7 +567,7 @@ $params += ['paySign' => Rsa::sign(
     $merchantPrivateKeyInstance
 ), 'signType' => 'RSA'];
 
-echo json_enocde($params);
+echo json_encode($params);
 ```
 
 ### 商家券-小程序发券APIv2密钥签名
