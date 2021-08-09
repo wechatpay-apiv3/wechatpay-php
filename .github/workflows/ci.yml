@@ -31,22 +31,26 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate --strict --no-check-version
 
-      - name: Cache vendor libraries on PHP(=7.2)@${{ matrix.os }}
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache dependencies on PHP(=7.2)@${{ matrix.os }}
         if: matrix.php-version == '7.2'
         id: composer-cache-72
         uses: actions/cache@v2
         with:
-          path: vendor
+          path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-php${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php${{ matrix.php-version }}-
 
-      - name: Cache vendor libraries on PHP(>7.2)@${{ matrix.os }}
+      - name: Cache dependencies on PHP(>7.2)@${{ matrix.os }}
         if: matrix.php-version != '7.2'
         id: composer-cache
         uses: actions/cache@v2
         with:
-          path: vendor
+          path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-php-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-
@@ -54,10 +58,6 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - run: composer phpstan-7
-        if: ${{ startsWith(matrix.php-version, '7') }}
-
       - run: composer phpstan
-        if: ${{ startsWith(matrix.php-version, '8') }}
 
       - run: composer test
