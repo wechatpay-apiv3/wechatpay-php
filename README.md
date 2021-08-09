@@ -21,7 +21,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.1.0`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`1.1.1`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 **版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本遵循[语义化版本号](https://semver.org/lang/zh-CN/)规则。
 
@@ -58,7 +58,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.1.0"
+    "wechatpay/wechatpay": "^1.1.1"
 }
 ```
 
@@ -395,7 +395,7 @@ try {
 
 ## APIv2
 
-本类库可单独用于`APIv2`的开发，希望给商户提供一个过渡，先平滑迁移至`APIv2`承接，然后再按需替换升级至`APIv3`上。
+本类库可单独用于`APIv2`的开发，希望能给商户提供一个过渡，可先平滑迁移至本类库以承接`APIv2`对接，然后再按需替换升级至`APIv3`上。
 以下代码以单独使用展开示例，供商户参考。
 ### 初始化
 
@@ -473,7 +473,7 @@ $res = $instance
 print_r($res);
 ```
 
-末尾驱动的 `HTTP METHOD(POST)` 方法入参 `array $options`，可接受的两个自定义参数，释义如下：
+`APIv2`末尾驱动的 `HTTP METHOD(POST)` 方法入参 `array $options`，可接受类库定义的两个参数，释义如下：
 
 - `$options['nonceless']` - 标量 `scalar` 任意值，语义上即，本次请求不用自动添加`nonce_str`参数，推荐 `boolean(True)`
 - `$options['security']` - 布尔量`True`，语义上即，本次请求需要加载ssl证书，对应的是初始化 `array $config['merchant']` 结构体
@@ -677,7 +677,7 @@ $remoteSigner = function (RequestInterface $request) use ($client, $merchantId):
     ]])->getBody();
 };
 
-// 返回结果验签，返回可以是4xx,5xx，与验签中间件约定返回字符串'OK'为验签通过
+// 返回结果验签，返回可以是4xx,5xx，与远程验签应用约定返回字符串'OK'为验签通过
 $remoteVerifier = function (ResponseInterface $response) use ($client, $merchantId): string {
     [$nonce]     = $response->getHeader('Wechatpay-Nonce');
     [$serial]    = $response->getHeader('Wechatpay-Serial');
@@ -735,7 +735,11 @@ $instance->V3->Certificates->getAsync()->then(static function($res) { return $re
 
 ### 证书和回调解密需要的AesGcm解密在哪里？
 
-请参考[AesGcm.php](src/Crypto/AesGcm.php)。
+请参考[AesGcm.php](src/Crypto/AesGcm.php)，例如内置的`平台证书`下载工具解密代码如下:
+
+```php
+AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_data);
+```
 
 ### 配合swoole使用时，上传文件接口报错
 
