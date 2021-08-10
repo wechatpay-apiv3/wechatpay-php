@@ -53,7 +53,7 @@ trait ClientXmlTrait
     public static function transformRequest(?string $mchid = null, string $secret = '', ?array $merchant = null): callable
     {
         return static function (callable $handler) use ($mchid, $secret, $merchant): callable {
-            trigger_error(Exception\WeChatPayException::DEP_XML_PROTOCOL_UNDER_END_OF_LIFE, E_USER_DEPRECATED);
+            trigger_error(Exception\WeChatPayException::DEP_XML_PROTOCOL_IS_REACHABLE_EOL, E_USER_DEPRECATED);
 
             return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): PromiseInterface {
                 $data = $options['xml'] ?? [];

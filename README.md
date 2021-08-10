@@ -397,6 +397,15 @@ try {
 
 本类库可单独用于`APIv2`的开发，希望能给商户提供一个过渡，可先平滑迁移至本类库以承接`APIv2`对接，然后再按需替换升级至`APIv3`上。
 以下代码以单独使用展开示例，供商户参考。
+
+**提醒：** 本SDK在调用`APIv2`接口时， *特意在错误通道(E_USER_DEPRECATED)* 打出提示 `\WeChatPay\Exception\DEP_XML_PROTOCOL_IS_REACHABLE_EOL` :
+
+**New features are all in `APIv3`, there's no reason to continue use this kind client since v2.0.**
+
+**新功能均已在`APIv3`接口服务上，已没有理由继续使用`APIv2`接口服务了，本SDK将在v2.0版移除对`APIv2`的默认支持。**
+
+商户在平滑迁移时，务必调整`php.ini`的`display_errors=Off`或者`error_reporting`错误级别，来防止把这条**提醒**信息打送至前台业务系统。
+
 ### 初始化
 
 ```php
