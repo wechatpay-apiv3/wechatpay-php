@@ -196,11 +196,11 @@ trait ClientJsonTrait
             ));
         }
 
-        /** @var HandlerStack $handler */
-        $handler = isset($config['handler']) && ($config['handler'] instanceof HandlerStack) ? (clone $config['handler']) : HandlerStack::create();
-        $handler->before('prepare_body', Middleware::mapRequest(static::signer((string)$config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
-        $handler->before('http_errors', static::verifier($config['certs']), 'verifier');
-        $config['handler'] = $handler;
+        /** @var HandlerStack $stack */
+        $stack = isset($config['handler']) && ($config['handler'] instanceof HandlerStack) ? (clone $config['handler']) : HandlerStack::create();
+        $stack->before('prepare_body', Middleware::mapRequest(static::signer((string)$config['mchid'], $config['serial'], $config['privateKey'])), 'signer');
+        $stack->before('http_errors', static::verifier($config['certs']), 'verifier');
+        $config['handler'] = $stack;
 
         unset($config['mchid'], $config['serial'], $config['privateKey'], $config['certs'], $config['secret'], $config['merchant']);
 

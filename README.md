@@ -15,13 +15,14 @@
 APIv2已内置请求数据签名及`XML`转换器，应答做了数据`签名验签`，转换提供有`WeChatPay\Transformer::toArray`静态方法，按需转换；
 APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创新性地实现了链式面向对象同步/异步调用远程接口。
 
-如果你是使用 `Guzzle` 的商户开发者，可以使用 `WeChatPay\Builder` 工厂方法直接创建一个 `GuzzleHttp\Client` 的链式调用封装器，
+如果你是使用 `Guzzle` 的商户开发者，可以使用 `WeChatPay\Builder::factory` 工厂方法直接创建一个 `GuzzleHttp\Client` 的链式调用封装器，
 实例在执行请求时将自动携带身份认证信息，并检查应答的微信支付签名。
 
 
 ## 项目状态
 
-当前版本为`1.1.0`测试版本。请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
+当前版本为`1.1.1`测试版本。
+请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 **版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本遵循[语义化版本号](https://semver.org/lang/zh-CN/)规则。
 
@@ -39,6 +40,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 + guzzlehttp/guzzle ^7.0
 
 **注:** 随`Guzzle7`支持的PHP版本最低为`7.2.5`，另PHP官方已于`30 Nov 2020`停止维护`PHP7.2`，详见附注链接。
+
 ## 安装
 
 推荐使用PHP包管理工具`composer`引入SDK到项目中：
@@ -58,7 +60,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.1.0"
+    "wechatpay/wechatpay": "^1.1.1"
 }
 ```
 
@@ -89,7 +91,7 @@ composer install
 
 ## 开始
 
-首先，通过 `WeChatPay\Builder` 工厂方法构建一个实例，然后如上述`约定`，链式`同步`或`异步`请求远端`OpenAPI`接口。
+首先，通过 `WeChatPay\Builder::factory` 工厂方法构建一个实例，然后如上述`约定`，链式`同步`或`异步`请求远端`OpenAPI`接口。
 
 ```php
 use WeChatPay\Builder;
@@ -356,7 +358,7 @@ $resp = $instance
 // 参考上上述说明，引入 `WeChatPay\Crypto\Rsa`
 use WeChatPay\Crypto\Rsa;
 // 做一个匿名方法，供后续方便使用，$platformCertificateInstance 见初始化章节
-$encryptor = function($msg) use ($platformCertificateInstance) {
+$encryptor = static function(string $msg) use ($platformCertificateInstance): string {
     return Rsa::encrypt($msg, $platformCertificateInstance);
 };
 
@@ -395,10 +397,16 @@ try {
 
 ## APIv2
 
-末尾驱动的 `HTTP METHOD(POST)` 方法入参 `array $options`，接受两个自定义参数，释义如下：
+本类库可单独用于`APIv2`的开发，希望能给商户提供一个过渡，可先平滑迁移至本类库以承接`APIv2`对接，然后再按需替换升级至`APIv3`上。
+以下代码以单独使用展开示例，供商户参考。
 
-- `$options['nonceless']` - 标量 `scalar` 任意值，语义上即，本次请求不用自动添加`nonce_str`参数，推荐 `boolean(True)`
-- `$options['security']` - 布尔量`True`，语义上即，本次请求需要加载ssl证书，对应的是初始化 `array $config['merchant']` 结构体
+**提醒：** 本SDK在调用`APIv2`接口时， *特意在错误通道(E_USER_DEPRECATED)* 打出提示 `\WeChatPay\Exception\DEP_XML_PROTOCOL_IS_REACHABLE_EOL` :
+
+**New features are all in `APIv3`, there's no reason to continue use this kind client since v2.0.**
+
+**新功能均已在`APIv3`接口服务上，已没有理由继续使用`APIv2`接口服务了，本SDK将在v2.0版移除对`APIv2`的默认支持。**
+
+商户在平滑迁移时，务必调整`php.ini`的`display_errors=Off`或者`error_reporting`错误级别，来防止把这条**提醒**信息打送至前台业务系统。
 
 ### 初始化
 
@@ -450,8 +458,8 @@ $res = $instance
 ->v2->mmpaymkttransfers->promotion->transfers
 ->postAsync([
     'xml' => [
-      'appid'            => 'wx8888888888888888',
-      'mch_id'           => '1900000109',
+      'mch_appid'        => 'wx8888888888888888',
+      'mchid'            => '1900000109',// 注意这个商户号，key是`mchid`非`mch_id`
       'partner_trade_no' => '10000098201411111234567890',
       'openid'           => 'oxTWIuGaIt6gTKsQRLau2M0yL16E',
       'check_name'       => 'FORCE_CHECK',
@@ -476,6 +484,168 @@ $res = $instance
 print_r($res);
 ```
 
+`APIv2`末尾驱动的 `HTTP METHOD(POST)` 方法入参 `array $options`，可接受类库定义的两个参数，释义如下：
+
+- `$options['nonceless']` - 标量 `scalar` 任意值，语义上即，本次请求不用自动添加`nonce_str`参数，推荐 `boolean(True)`
+- `$options['security']` - 布尔量`True`，语义上即，本次请求需要加载ssl证书，对应的是初始化 `array $config['merchant']` 结构体
+
+### 企业付款到银行卡-获取RSA公钥
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_7&index=4)
+
+```php
+$res = $instance
+->v2->risk->getpublickey
+->postAsync([
+    'xml' => [
+        'mch_id' => '1900000109',
+        'sign_type' => 'MD5',
+    ],
+    // 特殊接入点，仅对本次请求有效
+    'base_uri' => 'https://fraud.mch.weixin.qq.com/',
+])
+// 返回无sign字典，只能从异常通道获取返回值
+->otherwise(static function($e) {
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        return Transformer::toArray((string) $e->getResponse()->getBody());
+    }
+    return [];
+})
+->wait();
+print_r($res);
+```
+
+### v2沙箱环境-获取验签密钥API
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/sp_coupon.php?chapter=23_1&index=2)
+
+```php
+$res = $instance
+->v2->sandboxnew->pay->getsignkey
+->postAsync([
+    'xml' => [
+        'mch_id' => '1900000109',
+    ],
+    // 通知SDK不接受沙箱环境重定向，仅对本次请求有效
+    'allow_redirects' => false,
+])
+// 返回无sign字典，只能从异常通道获取返回值
+->otherwise(static function($e) {
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        return Transformer::toArray((string) $e->getResponse()->getBody());
+    }
+    return [];
+})
+->wait();
+print_r($res);
+```
+
+### v2通知应答
+
+```php
+use WeChatPay\Transformer;
+
+$xml = Transformer::toXml([
+  'return_code' => 'SUCCESS',
+  'return_msg' => 'OK',
+]);
+
+echo $xml;
+```
+
+## 数据签名
+
+### APIv3小程序/JSAPI调起支付数据签名
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_4.shtml)
+
+```php
+use WeChatPay\Formatter;
+use WeChatPay\Crypto\Rsa;
+use WeChatPay\Util\PemUtil;
+
+$merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
+$merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
+
+$params = [
+    'appId'     => 'wx8888888888888888',
+    'timeStamp' => (string)Formatter::timestamp(),
+    'nonceStr'  => Formatter::nonce(),
+    'package'   => 'prepay_id=wx201410272009395522657a690389285100',
+];
+$params += ['paySign' => Rsa::sign(
+    Formatter::joinedByLineFeed(...array_values($params)),
+    $merchantPrivateKeyInstance
+), 'signType' => 'RSA'];
+
+echo json_encode($params);
+```
+
+### 商家券-小程序发券APIv2密钥签名
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter9_3_1.shtml)
+
+```php
+use WeChatPay\Formatter;
+use WeChatPay\Crypto\Hash;
+
+$apiv2Key = 'exposed_your_key_here_have_risks';
+
+$busiFavorFlat = static function (array $params): array {
+    $result = ['send_coupon_merchant' => $params['send_coupon_merchant']];
+    foreach ($params['send_coupon_params'] as $index => $item) {
+        foreach ($item as $key => $value) {
+            $result["{$key}{$index}"] = $value;
+        }
+    }
+    return $result;
+};
+
+// 发券小程序所需数据结构
+$busiFavor = [
+    'send_coupon_params' => [
+        ['out_request_no' => '1234567', 'stock_id' => 'abc123'],
+        ['out_request_no' => '7654321', 'stock_id' => '321cba'],
+    ],
+    'send_coupon_merchant' => '10016226'
+];
+
+$busiFavor += ['sign' => Hash::sign(
+    Hash::ALGO_HMAC_SHA256,
+    Formatter::queryStringLike(Formatter::ksort($busiFavorFlat($busiFavor))),
+    $apiv2Key
+)];
+
+echo json_encode($params);
+```
+
+### 商家券-H5发券APIv2密钥签名
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter9_4_1.shtml)
+
+```php
+use WeChatPay\Formatter;
+use WeChatPay\Crypto\Hash;
+
+$apiv2Key = 'exposed_your_key_here_have_risks';
+
+$params = [
+  'stock_id'             => '12111100000001',
+  'out_request_no'       => '20191204550002',
+  'send_coupon_merchant' => '10016226',
+  'open_id'              => 'oVvBvwEurkeUJpBzX90-6MfCHbec',
+  'coupon_code'          => '75345199',
+];
+
+$params += ['sign' => Hash::sign(
+    Hash::ALGO_HMAC_SHA256,
+    Formatter::queryStringLike(Formatter::ksort($params)),
+    $apiv2Key
+)];
+
+echo json_encode($params);
+```
+
 ## 异常处理
 
 `Guzzle` 默认已提供基础中间件`\GuzzleHttp\Middleware::httpErrors`来处理异常，文档可见[这里](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions)。
@@ -488,6 +658,7 @@ print_r($res);
 - 服务器端返回了 `20x HTTP` 状态码，如SDK客户端逻辑处理失败，例如应答签名验证失败，送出`\GuzzleHttp\Exception\RequestException`；
 - 请求签名准备阶段，`HTTP`请求未发生之前，如PHP环境异常、商户私钥异常等，送出`\UnexpectedValueException`;
 - 初始化时，如把`商户证书序列号`配置成`平台证书序列号`，送出`\InvalidArgumentException`;
+- `APIv2`上的异常，返回值无签可验及验签失败均送出`\GuzzleHttp\Promise\RejectionException`;
 
 以上示例代码，均含有`catch`及`otherwise`错误处理场景示例，测试用例也覆盖了[5xx/4xx/20x异常](tests/ClientDecoratorTest.php)，开发者可参考这些代码逻辑进行错误处理。
 
@@ -518,7 +689,7 @@ $remoteSigner = function (RequestInterface $request) use ($client, $merchantId):
     ]])->getBody();
 };
 
-// 返回结果验签，返回可以是4xx,5xx，与验签中间件约定返回字符串'OK'为验签通过
+// 返回结果验签，返回可以是4xx,5xx，与远程验签应用约定返回字符串'OK'为验签通过
 $remoteVerifier = function (ResponseInterface $response) use ($client, $merchantId): string {
     [$nonce]     = $response->getHeader('Wechatpay-Nonce');
     [$serial]    = $response->getHeader('Wechatpay-Serial');
@@ -576,7 +747,11 @@ $instance->V3->Certificates->getAsync()->then(static function($res) { return $re
 
 ### 证书和回调解密需要的AesGcm解密在哪里？
 
-请参考[AesGcm.php](src/Crypto/AesGcm.php)。
+请参考[AesGcm.php](src/Crypto/AesGcm.php)，例如内置的`平台证书`下载工具解密代码如下:
+
+```php
+AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_data);
+```
 
 ### 配合swoole使用时，上传文件接口报错
 

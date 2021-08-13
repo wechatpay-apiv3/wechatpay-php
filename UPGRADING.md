@@ -198,7 +198,7 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 #### AesGcm平台证书解密
 
 ```diff
-- use WechatPay\Util\AesUtil;
+- use WechatPay\GuzzleMiddleware\Util\AesUtil;
 + use WeChatPay\Crypto\AesGcm;
 - $decrypter = new AesUtil($opts['key']);
 - $plain = $decrypter->decryptToString($encCert['associated_data'], $encCert['nonce'], $encCert['ciphertext']);

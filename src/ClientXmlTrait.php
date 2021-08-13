@@ -12,7 +12,8 @@ use const E_USER_DEPRECATED;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Utils;
-use GuzzleHttp\Promise as P;
+use GuzzleHttp\Promise\Create;
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\MessageInterface;
@@ -52,13 +53,13 @@ trait ClientXmlTrait
     public static function transformRequest(?string $mchid = null, string $secret = '', ?array $merchant = null): callable
     {
         return static function (callable $handler) use ($mchid, $secret, $merchant): callable {
-            trigger_error(Exception\WeChatPayException::DEP_XML_PROTOCOL_UNDER_END_OF_LIFE, E_USER_DEPRECATED);
+            trigger_error(Exception\WeChatPayException::DEP_XML_PROTOCOL_IS_REACHABLE_EOL, E_USER_DEPRECATED);
 
-            return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): P\PromiseInterface {
+            return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): PromiseInterface {
                 $data = $options['xml'] ?? [];
 
-                if ($mchid && $mchid !== ($data['mch_id'] ?? null)) {
-                    throw new Exception\InvalidArgumentException(sprintf(Exception\EV2_REQ_XML_NOTMATCHED_MCHID, $data['mch_id'] ?? '', $mchid));
+                if ($mchid && $mchid !== ($inputMchId = $data['mch_id'] ?? $data['mchid'] ?? null)) {
+                    throw new Exception\InvalidArgumentException(sprintf(Exception\EV2_REQ_XML_NOTMATCHED_MCHID, $inputMchId ?? '', $mchid));
                 }
 
                 $type = $data['sign_type'] ?? Crypto\Hash::ALGO_MD5;
@@ -71,9 +72,7 @@ trait ClientXmlTrait
 
                 // for security request, it was required the merchant's private_key and certificate
                 if (isset($options['security']) && true === $options['security']) {
-                    // @uses GuzzleHttp\RequestOptions::SSL_KEY
                     $options['ssl_key'] = $merchant['key'] ?? null;
-                    // @uses GuzzleHttp\RequestOptions::CERT
                     $options['cert'] = $merchant['cert'] ?? null;
                 }
 
@@ -94,7 +93,7 @@ trait ClientXmlTrait
     public static function transformResponse(string $secret = ''): callable
     {
         return static function (callable $handler) use ($secret): callable {
-            return static function (RequestInterface $request, array $options = []) use ($secret, $handler): P\PromiseInterface {
+            return static function (RequestInterface $request, array $options = []) use ($secret, $handler): PromiseInterface {
                 return $handler($request, $options)->then(static function(ResponseInterface $response) use ($secret) {
                     $result = Transformer::toArray(static::body($response));
 
@@ -103,11 +102,7 @@ trait ClientXmlTrait
                     /** @var string $calc - calculated digest string, it's naver `null` here because of \$type known. */
                     $calc = Crypto\Hash::sign($type, Formatter::queryStringLike(Formatter::ksort($result)), $secret);
 
-                    if (!Crypto\Hash::equals($calc, $sign)) {
-                        return P\Create::rejectionFor($response);
-                    }
-
-                    return $response;
+                    return Crypto\Hash::equals($calc, $sign) ? $response : Create::rejectionFor($response);
                 });
             };
         };
@@ -129,11 +124,11 @@ trait ClientXmlTrait
      */
     public static function xmlBased(array $config = []): Client
     {
-        /** @var HandlerStack $handler */
-        $handler = isset($config['handler']) && ($config['handler'] instanceof HandlerStack) ? (clone $config['handler']) : HandlerStack::create();
-        $handler->before('prepare_body', static::transformRequest($config['mchid'] ?? null, $config['secret'] ?? '', $config['merchant'] ?? []), 'transform_request');
-        $handler->before('http_errors', static::transformResponse($config['secret'] ?? ''), 'transform_response');
-        $config['handler'] = $handler;
+        /** @var HandlerStack $stack */
+        $stack = isset($config['handler']) && ($config['handler'] instanceof HandlerStack) ? (clone $config['handler']) : HandlerStack::create();
+        $stack->before('prepare_body', static::transformRequest($config['mchid'] ?? null, $config['secret'] ?? '', $config['merchant'] ?? []), 'transform_request');
+        $stack->before('http_errors', static::transformResponse($config['secret'] ?? ''), 'transform_response');
+        $config['handler'] = $stack;
         $config['headers'] = array_replace_recursive(static::$headers, $config['headers'] ?? []);
 
         unset($config['mchid'], $config['serial'], $config['privateKey'], $config['certs'], $config['secret'], $config['merchant']);
