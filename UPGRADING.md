@@ -289,7 +289,7 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 +     'package'   => 'prepay_id=' . $order['prepay_id'],
 +     'signType'  => Hash::ALGO_HMAC_SHA256,
 + ];
-* // 二次数据签名「签名类型」需与预下单数据「签名类型」一致
++ // 二次数据签名「签名类型」需与预下单数据「签名类型」一致
 + $params['paySign'] = Hash::sign(Hash::ALGO_HMAC_SHA256, Formatter::queryStringLike(Formatter::ksort($parameters)), $apiv2Key);
 + $parameters = json_encode($params);
 ```
