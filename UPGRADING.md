@@ -334,7 +334,7 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 +     'out_trade_no' => $outTradeNo,
 + ];
 + // 发起请求并取得结果，抑制`E_USER_DEPRECATED`提示
-+ $resp   = @$instance->chain('v2/pay/micropay')->postAsync(['xml' => $input, 'security' => true])->wait();
++ $resp   = @$instance->chain('v2/secapi/pay/reverse')->postAsync(['xml' => $input, 'security' => true])->wait();
 + $result = Transformer::toArray((string)$resp->getBody());
 + // print_r($result);
 ```
