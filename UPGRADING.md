@@ -205,4 +205,140 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 + $plain = AesGcm::decrypt($encCert['ciphertext'], $opts['key'], $encCert['nonce'], $encCert['associated_data']);
 ```
 
+## 从 php_sdk_v3.0.10 迁移至 1.0
+
+这个`php_sdk_v3.0.10`版的SDK，是在`APIv2`版的文档上有下载，这里提供一份迁移指南，抛砖引玉如何迁移。
+### 初始化
+
+从手动文件模式调整参数，变更为实例初始化方式:
+
+```diff
+- // ③、修改lib/WxPay.Config.php为自己申请的商户号的信息（配置详见说明）
++ use WeChatPay/Builder;
++ $instance = new Builder([
++   'mchid'      => $mchid,
++   'serial'     => 'nop',
++   'privateKey' => 'any',
++   'secret'     => $apiv2Key,
++   'certs'      => ['any' => null],
++   'merchant'   => ['key' => '/path/to/cert/apiclient_key.pem', 'cert' => '/path/to/cert/apiclient_cert.pem'],
++ ]);
+```
+
+### 统一下单-JSAPI下单及数据二次签名
+
+```diff
+- require_once "../lib/WxPay.Api.php";
+- require_once "WxPay.JsApiPay.php";
+- require_once "WxPay.Config.php";
+
+- $tools = new JsApiPay();
+- $openId = $tools->GetOpenid();
+- $input = new WxPayUnifiedOrder();
+- $input->SetBody("test");
+- $input->SetAttach("test");
+- $input->SetOut_trade_no("sdkphp".date("YmdHis"));
+- $input->SetTotal_fee("1");
+- $input->SetTime_start(date("YmdHis"));
+- $input->SetTime_expire(date("YmdHis", time() + 600));
+- $input->SetGoods_tag("test");
+- $input->SetNotify_url("http://paysdk.weixin.qq.com/notify.php");
+- $input->SetTrade_type("JSAPI");
+- $input->SetOpenid($openId);
+- $config = new WxPayConfig();
+- $order = WxPayApi::unifiedOrder($config, $input);
+- printf_info($order);
+- // 数据签名
+- $jsapi = new WxPayJsApiPay();
+- $jsapi->SetAppid($order["appid"]);
+- $timeStamp = time();
+- $jsapi->SetTimeStamp("$timeStamp");
+- $jsapi->SetNonceStr(WxPayApi::getNonceStr());
+- $jsapi->SetPackage("prepay_id=" . $order['prepay_id']);
+- $config = new WxPayConfig();
+- $jsapi->SetPaySign($jsapi->MakeSign($config));
+- $parameters = json_encode($jsapi->GetValues());
++ use WeChatPay\Formatter;
++ use WeChatPay\Transformer;
++ use WeChatPay\Crypto\Hash;
++ // 直接构造请求数组参数
++ $input = [
++     'appid'        => $appid, // 从config拿到当前请求参数上
++     'mch_id'       => $mchid, // 从config拿到当前请求参数上
++     'body'         => 'test',
++     'attach'       => 'test',
++     'out_trade_no' => 'sdkphp' . date('YmdHis'),
++     'total_fee'    => '1',
++     'time_start'   => date('YmdHis'),
++     'time_expire'  => date('YmdHis, time() + 600),
++     'goods_tag'    => 'test',
++     'notify_url'   => 'http://paysdk.weixin.qq.com/notify.php',
++     'trade_type'   => 'JSAPI',
++     'openid'       => $openId, // 有太多优秀解决方案能够获取到这个值，这里假定已经有了
++ ];
++ // 发起请求并取得结果，抑制`E_USER_DEPRECATED`提示
++ $resp  = @$instance->chain('v2/pay/unifiedorder')->post(['xml' => $input]);
++ $order = Transformer::toArray((string)$resp->getBody());
++ // print_r($order);
++ // 数据签名
++ $params = [
++     'appId'     => $appid,
++     'timeStamp' => (string)Formatter::timestamp(),
++     'nonceStr'  => Formatter::nonce(),
++     'package'   => 'prepay_id=' . $order['prepay_id'],
++     'signType'  => Hash::ALGO_HMAC_SHA256,
++ ];
++ $params['paySign'] = Hash::sign(Hash::ALGO_HMAC_SHA256, Formatter::queryStringLike(Formatter::ksort($parameters)), $apiv2Key);
++ $parameters = json_encode($params);
+```
+
+### 付款码支付
+
+```diff
+- require_once "../lib/WxPay.Api.php";
+- require_once "WxPay.MicroPay.php";
+- 
+- $auth_code = $_REQUEST["auth_code"];
+- $input = new WxPayMicroPay();
+- $input->SetAuth_code($auth_code);
+- $input->SetBody("刷卡测试样例-支付");
+- $input->SetTotal_fee("1");
+- $input->SetOut_trade_no("sdkphp".date("YmdHis"));
+- 
+- $microPay = new MicroPay();
+- printf_info($microPay->pay($input));
++ use WeChatPay\Formatter;
++ use WeChatPay\Transformer;
++ // 直接构造请求数组参数
++ $input = [
++     'appid'            => $appid, // 从config拿到当前请求参数上
++     'mch_id'           => $mchid, // 从config拿到当前请求参数上
++     'auth_code'        => $auth_code,
++     'body'             => '刷卡测试样例-支付',
++     'total_fee'        => '1',
++     'out_trade_no'     => 'sdkphp' . date('YmdHis'),
++     'spbill_create_ip' => $mechineIp,
++ ];
++ // 发起请求并取得结果，抑制`E_USER_DEPRECATED`提示
++ $resp  = @$instance->chain('v2/pay/micropay')->post(['xml' => $input]);
++ $order = Transformer::toArray((string)$resp->getBody());
++ // print_r($order);
+```
+
+### 撤销订单
+
+```diff
++ $input = [
++     'appid'        => $appid, // 从config拿到当前请求参数上
++     'mch_id'       => $mchid, // 从config拿到当前请求参数上
++     'out_trade_no' => $outTradeNo,
++ ];
++ // 发起请求并取得结果，抑制`E_USER_DEPRECATED`提示
++ $resp   = @$instance->chain('v2/pay/micropay')->postAsync(['xml' => $input, 'security' => true])->wait();
++ $result = Transformer::toArray((string)$resp->getBody());
++ // print_r($result);
+```
+
+其他`APIv2`迁移及接口请求类似如上，示例仅做了正常返回样例，**程序缜密性，需要加入`try catch`/`otherwise`结构捕获异常情况**。
+
 至此，迁移后，`Chainable`、`PromiseA+`以及强劲的`PHP8`运行时，均可愉快地调用微信支付官方接口了。
