@@ -275,6 +275,7 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 +     'notify_url'   => 'http://paysdk.weixin.qq.com/notify.php',
 +     'trade_type'   => 'JSAPI',
 +     'openid'       => $openId, // 有太多优秀解决方案能够获取到这个值，这里假定已经有了
++     'sign_type'    => Hash::ALGO_HMAC_SHA256, // 以下二次数据签名「签名类型」需与预下单数据「签名类型」一致
 + ];
 + // 发起请求并取得结果，抑制`E_USER_DEPRECATED`提示
 + $resp  = @$instance->chain('v2/pay/unifiedorder')->post(['xml' => $input]);
@@ -288,6 +289,7 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 +     'package'   => 'prepay_id=' . $order['prepay_id'],
 +     'signType'  => Hash::ALGO_HMAC_SHA256,
 + ];
+* // 二次数据签名「签名类型」需与预下单数据「签名类型」一致
 + $params['paySign'] = Hash::sign(Hash::ALGO_HMAC_SHA256, Formatter::queryStringLike(Formatter::ksort($parameters)), $apiv2Key);
 + $parameters = json_encode($params);
 ```
