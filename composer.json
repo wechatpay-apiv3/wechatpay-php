@@ -5,7 +5,7 @@
     "type": "library",
     "keywords": [
         "wechatpay",
-        "chainable HTTP requests client",
+        "openapi-chainable",
         "xml-parser",
         "xml-builder",
         "aes-ecb",

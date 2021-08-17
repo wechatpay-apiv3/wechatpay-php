@@ -11,6 +11,7 @@ use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Promise\RejectionException;
 use PHPUnit\Framework\TestCase;
 use WeChatPay\Transformer;
+use WeChatPay\ClientDecoratorInterface;
 
 class V2MmpaymkttransfersPromotionTransfersTest extends TestCase
 {
@@ -60,6 +61,21 @@ class V2MmpaymkttransfersPromotionTransfersTest extends TestCase
         $this->mock->append($respondor);
 
         $endpoint = $instance->chain('v2/mmpaymkttransfers/promotion/transfers');
+
+        // samples howto control the `HandlerStack`, only effect this request
+        $stack = clone $endpoint->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
+        /** @var HandlerStack $stack */
+        $stack->remove('transform_response');
+        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
+        $res = @$endpoint->post(['xml' => [ 'mchid' => $mchid, ], 'handler' => $stack]);
+        $txt = (string) $res->getBody();
+        $array = Transformer::toArray($txt);
+        static::assertArrayHasKey('mchid', $array);
+        static::assertArrayHasKey('return_code', $array);
+        static::assertArrayHasKey('result_code', $array);
+
+        $this->mock->reset();
+        $this->mock->append($respondor);
         try {
             // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
             @$endpoint->post(['xml' => [ 'mchid' => $mchid, ]]);
@@ -94,6 +110,21 @@ class V2MmpaymkttransfersPromotionTransfersTest extends TestCase
 
         $endpoint = $instance->chain('v2/mmpaymkttransfers/promotion/transfers');
 
+        // samples howto control the `HandlerStack`, only effect this request
+        $stack = clone $endpoint->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
+        /** @var HandlerStack $stack */
+        $stack->remove('transform_response');
+        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
+        @$endpoint->postAsync(['xml' => [ 'mchid' => $mchid, ], 'handler' => $stack])->then(static function(ResponseInterface $res) {
+            $txt = (string) $res->getBody();
+            $array = Transformer::toArray($txt);
+            static::assertArrayHasKey('mchid', $array);
+            static::assertArrayHasKey('return_code', $array);
+            static::assertArrayHasKey('result_code', $array);
+        })->wait();
+
+        $this->mock->reset();
+        $this->mock->append($respondor);
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync(['xml' => [ 'mchid' => $mchid, ]])->otherwise(static function($res) {
             $txt = (string) $res->getBody();

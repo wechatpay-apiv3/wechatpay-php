@@ -125,15 +125,17 @@ class CertificateDownloader
                 $serialNo = $row->serial_no;
                 $outpath = $outputDir . DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
 
-                echo 'Certificate #', $index, ' {', PHP_EOL;
-                echo '    Serial Number: ', static::highlight($serialNo), PHP_EOL;
-                echo '    Not Before: ', (new \DateTime($row->effective_time))->format(\DateTime::W3C), PHP_EOL;
-                echo '    Not After: ', (new \DateTime($row->expire_time))->format(\DateTime::W3C), PHP_EOL;
-                echo '    Saved to: ', static::highlight($outpath), PHP_EOL;
-                echo '    You may confirm the above infos again even if this library already did(by Crypto\Rsa::verify):', PHP_EOL;
-                echo '      ', static::highlight(sprintf('openssl x509 -in %s -noout -serial -dates', $outpath)), PHP_EOL;
-                echo '    Content: ', PHP_EOL, PHP_EOL, $certs[$serialNo], PHP_EOL, PHP_EOL;
-                echo '}', PHP_EOL;
+                static::prompt([
+                    'Certificate #' . $index . ' {',
+                    '    Serial Number: ' . static::highlight($serialNo),
+                    '    Not Before: ' . (new \DateTime($row->effective_time))->format(\DateTime::W3C),
+                    '    Not After: ' . (new \DateTime($row->expire_time))->format(\DateTime::W3C),
+                    '    Saved to: ' . static::highlight($outpath),
+                    '    You may confirm the above infos again even if this library already did(by Crypto\Rsa::verify):',
+                    '      ' . static::highlight(sprintf('openssl x509 -in %s -noout -serial -dates', $outpath)),
+                    '    Content: ', '', $certs[$serialNo], '',
+                    '}',
+                ]);
 
                 \file_put_contents($outpath, $certs[$serialNo]);
             }, $certs);
@@ -148,6 +150,14 @@ class CertificateDownloader
     private static function highlight(string $thing): string
     {
         return sprintf("\x1B[1;32m%s\x1B[0m", $thing);
+    }
+
+    /**
+     * @param string[] $messages
+     */
+    private static function prompt(array $messages): void
+    {
+        array_walk($messages, static function (string $message): void { printf('%s%s', $message, PHP_EOL); });
     }
 
     /**
@@ -200,22 +210,22 @@ class CertificateDownloader
 
     private function printHelp(): void
     {
-        echo <<<EOD
-Usage: 微信支付平台证书下载工具 [-hV]
-                    -f=<privateKeyFilePath> -k=<apiv3Key> -m=<merchantId>
-                    -s=<serialNo> -o=[outputFilePath] -u=[baseUri]
-  -m, --mchid=<merchantId>   商户号
-  -s, --serialno=<serialNo>  商户证书的序列号
-  -f, --privatekey=<privateKeyFilePath>
-                             商户的私钥文件
-  -k, --key=<apiv3Key>       API v3密钥
-  -o, --output=[outputFilePath]
-                             下载成功后保存证书的路径，可选参数，默认为临时文件目录夹
-  -u, --baseuri=[baseUri]    接入点，默认为 https://api.mch.weixin.qq.com/
-  -V, --version              Print version information and exit.
-  -h, --help                 Show this help message and exit.
-
-EOD;
+        static::prompt([
+            'Usage: 微信支付平台证书下载工具 [-hV]',
+            '                    -f=<privateKeyFilePath> -k=<apiv3Key> -m=<merchantId>',
+            '                    -s=<serialNo> -o=[outputFilePath] -u=[baseUri]',
+            'Options:',
+            '  -m, --mchid=<merchantId>   商户号',
+            '  -s, --serialno=<serialNo>  商户证书的序列号',
+            '  -f, --privatekey=<privateKeyFilePath>',
+            '                             商户的私钥文件',
+            '  -k, --key=<apiv3Key>       APIv3密钥',
+            '  -o, --output=[outputFilePath]',
+            '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹',
+            '  -u, --baseuri=[baseUri]    接入点，可选，默认为 https://api.mch.weixin.qq.com/',
+            '  -V, --version              Print version information and exit.',
+            '  -h, --help                 Show this help message and exit.', '',
+        ]);
     }
 }
 

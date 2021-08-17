@@ -18,7 +18,7 @@ interface ClientDecoratorInterface
 
     /**
      * @var string - The HTTP transfer `xml` based protocol
-     * @deprecated 1.0 - @see \WeChatPay\Exception\WeChatPayException::DEP_XML_PROTOCOL_UNDER_END_OF_LIFE
+     * @deprecated 1.0 - @see \WeChatPay\Exception\WeChatPayException::DEP_XML_PROTOCOL_IS_REACHABLE_EOL
      */
     const XML_BASED = 'v2';
 

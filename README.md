@@ -130,7 +130,7 @@ $instance = Builder::factory([
         $platformCertificateSerial => $platformCertificateInstance,
     ],
     // APIv2密钥(32字节)--不使用APIv2可选
-    // 'secret' => 'ZZZZZZZZZZ',// `ZZZZZZZZZZ` 为变量占位符，如需使用APIv2请替换为实际值
+    // 'secret' => 'exposed_your_key_here_have_risks',// 值为占位符，如需使用APIv2请替换为实际值
     // 'merchant' => [// --不使用APIv2可选
     //     // 商户证书 文件路径 --不使用APIv2可选
     //     'cert' => $merchantCertificateFilePath,
@@ -415,8 +415,8 @@ use WeChatPay\Builder;
 
 // 商户号，假定为`1000100`
 $merchantId = '1000100';
-// APIv2密钥(32字节) 假定为`ZZZZZZZZZZ`，使用请替换为实际值
-$apiv2Secret = 'ZZZZZZZZZZ';
+// APIv2密钥(32字节) 假定为`exposed_your_key_here_have_risks`，使用请替换为实际值
+$apiv2Key = 'exposed_your_key_here_have_risks';
 // 商户私钥，文件路径假定为 `/path/to/merchant/apiclient_key.pem`
 $merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
 // 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
@@ -428,7 +428,7 @@ $instance = Builder::factory([
     'serial'     => 'nop',
     'privateKey' => 'any',
     'certs'      => ['any' => null],
-    'secret'     => $apiv2Secret,
+    'secret'     => $apiv2Key,
     'merchant' => [
         'cert' => $merchantCertificateFilePath,
         'key'  => $merchantPrivateKeyFilePath,

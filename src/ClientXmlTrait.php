@@ -111,7 +111,7 @@ trait ClientXmlTrait
     /**
      * Create an APIv2's client
      *
-     * @deprecated 1.0 - @see \WeChatPay\Exception\WeChatPayException::DEP_XML_PROTOCOL_UNDER_END_OF_LIFE
+     * @deprecated 1.0 - @see \WeChatPay\Exception\WeChatPayException::DEP_XML_PROTOCOL_IS_REACHABLE_EOL
      *
      * Optional acceptable \$config parameters
      *   - mchid?: ?string - The merchant ID
