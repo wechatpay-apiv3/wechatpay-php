@@ -2,18 +2,6 @@
 
 namespace WeChatPay\Tests\Crypto;
 
-use function openssl_pkey_new;
-use function openssl_pkey_get_details;
-use function openssl_error_string;
-use function fwrite;
-use function dirname;
-
-use const PHP_EOL;
-use const PHP_SAPI;
-use const STDERR;
-use const OPENSSL_KEYTYPE_RSA;
-use const DIRECTORY_SEPARATOR;
-
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
 
@@ -21,24 +9,19 @@ class RsaTest extends TestCase
 {
     private const BASE64_EXPRESSION = '#^[a-zA-Z0-9\+/]+={0,2}$#';
 
+    private const FIXTURES = __DIR__ . '/../fixtures/mock.%s.%s';
+
     /**
-     * @return array<string,array{string,string|resource|mixed,resource|mixed}>
+     * @return array<string,array{string,string|\OpenSSLAsymmetricKey|resource|mixed,string|\OpenSSLAsymmetricKey|resource|mixed}>
      */
     public function keysProvider(): array
     {
-        $privateKey = openssl_pkey_new([
-            'digest_alg'       => 'sha256',
-            'default_bits'     => 2048,
-            'private_key_bits' => 2048,
-            'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            'config'           => dirname(__DIR__) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'openssl.conf',
-        ]);
+        $privateKey = openssl_pkey_get_private('file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'));
+        $publicKey  = openssl_pkey_get_public('file://' . sprintf(static::FIXTURES, 'sha256', 'crt'));
 
-        while ($msg = openssl_error_string()) {
-            'cli' === PHP_SAPI && fwrite(STDERR, 'OpenSSL ' . $msg . PHP_EOL);
+        if (false === $privateKey || false === $publicKey) {
+            throw new \Exception('Loading the pkey failed.');
         }
-
-        ['key' => $publicKey] = $privateKey ? openssl_pkey_get_details($privateKey) : [];
 
         return [
             'plaintext, publicKey and privateKey' => ['hello wechatpay 你好 微信支付', $publicKey, $privateKey]

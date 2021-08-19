@@ -3,8 +3,7 @@
 /.github/              export-ignore
 .gitignore             export-ignore
 /docs/                 export-ignore
-/phpstan-baseline.neon export-ignore
-/phpstan-php7.neon     export-ignore
 /phpstan.neon.dist     export-ignore
 /phpunit.xml.dist      export-ignore
 /tests/                export-ignore
+/Makefile              export-ignore

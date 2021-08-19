@@ -5,8 +5,6 @@ namespace WeChatPay\Tests;
 use function class_implements;
 use function class_uses;
 use function is_array;
-use function openssl_pkey_new;
-use function openssl_pkey_get_details;
 use function strval;
 use function abs;
 use function json_encode;
@@ -17,8 +15,6 @@ use function trim;
 
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
-use const OPENSSL_KEYTYPE_RSA;
-use const DIRECTORY_SEPARATOR;
 
 use ReflectionClass;
 use ReflectionMethod;
@@ -40,6 +36,8 @@ use PHPUnit\Framework\TestCase;
 
 class ClientDecoratorTest extends TestCase
 {
+    private const FIXTURES = __DIR__ . '/fixtures/mock.%s.%s';
+
     /** @var int - The maximum clock offset in second */
     private const MAXIMUM_CLOCK_OFFSET = 300;
 
@@ -219,15 +217,12 @@ class ClientDecoratorTest extends TestCase
      */
     private function mockConfiguration(): array
     {
-        $privateKey = openssl_pkey_new([
-            'digest_alg'       => 'sha256',
-            'default_bits'     => 2048,
-            'private_key_bits' => 2048,
-            'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            'config'           => __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'openssl.conf',
-        ]);
+        $privateKey = openssl_pkey_get_private('file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'));
+        $publicKey  = openssl_pkey_get_public('file://' . sprintf(static::FIXTURES, 'sha256', 'crt'));
 
-        ['key' => $publicKey] = $privateKey ? openssl_pkey_get_details($privateKey) : [];
+        if (false === $privateKey || false === $publicKey) {
+            throw new \Exception('Loading the pkey failed.');
+        }
 
         return ['1230000109', $privateKey, $publicKey, Formatter::nonce(40), Formatter::nonce(40)];
     }
