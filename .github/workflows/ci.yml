@@ -58,6 +58,12 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - run: composer phpstan
+      - run: vendor/bin/phpstan analyse --no-progress
 
-      - run: composer test
+      - run: |
+          make keygen
+          make x509crt
+
+      - run: vendor/bin/phpunit
+
+      - run: make clean

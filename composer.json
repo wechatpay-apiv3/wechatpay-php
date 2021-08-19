@@ -43,8 +43,6 @@
         "bin/CertificateDownloader.php"
     ],
     "scripts": {
-        "v3-certificates": "bin/CertificateDownloader.php",
-        "test": "vendor/bin/phpunit",
-        "phpstan": "vendor/bin/phpstan analyse --no-progress"
+        "v3-certificates": "bin/CertificateDownloader.php"
     }
 }
