@@ -1,6 +1,6 @@
 {
     "name": "wechatpay/wechatpay",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "description": "[A]Sync Chainable WeChatPay v2&v3's OpenAPI SDK for PHP",
     "type": "library",
     "keywords": [
@@ -13,6 +13,10 @@
         "rsa-oaep"
     ],
     "authors": [
+        {
+            "name": "James ZHANG",
+            "homepage": "https://github.com/TheNorthMemory"
+        },
         {
             "name": "WeChatPay Community",
             "homepage": "https://developers.weixin.qq.com/community/pay"
@@ -43,8 +47,6 @@
         "bin/CertificateDownloader.php"
     ],
     "scripts": {
-        "v3-certificates": "bin/CertificateDownloader.php",
-        "test": "vendor/bin/phpunit",
-        "phpstan": "vendor/bin/phpstan analyse --no-progress"
+        "v3-certificates": "bin/CertificateDownloader.php"
     }
 }

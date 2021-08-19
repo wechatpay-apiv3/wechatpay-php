@@ -6,7 +6,6 @@ use function preg_replace_callback_array;
 use function strtolower;
 use function implode;
 use function array_filter;
-use function array_push;
 
 use ArrayIterator;
 
@@ -113,7 +112,7 @@ final class Builder
             /**
              * Only retrieve a copy array of the URI segments
              *
-             * @return array<string|int> - The URI segments array
+             * @return (string|int)[] - The URI segments array
              */
             protected function simplized(): array
             {
@@ -126,9 +125,9 @@ final class Builder
             public function offsetGet($key): BuilderChainable
             {
                 if (!$this->offsetExists($key)) {
-                  $index = $this->simplized();
-                  array_push($index, $this->normalize($key));
-                  $this->offsetSet($key, new self($index, $this->getDriver()));
+                    $indices   = $this->simplized();
+                    $indices[] = $this->normalize($key);
+                    $this->offsetSet($key, new self($indices, $this->getDriver()));
                 }
 
                 return parent::offsetGet($key);

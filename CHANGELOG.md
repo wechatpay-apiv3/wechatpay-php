@@ -1,5 +1,14 @@
 # 变更历史
 
+## 1.1.2 - 2021-08-19
+
+[变更细节](../../compare/V1.1.1...v1.1.2)
+
+- 优化`README`，`密钥`、`证书`等相关术语保持一致；
+- 优化`UPGRADING`，增加从`php_sdk_v3.0.10`迁移指南；
+- 优化测试用例，完整覆盖`PHP7.2/7.3/7.4/8.0 + Linux/macOS/Windows`运行时；
+- 调整`composer.json`，去除`test`, `phpstan`命令，面向生产环境可用；
+
 ## 1.1.1 - 2021-08-13
 
 [变更细节](../../compare/v1.1.0...V1.1.1)
@@ -77,7 +86,7 @@
 [变更细节](../../compare/v1.0.1...v1.0.2)
 
 - 优化了一些性能；
-- 增加 `github actions` 覆盖 PHP7.2/7.3/7.4/8.0 + Linux/macOs/Windows环境；
+- 增加 `github actions` 覆盖 PHP7.2/7.3/7.4/8.0 + Linux/macOS/Windows环境；
 - 提升 `phpstan` 至 `level8` 最严谨级别，并修复大量遗留问题；
 - 优化 `\WeChatPay\Exception\WeChatPayException` 异常类接口；
 - 完善文档及平台证书下载器用法说明；

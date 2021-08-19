@@ -49,9 +49,10 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     protected static function userAgent(): array
     {
-        $value = ['wechatpay-php/' . static::VERSION];
-
-        array_push($value, 'GuzzleHttp/' . ClientInterface::MAJOR_VERSION);
+        $value = [
+            sprintf('wechatpay-php/%s', static::VERSION),
+            sprintf('GuzzleHttp/%d', ClientInterface::MAJOR_VERSION),
+        ];
 
         extension_loaded('curl') && function_exists('curl_version') && array_push($value, 'curl/' . ((array)curl_version())['version']);
 
@@ -125,7 +126,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
-        list($protocol, $pathname) = static::prepare($uri);
+        [$protocol, $pathname] = static::prepare($uri);
 
         return $this->select($protocol)->request($method, UriTemplate::expand($pathname, $options), $options);
     }
@@ -135,7 +136,7 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function requestAsync(string $method, string $uri, array $options = []): PromiseInterface
     {
-        list($protocol, $pathname) = static::prepare($uri);
+        [$protocol, $pathname] = static::prepare($uri);
 
         return $this->select($protocol)->requestAsync($method, UriTemplate::expand($pathname, $options), $options);
     }

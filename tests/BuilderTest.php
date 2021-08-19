@@ -2,16 +2,11 @@
 
 namespace WeChatPay\Tests;
 
-use function openssl_pkey_new;
-use function openssl_pkey_get_details;
 use function class_implements;
 use function class_uses;
 use function is_array;
 use function array_map;
 use function iterator_to_array;
-
-use const OPENSSL_KEYTYPE_RSA;
-use const DIRECTORY_SEPARATOR;
 
 use ArrayAccess;
 use WeChatPay\Builder;
@@ -21,6 +16,8 @@ use PHPUnit\Framework\TestCase;
 
 class BuilderTest extends TestCase
 {
+    private const FIXTURES = __DIR__ . '/fixtures/mock.%s.%s';
+
     public function testConstractor(): void
     {
         $this->expectError();
@@ -32,20 +29,18 @@ class BuilderTest extends TestCase
      */
     public function configurationDataProvider(): array
     {
-        $privateKey = openssl_pkey_new([
-            'digest_alg'       => 'sha256',
-            'default_bits'     => 2048,
-            'private_key_bits' => 2048,
-            'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            'config'           => __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'openssl.conf',
-        ]);
+        $privateKey = openssl_pkey_get_private('file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'));
+        $publicKey  = openssl_pkey_get_public('file://' . sprintf(static::FIXTURES, 'spki', 'pem'));
 
-        ['key' => $publicKey] = $privateKey ? openssl_pkey_get_details($privateKey) : [];
+        if (false === $privateKey || false === $publicKey) {
+            throw new \Exception('Loading the pkey failed.');
+        }
 
         return [
             'standard' => ['1230000109', $privateKey, $publicKey, Formatter::nonce(40), Formatter::nonce(40)],
         ];
     }
+
     /**
      * @dataProvider configurationDataProvider
      *
