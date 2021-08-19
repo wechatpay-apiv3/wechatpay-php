@@ -14,6 +14,10 @@
     ],
     "authors": [
         {
+            "name": "James ZHANG",
+            "homepage": "https://github.com/TheNorthMemory"
+        },
+        {
             "name": "WeChatPay Community",
             "homepage": "https://developers.weixin.qq.com/community/pay"
         }
