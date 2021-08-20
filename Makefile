@@ -7,7 +7,9 @@ keygen:
 	openssl rsa -pubin -in ./tests/fixtures/mock.spki.pem -RSAPublicKey_out -out ./tests/fixtures/mock.pkcs1.pem
 
 x509crt:
-	fixtures="./tests/fixtures/" && serial=$$(openssl rand -hex 20 | awk '{ sub(/00/, "01"); print toupper($$1) }' | tee $${fixtures}mock.serial.txt) && \
+	fixtures="./tests/fixtures/" && serial=$$(openssl rand -hex 20 | \
+		awk '{ if (match($$0,/^00/)) s="01"substr($$0,3,length($$0)); else s=$$0; print toupper(s) }' | \
+		tee $${fixtures}mock.serial.txt) && \
 	MSYS_NO_PATHCONV=1 openssl req -new -sha256 -key $${fixtures}mock.pkcs8.key \
 		-subj "/C=CN/ST=Shanghai/O=WeChatPay Community/CN=WeChatPay Community CI" | \
 	openssl x509 -req -sha256 -days 1 -set_serial "0x$${serial}" \
