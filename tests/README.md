@@ -1,5 +1,7 @@
 # 测试
 
+本项目测试所依赖的`RSA私钥`、`RSA公钥`、`X509证书`、以及`证书序列号`，由根目录`Makefile`模拟生成，理论上每次/每轮/不同环境/不同版本上的测试依赖均不同，以此来模拟真实环境中的不可预测场景。
+
 在项目根目录，`*nix`环境，执行如下命令；`Windows`环境，请使用`Cywin`来测试，详细可参考`GitHub Actions`上`Windows`环境测试：
 
 ```shell
@@ -95,3 +97,28 @@ Time: 00:00.153, Memory: 10.00 MB
 
 OK (145 tests, 901 assertions)
 ```
+
+如果希望静态测试，或者无`cmake`环境，希望手动进行测试，则可以提供以下6个文件(文件名需相同)，来执行`make test(=vendor/bin/phpunit)`测试用例。
+
+```
+tests/fixtures
+├── mock.pkcs1.key
+├── mock.pkcs1.pem
+├── mock.pkcs8.key
+├── mock.serial.txt
+├── mock.sha256.crt
+├── mock.spki.pem
+```
+
+文件名释义如下：
+
+|文件名|含义|
+|---|---|
+|mock.pkcs1.key|RSA私钥`PKCS#1`格式|
+|mock.pkcs1.pem|RSA公钥`PKCS#1`格式|
+|mock.pkcs8.key|RSA私钥`PKCS#8`格式|
+|mock.serial.txt|X509`证书序列号`，16进制格式|
+|mock.sha256.crt|`X509证书`，sha256签名格式|
+|mock.spki.pem|RSA公钥`SPKI`格式|
+
+手动执行 `vendor/bin/phpunit` 即可运行已覆盖的测试用例。
