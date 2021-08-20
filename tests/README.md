@@ -98,7 +98,7 @@ Time: 00:00.153, Memory: 10.00 MB
 OK (145 tests, 901 assertions)
 ```
 
-如果希望静态测试，或者无`cmake`环境，希望手动进行测试，则可以提供以下6个文件(文件名需相同)，来执行`make test(=vendor/bin/phpunit)`测试用例。
+如果希望静态测试，或者无`make`环境，希望手动进行测试，则可以提供以下6个文件(文件名需相同)，来代替测试用例准备工作。
 
 ```
 tests/fixtures
