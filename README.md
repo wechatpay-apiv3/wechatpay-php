@@ -679,7 +679,11 @@ $timeOffsetStatus = 300 >= abs(Formatter::timestamp() - (int)$inWechatpayTimesta
 $verifiedStatus = Rsa::verify($inBody, $inWechatpaySignature, $certInstance);
 if ($timeOffsetStatus && $verifiedStatus) {
     $inBodyArray = (array)json_decode($inBody, true);
-    ['resource' => ['ciphertext' => $ciphertext, 'nonce' => $nonce, 'associated_data' => $aad]] = $inBodyArray;
+    ['resource' => [
+        'ciphertext'      => $ciphertext,
+        'nonce'           => $nonce,
+        'associated_data' => $aad
+    ]] = $inBodyArray;
     $inBodyResource = AesGcm::decrypt($ciphertext, $apiv3Key, $nonce, $aad);
     $inBodyResourceArray = (array)json_decode($inBodyResource, true);
     // print_r($inBodyResourceArray);// 打印解密后的结果
@@ -693,6 +697,8 @@ if ($timeOffsetStatus && $verifiedStatus) {
 3. 调用`SDK`内置方法验签；
 4. 消息体需要解密的，调用`SDK`内置方法解密；
 5. 如遇到问题，请拿`Request-ID`点击[这里](https://support.pay.weixin.qq.com/online-service?utm_source=github&utm_medium=wechatpay-php&utm_content=apiv2)，联系官方在线技术支持；
+
+样例代码如下：
 
 ```php
 use WeChatPay\Transformer;
@@ -711,7 +717,11 @@ $inBodyArray = Transformer::toArray($inBody);
 // 请根据官方开发文档确定
 ['sign_type' => $signType, 'sign' => $sign] = $inBodyArray;
 
-$calculated = Hash::sign($signType, Formatter::queryStringLike(Formatter::ksort($inBodyArray)), $apiv2Key);
+$calculated = Hash::sign(
+    $signType ?? Hash::ALGO_MD5,// 如没获取到`sign_type`，假定默认为`MD5`
+    Formatter::queryStringLike(Formatter::ksort($inBodyArray)),
+    $apiv2Key
+);
 
 $signatureStatus = Hash::equals($calculated, $sign);
 
