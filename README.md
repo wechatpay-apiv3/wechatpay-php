@@ -657,7 +657,7 @@ echo json_encode($params);
 样例代码如下：
 
 ```php
-use WeChatPay\Utl\PemUtil;
+use WeChatPay\Util\PemUtil;
 use WeChatPay\Crypto\Rsa;
 use WeChatPay\Crypto\AesGcm;
 use WeChatPay\Formatter;
@@ -670,7 +670,7 @@ $inBody = '';// 请根据实际情况获取，例如: file_get_contents('php://i
 
 $apiv3Key = '';// 在商户平台上设置的APIv3密钥
 
-// 根据通知的平台证书序列号，查询本地本地平台证书文件，
+// 根据通知的平台证书序列号，查询本地平台证书文件，
 // 假定为 `/path/to/wechatpay/inWechatpaySerial.pem`
 $certInstance = PemUtil::loadCertificate('/path/to/wechatpay/inWechatpaySerial.pem');
 
