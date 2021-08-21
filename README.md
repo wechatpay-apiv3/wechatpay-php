@@ -641,6 +641,89 @@ $params += ['sign' => Hash::sign(
 echo json_encode($params);
 ```
 
+## 回调通知
+
+回调通知受限于开发者/商户所使用的`WebServer`有很大差异，这里只给出开发指导步骤，供参考实现。
+
+### APIv3回调通知
+
+1. 从请求头部`Headers`，拿到`Wechatpay-Signature`、`Wechatpay-Nonce`、`Wechatpay-Timestamp`、`Wechatpay-Serial`及`Request-ID`，商户侧`Web`解决方案可能有差异，请求头可能大小写不敏感，请根据自身应用来定；
+2. 获取请求`body`体的`JSON`纯文本；
+3. 检查通知消息头标记的`Wechatpay-Timestamp`偏移量是否在5分钟之内；
+4. 调用`SDK`内置方法验签；
+5. 消息体需要解密的，调用`SDK`内置方法解密；
+6. 如遇到问题，请拿`Request-ID`点击[这里](https://support.pay.weixin.qq.com/online-service?utm_source=github&utm_medium=wechatpay-php&utm_content=apiv3)，联系官方在线技术支持；
+
+样例代码如下：
+
+```php
+use WeChatPay\Utl\PemUtil;
+use WeChatPay\Crypto\Rsa;
+use WeChatPay\Crypto\AesGcm;
+use WeChatPay\Formatter;
+
+$inWechatpaySignature = '';// 请根据实际情况获取
+$inWechatpayTimestamp = '';// 请根据实际情况获取
+$inWechatpaySerial = '';// 请根据实际情况获取
+$inWechatpayNonce = '';// 请根据实际情况获取
+$inBody = '';// 请根据实际情况获取，例如: file_get_contents('php://input');
+
+$apiv3Key = '';// 在商户平台上设置的APIv3密钥
+
+// 根据通知的平台证书序列号，查询本地本地平台证书文件，
+// 假定为 `/path/to/wechatpay/inWechatpaySerial.pem`
+$certInstance = PemUtil::loadCertificate('/path/to/wechatpay/inWechatpaySerial.pem');
+
+// 检查通知时间偏移量，允许5分钟之内的偏移
+$timeOffsetStatus = 300 >= abs(Formatter::timestamp() - (int)$inWechatpayTimestamp);
+$verifiedStatus = Rsa::verify($inBody, $inWechatpaySignature, $certInstance);
+if ($timeOffsetStatus && $verifiedStatus) {
+    $inBodyArray = (array)json_decode($inBody, true);
+    ['resource' => ['ciphertext' => $ciphertext, 'nonce' => $nonce, 'associated_data' => $aad]] = $inBodyArray;
+    $inBodyResource = AesGcm::decrypt($ciphertext, $apiv3Key, $nonce, $aad);
+    $inBodyResourceArray = (array)json_decode($inBodyResource, true);
+    // print_r($inBodyResourceArray);// 打印解密后的结果
+}
+```
+
+### APIv2回调通知
+
+1. 从请求头`Headers`获取`Request-ID`，商户侧`Web`解决方案可能有差异，请求头的`Request-ID`可能大小写不敏感，请根据自身应用来定；
+2. 获取请求`body`体的`XML`纯文本；
+3. 调用`SDK`内置方法验签；
+4. 消息体需要解密的，调用`SDK`内置方法解密；
+5. 如遇到问题，请拿`Request-ID`点击[这里](https://support.pay.weixin.qq.com/online-service?utm_source=github&utm_medium=wechatpay-php&utm_content=apiv2)，联系官方在线技术支持；
+
+```php
+use WeChatPay\Transformer;
+use WeChatPay\Crypto\Hash;
+use WeChatPay\Crypto\AesEcb;
+use WeChatPay\Formatter;
+
+$inBody = '';// 请根据实际情况获取，例如: file_get_contents('php://input');
+
+$apiv2Key = '';// 在商户平台上设置的APIv2密钥
+
+$inBodyArray = Transformer::toArray($inBody);
+
+// 部分通知体无`sign_type`，部分`sign_type`默认为`MD5`，部分`sign_type`默认为`HMAC-SHA256`
+// 部分通知无`sign`字典
+// 请根据官方开发文档确定
+['sign_type' => $signType, 'sign' => $sign] = $inBodyArray;
+
+$calculated = Hash::sign($signType, Formatter::queryStringLike(Formatter::ksort($inBodyArray)), $apiv2Key);
+
+$signatureStatus = Hash::equals($calculated, $sign);
+
+if ($signatureStatus) {
+    // 如需要解密的
+    ['req_info' => $reqInfo] = $inBodyArray;
+    $inBodyReqInfoXml = AesEcb::decrypt($reqInfo, Hash::md5($apiv2Key));
+    $inBodyReqInfoArray = Transformer::toArray($inBodyReqInfoXml);
+    // print_r($inBodyReqInfoArray);// 打印解密后的结果
+}
+```
+
 ## 异常处理
 
 `Guzzle` 默认已提供基础中间件`\GuzzleHttp\Middleware::httpErrors`来处理异常，文档可见[这里](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions)。
