@@ -7,6 +7,7 @@ use function hash_hmac;
 use function strlen;
 use function is_null;
 use function random_bytes;
+use function method_exists;
 
 use WeChatPay\Formatter;
 use WeChatPay\Crypto\Hash;

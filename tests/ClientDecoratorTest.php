@@ -12,6 +12,9 @@ use function explode;
 use function array_reduce;
 use function array_map;
 use function trim;
+use function openssl_pkey_get_private;
+use function openssl_pkey_get_public;
+use function sprintf;
 
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;

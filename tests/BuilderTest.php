@@ -7,6 +7,10 @@ use function class_uses;
 use function is_array;
 use function array_map;
 use function iterator_to_array;
+use function openssl_pkey_get_private;
+use function openssl_pkey_get_public;
+use function sprintf;
+use function method_exists;
 
 use ArrayAccess;
 use WeChatPay\Builder;

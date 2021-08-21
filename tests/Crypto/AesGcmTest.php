@@ -3,6 +3,7 @@
 namespace WeChatPay\Tests\Crypto;
 
 use function class_implements;
+use function method_exists;
 
 use WeChatPay\Formatter;
 use WeChatPay\Crypto\AesGcm;
