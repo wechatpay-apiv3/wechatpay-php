@@ -10,7 +10,8 @@ Certificate Downloader 是 PHP版 微信支付 APIv3 平台证书的命令行下
 
 Usage: 微信支付平台证书下载工具 [-hV]
                     -f=<privateKeyFilePath> -k=<apiV3key> -m=<merchantId>
-                    -o=[outputFilePath] -s=<serialNo>
+                    -s=<serialNo> -o=[outputFilePath] -u=[baseUri]
+Options:
   -m, --mchid=<merchantId>   商户号
   -s, --serialno=<serialNo>  商户证书的序列号
   -f, --privatekey=<privateKeyFilePath>
