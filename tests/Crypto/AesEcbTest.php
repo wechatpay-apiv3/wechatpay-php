@@ -2,8 +2,10 @@
 
 namespace WeChatPay\Tests\Crypto;
 
+use function class_implements;
 use function is_array;
 use function is_null;
+use function method_exists;
 
 use WeChatPay\Formatter;
 use WeChatPay\Crypto\AesEcb;

@@ -4,7 +4,10 @@ namespace WeChatPay\Tests\Util;
 
 use const PHP_MAJOR_VERSION;
 
+use function file_get_contents;
 use function openssl_x509_parse;
+use function rtrim;
+use function sprintf;
 
 use WeChatPay\Util\PemUtil;
 use PHPUnit\Framework\TestCase;

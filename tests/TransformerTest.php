@@ -45,6 +45,14 @@ class TransformerTest extends TestCase
                     'out_trade_no', 'spbill_create_ip', 'total_fee', 'trade_type', 'sign',
                 ],
             ],
+            'refund.notification.req_info.sample.xml' => [
+                file_get_contents($baseDir . 'refund.notification.req_info.sample.xml') ?: '',
+                [
+                    'out_refund_no', 'out_trade_no',
+                    'refund_account', 'refund_fee', 'refund_id', 'refund_recv_accout', 'refund_request_source', 'refund_status',
+                    'settlement_refund_fee','settlement_total_fee', 'success_time', 'total_fee', 'transaction_id',
+                ],
+            ],
         ];
     }
 

@@ -2,6 +2,11 @@
 
 namespace WeChatPay\Tests\Crypto;
 
+use function method_exists;
+use function openssl_pkey_get_private;
+use function openssl_pkey_get_public;
+use function sprintf;
+
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
 
