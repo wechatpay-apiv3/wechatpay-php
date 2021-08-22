@@ -134,7 +134,7 @@ class CertificateDownloader
                     '    You may confirm the above infos again even if this library already did(by Crypto\Rsa::verify):',
                     '      ' . static::highlight(\sprintf('openssl x509 -in %s -noout -serial -dates', $outpath)),
                     '    Content: ', '', $certs[$serialNo], '',
-                    '}',
+                    '}'
                 );
 
                 \file_put_contents($outpath, $certs[$serialNo]);
@@ -224,7 +224,7 @@ class CertificateDownloader
             '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹',
             '  -u, --baseuri=[baseUri]    接入点，可选，默认为 https://api.mch.weixin.qq.com/',
             '  -V, --version              Print version information and exit.',
-            '  -h, --help                 Show this help message and exit.', '',
+            '  -h, --help                 Show this help message and exit.', ''
         );
     }
 }
