@@ -650,7 +650,7 @@ echo json_encode($params);
 1. 从请求头部`Headers`，拿到`Wechatpay-Signature`、`Wechatpay-Nonce`、`Wechatpay-Timestamp`、`Wechatpay-Serial`及`Request-ID`，商户侧`Web`解决方案可能有差异，请求头可能大小写不敏感，请根据自身应用来定；
 2. 获取请求`body`体的`JSON`纯文本；
 3. 检查通知消息头标记的`Wechatpay-Timestamp`偏移量是否在5分钟之内；
-4. 调用`SDK`内置方法验签；
+4. 调用`SDK`内置方法，[构造验签名串](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_1.shtml)然后经`Rsa::verfify`验签；
 5. 消息体需要解密的，调用`SDK`内置方法解密；
 6. 如遇到问题，请拿`Request-ID`点击[这里](https://support.pay.weixin.qq.com/online-service?utm_source=github&utm_medium=wechatpay-php&utm_content=apiv3)，联系官方在线技术支持；
 
@@ -676,7 +676,12 @@ $certInstance = PemUtil::loadCertificate('/path/to/wechatpay/inWechatpaySerial.p
 
 // 检查通知时间偏移量，允许5分钟之内的偏移
 $timeOffsetStatus = 300 >= abs(Formatter::timestamp() - (int)$inWechatpayTimestamp);
-$verifiedStatus = Rsa::verify($inBody, $inWechatpaySignature, $certInstance);
+$verifiedStatus = Rsa::verify(
+    // 构造验签名串
+    Formatter::joinedByLineFeed($inWechatpayTimestamp, $inWechatpayNonce, $inBody),
+    $inWechatpaySignature,
+    $certInstance
+);
 if ($timeOffsetStatus && $verifiedStatus) {
     $inBodyArray = (array)json_decode($inBody, true);
     ['resource' => [
@@ -694,7 +699,7 @@ if ($timeOffsetStatus && $verifiedStatus) {
 
 1. 从请求头`Headers`获取`Request-ID`，商户侧`Web`解决方案可能有差异，请求头的`Request-ID`可能大小写不敏感，请根据自身应用来定；
 2. 获取请求`body`体的`XML`纯文本；
-3. 调用`SDK`内置方法验签；
+3. 调用`SDK`内置方法，根据[签名算法](https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=4_3)做本地数据签名计算，然后与通知文本的`sign`做`Hash::equals`对比验签；
 4. 消息体需要解密的，调用`SDK`内置方法解密；
 5. 如遇到问题，请拿`Request-ID`点击[这里](https://support.pay.weixin.qq.com/online-service?utm_source=github&utm_medium=wechatpay-php&utm_content=apiv2)，联系官方在线技术支持；
 
