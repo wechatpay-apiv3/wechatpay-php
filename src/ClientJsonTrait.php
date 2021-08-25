@@ -39,11 +39,6 @@ const WechatpayTimestamp = 'Wechatpay-Timestamp';
 trait ClientJsonTrait
 {
     /**
-     * @var Client - The APIv3's `GuzzleHttp\Client`
-     */
-    protected $v3;
-
-    /**
      * @var array<string, string|array<string, string>> - The defaults configuration whose pased in `GuzzleHttp\Client`.
      */
     protected static $defaults = [

@@ -31,6 +31,16 @@ final class ClientDecorator implements ClientDecoratorInterface
     use ClientJsonTrait;
 
     /**
+     * @var ClientInterface - The APIv2's `\GuzzleHttp\Client`
+     */
+    protected $v2;
+
+    /**
+     * @var ClientInterface - The APIv3's `\GuzzleHttp\Client`
+     */
+    protected $v3;
+
+    /**
      * Deep merge the input with the defaults
      *
      * @param array<string,string|int|bool|array|mixed> $config - The configuration.

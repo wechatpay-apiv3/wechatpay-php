@@ -30,6 +30,8 @@ use WeChatPay\Crypto\AesGcm;
   */
 class CertificateDownloader
 {
+    private const DEFAULT_BASE_URI = 'https://api.mch.weixin.qq.com/';
+
     public function run(): void
     {
         $opts = $this->parseOpts();
@@ -85,7 +87,7 @@ class CertificateDownloader
             'serial'     => $opts['serialno'],
             'privateKey' => \file_get_contents((string)$opts['privatekey']),
             'certs'      => &$certs,
-            'base_uri'   => (string)($opts['baseuri'] ?? 'https://api.mch.weixin.qq.com/'),
+            'base_uri'   => (string)($opts['baseuri'] ?? self::DEFAULT_BASE_URI),
         ]);
 
         /** @var \GuzzleHttp\HandlerStack $stack */
@@ -222,7 +224,7 @@ class CertificateDownloader
             '  -k, --key=<apiv3Key>       APIv3密钥',
             '  -o, --output=[outputFilePath]',
             '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹',
-            '  -u, --baseuri=[baseUri]    接入点，可选，默认为 https://api.mch.weixin.qq.com/',
+            '  -u, --baseuri=[baseUri]    接入点，可选，默认为 ' . self::DEFAULT_BASE_URI,
             '  -V, --version              Print version information and exit.',
             '  -h, --help                 Show this help message and exit.', ''
         );
