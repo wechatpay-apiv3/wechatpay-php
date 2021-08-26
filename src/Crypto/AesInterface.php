@@ -10,29 +10,29 @@ interface AesInterface
     /**
      * Bytes Length of the AES block
      */
-    const BLOCK_SIZE = 16;
+    public const BLOCK_SIZE = 16;
 
     /**
      * Bytes length of the AES secret key.
      */
-    const KEY_LENGTH_BYTE = 32;
+    public const KEY_LENGTH_BYTE = 32;
 
     /**
      * Bytes Length of the authentication tag in AEAD cipher mode
      * @deprecated 1.0 - As of the OpenSSL described, the `auth_tag` length may be one of 16, 15, 14, 13, 12, 8 or 4.
      *                   Keep it only compatible for the samples on the official documentation.
      */
-    const AUTH_TAG_LENGTH_BYTE = 16;
+    public const AUTH_TAG_LENGTH_BYTE = 16;
 
     /**
      * The `aes-256-gcm` algorithm string
      */
-    const ALGO_AES_256_GCM = 'aes-256-gcm';
+    public const ALGO_AES_256_GCM = 'aes-256-gcm';
 
     /**
      * The `aes-256-ecb` algorithm string
      */
-    const ALGO_AES_256_ECB = 'aes-256-ecb';
+    public const ALGO_AES_256_ECB = 'aes-256-ecb';
 
     /**
      * Encrypts given data with given key and iv, returns a base64 encoded string.

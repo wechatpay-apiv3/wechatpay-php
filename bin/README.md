@@ -10,7 +10,8 @@ Certificate Downloader 是 PHP版 微信支付 APIv3 平台证书的命令行下
 
 Usage: 微信支付平台证书下载工具 [-hV]
                     -f=<privateKeyFilePath> -k=<apiV3key> -m=<merchantId>
-                    -o=[outputFilePath] -s=<serialNo>
+                    -s=<serialNo> -o=[outputFilePath] -u=[baseUri]
+Options:
   -m, --mchid=<merchantId>   商户号
   -s, --serialno=<serialNo>  商户证书的序列号
   -f, --privatekey=<privateKeyFilePath>
@@ -29,10 +30,22 @@ Usage: 微信支付平台证书下载工具 [-hV]
 ./bin/CertificateDownloader.php -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
 ```
 
+或
+
+```shell
+php -f ./bin/CertificateDownloader.php -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
+```
+
 使用`composer`安装的软件包，可以通过如下命令下载：
 
 ```shell
 vendor/bin/CertificateDownloader.php -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
+```
+
+或
+
+```shell
+composer exec CertificateDownloader.php -- -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
 ```
 
 使用源码克隆版本，也可以使用`composer`通过以下命令下载：
@@ -46,6 +59,8 @@ composer v3-certificates -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} 
 ```shell
 composer v3-certificates -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath} -u https://apihk.mch.weixin.qq.com/
 ```
+
+**注:** 示例命令行上的`${}`是变量表达方法，运行时请替换(包括`${}`)为对应的实际值。
 
 ## 常见问题
 

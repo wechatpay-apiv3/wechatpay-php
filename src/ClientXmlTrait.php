@@ -24,11 +24,6 @@ use Psr\Http\Message\MessageInterface;
 trait ClientXmlTrait
 {
     /**
-     * @var Client - The APIv2's `GuzzleHttp\Client`
-     */
-    protected $v2;
-
-    /**
      * @var array<string, string> - The default headers whose passed in `GuzzleHttp\Client`.
      */
     protected static $headers = [

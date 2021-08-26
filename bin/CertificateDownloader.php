@@ -5,13 +5,13 @@
 $possibleFiles = [__DIR__.'/../vendor/autoload.php', __DIR__.'/../../../autoload.php', __DIR__.'/../../autoload.php'];
 $file = null;
 foreach ($possibleFiles as $possibleFile) {
-    if (file_exists($possibleFile)) {
+    if (\file_exists($possibleFile)) {
         $file = $possibleFile;
         break;
     }
 }
 if (null === $file) {
-    throw new RuntimeException('Unable to locate autoload.php file.');
+    throw new \RuntimeException('Unable to locate autoload.php file.');
 }
 
 require_once $file;
@@ -30,6 +30,8 @@ use WeChatPay\Crypto\AesGcm;
   */
 class CertificateDownloader
 {
+    private const DEFAULT_BASE_URI = 'https://api.mch.weixin.qq.com/';
+
     public function run(): void
     {
         $opts = $this->parseOpts();
@@ -39,7 +41,7 @@ class CertificateDownloader
             return;
         }
         if (isset($opts['version'])) {
-            echo ClientDecoratorInterface::VERSION, PHP_EOL;
+            static::prompt(ClientDecoratorInterface::VERSION);
             return;
         }
         $this->job($opts);
@@ -85,7 +87,7 @@ class CertificateDownloader
             'serial'     => $opts['serialno'],
             'privateKey' => \file_get_contents((string)$opts['privatekey']),
             'certs'      => &$certs,
-            'base_uri'   => (string)($opts['baseuri'] ?? 'https://api.mch.weixin.qq.com/'),
+            'base_uri'   => (string)($opts['baseuri'] ?? self::DEFAULT_BASE_URI),
         ]);
 
         /** @var \GuzzleHttp\HandlerStack $stack */
@@ -97,13 +99,13 @@ class CertificateDownloader
         $instance->chain('v3/certificates')->getAsync(
             ['debug' => true]
         )->otherwise(static function($exception) {
-            echo $exception->getMessage(), PHP_EOL;
+            static::prompt($exception->getMessage());
             if ($exception instanceof RequestException && $exception->hasResponse()) {
-                /** @var ResponseInterface $body */
-                $body = $exception->getResponse();
-                echo $body->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
+                /** @var ResponseInterface $response */
+                $response = $exception->getResponse();
+                static::prompt((string) $response->getBody(), '', '');
             }
-            echo $exception->getTraceAsString(), PHP_EOL;
+            static::prompt($exception->getTraceAsString());
         })->wait();
     }
 
@@ -123,19 +125,19 @@ class CertificateDownloader
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
             \array_walk($data, static function($row, $index, $certs) use ($outputDir) {
                 $serialNo = $row->serial_no;
-                $outpath = $outputDir . DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
+                $outpath = $outputDir . \DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
 
-                static::prompt([
+                static::prompt(
                     'Certificate #' . $index . ' {',
                     '    Serial Number: ' . static::highlight($serialNo),
                     '    Not Before: ' . (new \DateTime($row->effective_time))->format(\DateTime::W3C),
                     '    Not After: ' . (new \DateTime($row->expire_time))->format(\DateTime::W3C),
                     '    Saved to: ' . static::highlight($outpath),
                     '    You may confirm the above infos again even if this library already did(by Crypto\Rsa::verify):',
-                    '      ' . static::highlight(sprintf('openssl x509 -in %s -noout -serial -dates', $outpath)),
+                    '      ' . static::highlight(\sprintf('openssl x509 -in %s -noout -serial -dates', $outpath)),
                     '    Content: ', '', $certs[$serialNo], '',
-                    '}',
-                ]);
+                    '}'
+                );
 
                 \file_put_contents($outpath, $certs[$serialNo]);
             }, $certs);
@@ -149,15 +151,15 @@ class CertificateDownloader
      */
     private static function highlight(string $thing): string
     {
-        return sprintf("\x1B[1;32m%s\x1B[0m", $thing);
+        return \sprintf("\x1B[1;32m%s\x1B[0m", $thing);
     }
 
     /**
-     * @param string[] $messages
+     * @param string $messages
      */
-    private static function prompt(array $messages): void
+    private static function prompt(...$messages): void
     {
-        array_walk($messages, static function (string $message): void { printf('%s%s', $message, PHP_EOL); });
+        \array_walk($messages, static function (string $message): void { \printf('%s%s', $message, \PHP_EOL); });
     }
 
     /**
@@ -178,7 +180,7 @@ class CertificateDownloader
         $shortopts = 'hV';
         $longopts = [ 'help', 'version' ];
         foreach ($opts as $opt) {
-            list($key, $alias) = $opt;
+            [$key, $alias] = $opt;
             $shortopts .= $alias . ':';
             $longopts[] = $key . ':';
         }
@@ -190,7 +192,7 @@ class CertificateDownloader
 
         $args = [];
         foreach ($opts as $opt) {
-            list($key, $alias, $mandatory) = $opt;
+            [$key, $alias, $mandatory] = $opt;
             if (isset($parsed[$key]) || isset($parsed[$alias])) {
                 $possiable = $parsed[$key] ?? $parsed[$alias] ?? '';
                 $args[$key] = (string) (\is_array($possiable) ? $possiable[0] : $possiable);
@@ -210,7 +212,7 @@ class CertificateDownloader
 
     private function printHelp(): void
     {
-        static::prompt([
+        static::prompt(
             'Usage: 微信支付平台证书下载工具 [-hV]',
             '                    -f=<privateKeyFilePath> -k=<apiv3Key> -m=<merchantId>',
             '                    -s=<serialNo> -o=[outputFilePath] -u=[baseUri]',
@@ -222,10 +224,10 @@ class CertificateDownloader
             '  -k, --key=<apiv3Key>       APIv3密钥',
             '  -o, --output=[outputFilePath]',
             '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹',
-            '  -u, --baseuri=[baseUri]    接入点，可选，默认为 https://api.mch.weixin.qq.com/',
+            '  -u, --baseuri=[baseUri]    接入点，可选，默认为 ' . self::DEFAULT_BASE_URI,
             '  -V, --version              Print version information and exit.',
-            '  -h, --help                 Show this help message and exit.', '',
-        ]);
+            '  -h, --help                 Show this help message and exit.', ''
+        );
     }
 }
 
