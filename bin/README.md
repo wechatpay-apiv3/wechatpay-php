@@ -33,7 +33,13 @@ Options:
 或
 
 ```shell
-php -f ./bin/CertificateDownloader.php -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
+php -f ./bin/CertificateDownloader.php -- -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
+```
+
+或
+
+```shell
+php ./bin/CertificateDownloader.php -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
 ```
 
 使用`composer`安装的软件包，可以通过如下命令下载：
