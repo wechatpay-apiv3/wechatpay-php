@@ -67,7 +67,7 @@ class Rsa
      * @param string $thing - The string
      *
      * @return string The `ASN.1` 128bit hexadecimal length string
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/main/LICENSE
+     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     private static function encodeLength(string $thing): string
     {
@@ -86,7 +86,7 @@ class Rsa
      * @param string $thing - The base64-encoded string, without evelope style
      *
      * @return string The `SPKI` style public key without evelope string
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/main/LICENSE
+     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     public static function pkcs1ToSpki(string $thing): string
     {
@@ -102,7 +102,7 @@ class Rsa
      * @param string $thing - The string in `PKCS#8` format.
      * @return \OpenSSLAsymmetricKey|resource|mixed
      * @throws UnexpectedValueException
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/main/LICENSE
+     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     public static function fromPkcs8(string $thing)
     {
@@ -122,7 +122,7 @@ class Rsa
      * @param boolean $isPublic - The `$thing` is public key string.
      * @return \OpenSSLAsymmetricKey|resource|mixed
      * @throws UnexpectedValueException
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/main/LICENSE
+     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     public static function fromPkcs1(string $thing, bool $isPublic = false)
     {
@@ -143,7 +143,7 @@ class Rsa
      * @param string $thing - The string in `SKPI` format.
      * @return \OpenSSLAsymmetricKey|resource|mixed
      * @throws UnexpectedValueException
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/main/LICENSE
+     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     public static function fromSpki(string $thing)
     {
@@ -164,6 +164,7 @@ class Rsa
      * - `public.spki://`, `public.pkcs1://`, `private.pkcs1://`, `private.pkcs8://` protocols string.
      * - full `PEM` format privateKey/publicKey(x509 certificate) string.
      * - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7).
+     * - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      *
      * @param \OpenSSLAsymmetricKey|resource|string|mixed $thing - The string.
      * @param boolean $isPublic - Identify the \$thing whether or nor is the `publicKeyLike`, default is `false`
@@ -207,8 +208,12 @@ class Rsa
      *   - `-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----`
      *   - `-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----` (for publicKey)
      *
+     * object/resouce, eg:
+     *   - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7) for publicKey/privateKey.
+     *   - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
+     *
      * @param \OpenSSLAsymmetricKey|resource|string|mixed $thing - The string.
-     * @param boolean $isPublic - Identify the \$thing wheter or nor is `publicKeyLike` string, default is `false`
+     * @param boolean $isPublic - Identify the \$thing whether or nor is `publicKeyLike` string, default is `false`
      * @return \OpenSSLAsymmetricKey|resource|string|mixed
      */
     private static function cast($thing, bool $isPublic = false)

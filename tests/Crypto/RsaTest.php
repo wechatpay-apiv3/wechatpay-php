@@ -12,7 +12,6 @@ use function openssl_x509_read;
 use function sprintf;
 use function substr;
 
-use WeChatPay\Formatter;
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
 
@@ -180,17 +179,17 @@ class RsaTest extends TestCase
         ] = array_values($this->keyPhrasesDataProvider());
 
         $keys = [
-            'plaintext, `public.spki://`, `private.pkcs1://`'        => [Formatter::nonce( 8), Rsa::fromSpki(substr($pub1, 14)), Rsa::fromPkcs1(substr($pri1, 16))],
-            'plaintext, `public.spki://`, `private.pkcs8://`'        => [Formatter::nonce(16), Rsa::fromSpki(substr($pub1, 14)), Rsa::fromPkcs8(substr($pri2, 16))],
-            'plaintext, `public.pkcs1://`, `private.pkcs1://`'       => [Formatter::nonce(24), Rsa::fromPkcs1(substr($pub2, 15), true), Rsa::fromPkcs1(substr($pri1, 16))],
-            'plaintext, `public.pkcs1://`, `private.pkcs8://`'       => [Formatter::nonce(32), Rsa::fromPkcs1(substr($pub2, 15), true), Rsa::fromPkcs8(substr($pri2, 16))],
-            'plaintext, `pkcs#1 pubkey content`, `private.pkcs1://`' => [Formatter::nonce(40), Rsa::from($pub7, true), Rsa::fromPkcs1(substr($pri1, 16))],
-            'plaintext, `pkcs#1 pubkey content`, `private.pkcs8://`' => [Formatter::nonce(48), Rsa::from($pub7, true), Rsa::fromPkcs8(substr($pri2, 16))],
+            'plaintext, `public.spki://`, `private.pkcs1://`'        => [random_bytes( 8), Rsa::fromSpki(substr($pub1, 14)), Rsa::fromPkcs1(substr($pri1, 16))],
+            'plaintext, `public.spki://`, `private.pkcs8://`'        => [random_bytes(16), Rsa::fromSpki(substr($pub1, 14)), Rsa::fromPkcs8(substr($pri2, 16))],
+            'plaintext, `public.pkcs1://`, `private.pkcs1://`'       => [random_bytes(24), Rsa::fromPkcs1(substr($pub2, 15), true), Rsa::fromPkcs1(substr($pri1, 16))],
+            'plaintext, `public.pkcs1://`, `private.pkcs8://`'       => [random_bytes(32), Rsa::fromPkcs1(substr($pub2, 15), true), Rsa::fromPkcs8(substr($pri2, 16))],
+            'plaintext, `pkcs#1 pubkey content`, `private.pkcs1://`' => [random_bytes(40), Rsa::from($pub7, true), Rsa::fromPkcs1(substr($pri1, 16))],
+            'plaintext, `pkcs#1 pubkey content`, `private.pkcs8://`' => [random_bytes(48), Rsa::from($pub7, true), Rsa::fromPkcs8(substr($pri2, 16))],
         ];
 
         foreach ([$pub3, $pub4, $pub5, $pub6, $crt1, $crt2, $crt3] as $pubIndex => $pub) {
             foreach ([$pri1, $pri2, $pri3, $pri4, $pri5, $pri6, $pri7, $pri8, $pri9, $pri0] as $priIndex => $pri) {
-                $keys["plaintext, publicKey{$pubIndex}, privateKey{$priIndex}"] = [Formatter::nonce(), Rsa::from($pub, true), Rsa::from($pri)];
+                $keys["plaintext, publicKey{$pubIndex}, privateKey{$priIndex}"] = [random_bytes(56), Rsa::from($pub, true), Rsa::from($pri)];
             }
         }
 
