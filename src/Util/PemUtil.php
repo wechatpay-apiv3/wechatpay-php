@@ -7,32 +7,43 @@ use function openssl_x509_read;
 use function openssl_x509_parse;
 use function file_get_contents;
 use function strtoupper;
+use function strpos;
 
 use UnexpectedValueException;
+
+use WeChatPay\Crypto\Rsa;
 
 /**
  * Util for read private key and certificate.
  */
 class PemUtil
 {
+    private const LOCAL_FILE_PROTOCOL = 'file://';
+
     /**
      * Read private key from file
+     * @deprecated v1.2.0 - Use `Rsa::from` instead
      *
      * @param string $filepath - PEM encoded private key file path
-     * @param string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
      *
-     * @return \OpenSSLAsymmetricKey|object|resource|bool - Private key resource identifier on success, or FALSE on error
-     * @throws UnexpectedValueException
+     * @return \OpenSSLAsymmetricKey|resource|mixed
      */
-    public static function loadPrivateKey(string $filepath, string $passphrase = '')
+    public static function loadPrivateKey(string $filepath)
     {
-        $content = file_get_contents($filepath);
+        return Rsa::from((false === strpos($filepath, self::LOCAL_FILE_PROTOCOL) ? self::LOCAL_FILE_PROTOCOL : '') . $filepath);
+    }
 
-        if (false === $content) {
-            throw new UnexpectedValueException("Loading the privateKey failed, please checking your {$filepath} input.");
-        }
-
-        return openssl_get_privatekey($content, $passphrase);
+    /**
+     * Read private key from string
+     * @deprecated v1.2.0 - Use `Rsa::from` instead
+     *
+     * @param \OpenSSLAsymmetricKey|resource|string|mixed $content - PEM encoded private key string content
+     *
+     * @return \OpenSSLAsymmetricKey|resource|mixed
+     */
+    public static function loadPrivateKeyFromString($content)
+    {
+        return Rsa::from($content);
     }
 
     /**
@@ -51,19 +62,6 @@ class PemUtil
         }
 
         return openssl_x509_read($content);
-    }
-
-    /**
-     * Read private key from string
-     *
-     * @param \OpenSSLAsymmetricKey|object|resource|string|mixed $content - PEM encoded private key string content
-     * @param string $passphrase The optional parameter passphrase must be used if the specified key is encrypted (protected by a passphrase).
-     *
-     * @return \OpenSSLAsymmetricKey|object|resource|bool - Private key resource identifier on success, or FALSE on error
-     */
-    public static function loadPrivateKeyFromString($content, string $passphrase = '')
-    {
-        return openssl_get_privatekey($content, $passphrase);
     }
 
     /**

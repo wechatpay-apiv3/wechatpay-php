@@ -12,6 +12,8 @@ use function array_keys;
 use function base64_decode;
 use function base64_encode;
 use function is_int;
+use function is_resource;
+use function is_object;
 use function ltrim;
 use function openssl_pkey_get_private;
 use function openssl_pkey_get_public;
@@ -104,7 +106,7 @@ class Rsa
      */
     public static function fromPkcs8(string $thing)
     {
-        $pkey = openssl_pkey_get_private(static::from(sprintf('private.pkcs8://%s', $thing)));
+        $pkey = openssl_pkey_get_private(static::cast(sprintf('private.pkcs8://%s', $thing)));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the PKCS#8 privateKey(%s).', $thing));
@@ -125,8 +127,8 @@ class Rsa
     public static function fromPkcs1(string $thing, bool $isPublic = false)
     {
         $pkey = $isPublic
-            ? openssl_pkey_get_public(static::from(sprintf('public.pkcs1://%s', $thing)))
-            : openssl_pkey_get_private(static::from(sprintf('private.pkcs1://%s', $thing)));
+            ? openssl_pkey_get_public(static::cast(sprintf('public.pkcs1://%s', $thing), $isPublic))
+            : openssl_pkey_get_private(static::cast(sprintf('private.pkcs1://%s', $thing)));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the PKCS#1 %s(%s).', $isPublic ? 'publicKey' : 'privateKey', $thing));
@@ -145,7 +147,7 @@ class Rsa
      */
     public static function fromSpki(string $thing)
     {
-        $pkey = openssl_pkey_get_public(static::from(sprintf('public.spki://%s', $thing)));
+        $pkey = openssl_pkey_get_public(static::cast(sprintf('public.spki://%s', $thing), true));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the SPKI publicKey(%s).', $thing));
@@ -161,14 +163,15 @@ class Rsa
      * - `file://` protocol privateKey/publicKey(x509 certificate) string.
      * - `public.spki://`, `public.pkcs1://`, `private.pkcs1://`, `private.pkcs8://` protocols string.
      * - full `PEM` format privateKey/publicKey(x509 certificate) string.
+     * - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7).
      *
-     * @param string $thing - The string.
-     * @param boolean $isPublic - Identify the \$thing wheter or nor is `publicKeyLike` string, default is `false`
+     * @param \OpenSSLAsymmetricKey|resource|string|mixed $thing - The string.
+     * @param boolean $isPublic - Identify the \$thing whether or nor is the `publicKeyLike`, default is `false`
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
      * @throws UnexpectedValueException
      */
-    public static function from(string $thing, bool $isPublic = false)
+    public static function from($thing, bool $isPublic = false)
     {
         $pkey = $isPublic
             ? openssl_pkey_get_public(static::cast($thing, $isPublic))
@@ -189,7 +192,7 @@ class Rsa
      *   - `file:///my/path/to/private.pkcs8.key`
      *   - `file:///my/path/to/public.spki.pem`
      *   - `file:///my/path/to/public.pkcs1.pem`
-     *   - `file:///my/path/to/x509.crt`
+     *   - `file:///my/path/to/x509.crt` (for publicKey)
      *
      * `public.spki://`, `public.pkcs1://`, `private.pkcs1://`, `private.pkcs8://` protocols, eg:
      *   - `public.spki://MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCg...`
@@ -202,15 +205,16 @@ class Rsa
      *   - `-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----`
      *   - `-----BEGIN RSA PUBLIC KEY-----...-----END RSA PUBLIC KEY-----`
      *   - `-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----`
+     *   - `-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----` (for publicKey)
      *
-     * @param string $thing - The string.
+     * @param \OpenSSLAsymmetricKey|resource|string|mixed $thing - The string.
      * @param boolean $isPublic - Identify the \$thing wheter or nor is `publicKeyLike` string, default is `false`
      */
-    private static function cast(string $thing, bool $isPublic = false): string
+    private static function cast($thing, bool $isPublic = false): string
     {
         $src = $thing;
 
-        if (is_int(strpos($src, self::LOCAL_FILE_PROTOCOL))) {
+        if (is_resource($src) || is_object($thing) || is_int(strpos($src, self::LOCAL_FILE_PROTOCOL))) {
             return $src;
         }
 
