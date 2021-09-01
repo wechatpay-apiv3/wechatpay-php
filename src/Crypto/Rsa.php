@@ -231,7 +231,8 @@ class Rsa
             if ($isPublic) {
                 preg_match(self::PKEY_PEM_FORMAT_PATTERN, $src, $matches);
                 [, $type, $base64] = $matches;
-                $protocol = array_combine(array_column(self::RULES, 1/*column*/), array_keys(self::RULES))[$type] ?? '';
+                $mapRules = (array)array_combine(array_column(self::RULES, 1/*column*/), array_keys(self::RULES));
+                $protocol = $mapRules[$type] ?? '';
                 if ('public.pkcs1' === $protocol) {
                     return self::cast(sprintf('%s://%s', $protocol, str_replace([self::CHR_CR, self::CHR_LF], '', $base64)));
                 }
