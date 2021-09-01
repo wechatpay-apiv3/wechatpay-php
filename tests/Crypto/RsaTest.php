@@ -2,11 +2,17 @@
 
 namespace WeChatPay\Tests\Crypto;
 
+use const PHP_MAJOR_VERSION;
+
+use function file_get_contents;
 use function method_exists;
 use function openssl_pkey_get_private;
 use function openssl_pkey_get_public;
+use function openssl_x509_read;
 use function sprintf;
+use function substr;
 
+use WeChatPay\Formatter;
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
 
@@ -16,21 +22,179 @@ class RsaTest extends TestCase
 
     private const FIXTURES = __DIR__ . '/../fixtures/mock.%s.%s';
 
+    private const EVELOPE = '#-{5}BEGIN[^-]+-{5}\r?\n(?<base64>[^-]+)\r?\n-{5}END[^-]+-{5}#';
+
+    /**
+     * @param string $type
+     * @param string $suffix
+     */
+    private function getMockContents(string $type, string $suffix): string
+    {
+        $file = sprintf(static::FIXTURES, $type, $suffix);
+        $pkey = file_get_contents($file);
+
+        preg_match(static::EVELOPE, $pkey ?: '', $matches);
+
+        return preg_replace('#\r|\n#', '', $matches['base64'] ?: '');
+    }
+
+    public function testFromPkcs8(): void
+    {
+        $thing = $this->getMockContents('pkcs8', 'key');
+
+        self::assertIsString($thing);
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression(self::BASE64_EXPRESSION, $thing);
+        } else {
+            self::assertRegExp(self::BASE64_EXPRESSION, $thing);
+        }
+
+        $pkey = Rsa::fromPkcs8($thing);
+
+        if (8 === PHP_MAJOR_VERSION) {
+            self::assertIsObject($pkey);
+        } else {
+            self::assertIsResource($pkey);
+        }
+    }
+
+    public function testPkcs1ToSpki(): void
+    {
+        [, , [$spki], [$pkcs1]] = array_values($this->keyPhrasesDataProvider());
+
+        self::assertStringStartsWith('public.spki://', $spki);
+        self::assertStringStartsWith('public.pkcs1://', $pkcs1);
+        self::assertEquals(substr($spki, 14), Rsa::pkcs1ToSpki(substr($pkcs1, 15)));
+    }
+
+    /**
+     * @return array<string,array{string,boolean}>
+     */
+    public function pkcs1PhrasesDataProvider(): array
+    {
+        return [
+            '`private.pkcs1://`' => [$this->getMockContents('pkcs1', 'key'), false],
+            '`public.pkcs1://`'  => [$this->getMockContents('pkcs1', 'pem'), true],
+        ];
+    }
+
+    /**
+     * @dataProvider pkcs1PhrasesDataProvider
+     *
+     * @param string $thing
+     */
+    public function testFromPkcs1(string $thing, bool $isPublic = false): void
+    {
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression(self::BASE64_EXPRESSION, $thing);
+        } else {
+            self::assertRegExp(self::BASE64_EXPRESSION, $thing);
+        }
+
+        $pkey = Rsa::fromPkcs1($thing, $isPublic);
+
+        if (8 === PHP_MAJOR_VERSION) {
+            self::assertIsObject($pkey);
+        } else {
+            self::assertIsResource($pkey);
+        }
+    }
+
+    public function testFromSpki(): void
+    {
+        $thing = $this->getMockContents('spki', 'pem');
+
+        self::assertIsString($thing);
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression(self::BASE64_EXPRESSION, $thing);
+        } else {
+            self::assertRegExp(self::BASE64_EXPRESSION, $thing);
+        }
+
+        $pkey = Rsa::fromSpki($thing);
+
+        if (8 === PHP_MAJOR_VERSION) {
+            self::assertIsObject($pkey);
+        } else {
+            self::assertIsResource($pkey);
+        }
+    }
+
+    /**
+     * @return array<string,array{\OpenSSLAsymmetricKey|resource|string|mixed,boolean}>
+     */
+    public function keyPhrasesDataProvider(): array
+    {
+        return [
+            '`private.pkcs1://` string'               => ['private.pkcs1://' . $this->getMockContents('pkcs1', 'key'), false],
+            '`private.pkcs8://` string'               => ['private.pkcs8://' . $this->getMockContents('pkcs8', 'key'), false],
+            '`public.spki://` string'                 => ['public.spki://' . $this->getMockContents('spki', 'pem'),   true],
+            '`public.pkcs1://` string'                => ['public.pkcs1://' . $this->getMockContents('pkcs1', 'pem'), true],
+            '`file://` PKCS#1 privateKey path string' => [$f = 'file://' . sprintf(static::FIXTURES, 'pkcs1', 'key'), false],
+            'OpenSSLAsymmetricKey/resource(private)1' => [openssl_pkey_get_private($f),                               false],
+            'PKCS#1 privateKey contents'              => [$f = (string)file_get_contents($f),                         false],
+            'OpenSSLAsymmetricKey/resource(private)2' => [openssl_pkey_get_private($f),                               false],
+            '`file://` PKCS#8 privateKey path string' => [$f = 'file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'), false],
+            'OpenSSLAsymmetricKey/resource(private)3' => [openssl_pkey_get_private($f),                               false],
+            'PKCS#8 privateKey contents'              => [$f = (string)file_get_contents($f),                         false],
+            'OpenSSLAsymmetricKey/resource(private)4' => [openssl_pkey_get_private($f),                               false],
+            '`file://` SPKI publicKey path string'    => [$f = 'file://' . sprintf(static::FIXTURES, 'spki', 'pem'),  true],
+            'OpenSSLAsymmetricKey/resource(public)1' => [openssl_pkey_get_public($f),                                 true],
+            'SKPI publicKey contents'                 => [$f = (string)file_get_contents($f),                         true],
+            'OpenSSLAsymmetricKey/resource(public)2' => [openssl_pkey_get_public($f),                                 true],
+            'pkcs1 publicKey contents'                 => [(string)file_get_contents(sprintf(static::FIXTURES, 'pkcs1', 'pem')), true],
+            '`file://` x509 certificate string'       => [$f = 'file://' . sprintf(static::FIXTURES, 'sha256', 'crt'), true],
+            'x509 certificate contents string'        => [$f = (string)file_get_contents($f),                          true],
+            'OpenSSLCertificate/resource(public)4'   => [openssl_x509_read($f),                                        true],
+        ];
+    }
+
+    /**
+     * @dataProvider keyPhrasesDataProvider
+     *
+     * @param \OpenSSLAsymmetricKey|resource|string|mixed $thing
+     */
+    public function testFrom($thing, bool $isPublic): void
+    {
+        $pkey = Rsa::from($thing, $isPublic);
+
+        if (8 === PHP_MAJOR_VERSION) {
+            self::assertIsObject($pkey);
+        } else {
+            self::assertIsResource($pkey);
+        }
+    }
+
     /**
      * @return array<string,array{string,string|\OpenSSLAsymmetricKey|resource|mixed,string|\OpenSSLAsymmetricKey|resource|mixed}>
      */
     public function keysProvider(): array
     {
-        $privateKey = openssl_pkey_get_private('file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'));
-        $publicKey  = openssl_pkey_get_public('file://' . sprintf(static::FIXTURES, 'sha256', 'crt'));
+        [
+            [$pri1], [$pri2],
+            [$pub1], [$pub2],
+            [$pri3], [$pri4], [$pri5], [$pri6],
+            [$pri7], [$pri8], [$pri9], [$pri0],
+            [$pub3], [$pub4], [$pub5], [$pub6],
+            [$pub7], [$crt1], [$crt2], [$crt3]
+        ] = array_values($this->keyPhrasesDataProvider());
 
-        if (false === $privateKey || false === $publicKey) {
-            throw new \Exception('Loading the pkey failed.');
+        $keys = [
+            'plaintext, `public.spki://`, `private.pkcs1://`'        => [Formatter::nonce( 8), Rsa::fromSpki(substr($pub1, 14)), Rsa::fromPkcs1(substr($pri1, 16))],
+            'plaintext, `public.spki://`, `private.pkcs8://`'        => [Formatter::nonce(16), Rsa::fromSpki(substr($pub1, 14)), Rsa::fromPkcs8(substr($pri2, 16))],
+            'plaintext, `public.pkcs1://`, `private.pkcs1://`'       => [Formatter::nonce(24), Rsa::fromPkcs1(substr($pub2, 15), true), Rsa::fromPkcs1(substr($pri1, 16))],
+            'plaintext, `public.pkcs1://`, `private.pkcs8://`'       => [Formatter::nonce(32), Rsa::fromPkcs1(substr($pub2, 15), true), Rsa::fromPkcs8(substr($pri2, 16))],
+            'plaintext, `pkcs#1 pubkey content`, `private.pkcs1://`' => [Formatter::nonce(40), Rsa::from($pub7, true), Rsa::fromPkcs1(substr($pri1, 16))],
+            'plaintext, `pkcs#1 pubkey content`, `private.pkcs8://`' => [Formatter::nonce(48), Rsa::from($pub7, true), Rsa::fromPkcs8(substr($pri2, 16))],
+        ];
+
+        foreach ([$pub3, $pub4, $pub5, $pub6, $crt1, $crt2, $crt3] as $pubIndex => $pub) {
+            foreach ([$pri1, $pri2, $pri3, $pri4, $pri5, $pri6, $pri7, $pri8, $pri9, $pri0] as $priIndex => $pri) {
+                $keys["plaintext, publicKey{$pubIndex}, privateKey{$priIndex}"] = [Formatter::nonce(), Rsa::from($pub, true), Rsa::from($pri)];
+            }
         }
 
-        return [
-            'plaintext, publicKey and privateKey' => ['hello wechatpay 你好 微信支付', $publicKey, $privateKey]
-        ];
+        return $keys;
     }
 
     /**

@@ -209,8 +209,9 @@ class Rsa
      *
      * @param \OpenSSLAsymmetricKey|resource|string|mixed $thing - The string.
      * @param boolean $isPublic - Identify the \$thing wheter or nor is `publicKeyLike` string, default is `false`
+     * @return \OpenSSLAsymmetricKey|resource|string|mixed
      */
-    private static function cast($thing, bool $isPublic = false): string
+    private static function cast($thing, bool $isPublic = false)
     {
         $src = $thing;
 
