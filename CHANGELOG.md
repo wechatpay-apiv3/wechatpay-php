@@ -1,5 +1,15 @@
 # 变更历史
 
+## 1.2.0 - 2021-09-02
+
+[变更细节](../../compare/v1.1.4...v1.2.0)
+
+- 新增`Rsa::from`统一加载函数，以接替`PemUtil::loadPrivateKey`函数功能；
+- 新增`Rsa::fromPkcs1`, `Rsa::fromPkcs8`, `Rsa::fromSpki`语法糖，以支持从云端加载RSA公/私钥；
+- 新增RSA公钥`Rsa::pkcs1ToSpki`格式转换函数，入参是`base64`字符串；
+- 标记 `PemUtil::loadPrivateKey`及`PemUtil::loadPrivateKeyFromString`为`不推荐用法`;
+- 详细变化可见[1.1至1.2升级指南](UPGRADING.md)
+
 ## 1.1.4 - 2021-08-26
 
 [变更细节](../../compare/v1.1.3...v1.1.4)
