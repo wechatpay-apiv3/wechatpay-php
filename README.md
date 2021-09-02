@@ -21,7 +21,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.1.4`测试版本。
+当前版本为`1.2.0`测试版本。
 请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 **版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本遵循[语义化版本号](https://semver.org/lang/zh-CN/)规则。
@@ -60,7 +60,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.1.4"
+    "wechatpay/wechatpay": "^1.2.0"
 }
 ```
 
@@ -90,27 +90,28 @@ composer install
 
 ```php
 use WeChatPay\Builder;
+use WeChatPay\Crypto\Rsa;
 use WeChatPay\Util\PemUtil;
 
 // 商户号，假定为`1000100`
 $merchantId = '1000100';
 // 商户私钥，文件路径假定为 `/path/to/merchant/apiclient_key.pem`
-$merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
+$merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';
 // 加载商户私钥
-$merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
+$merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath);
 $merchantCertificateSerial = '可以从商户平台直接获取到';// API证书不重置，商户证书序列号就是个常量
 // // 也可以使用openssl命令行获取证书序列号
 // // openssl x509 -in /path/to/merchant/apiclient_cert.pem -noout -serial | awk -F= '{print $2}'
 // // 或者从以下代码也可以直接加载
 // // 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
-// $merchantCertificateFilePath = '/path/to/merchant/apiclient_cert.pem';
+// $merchantCertificateFilePath = 'file:///path/to/merchant/apiclient_cert.pem';
 // // 加载商户证书
 // $merchantCertificateInstance = PemUtil::loadCertificate($merchantCertificateFilePath);
 // // 解析商户证书序列号
 // $merchantCertificateSerial = PemUtil::parseCertificateSerialNo($merchantCertificateInstance);
 
 // 平台证书，可由下载器 `./bin/CertificateDownloader.php` 生成并假定保存为 `/path/to/wechatpay/cert.pem`
-$platformCertificateFilePath = '/path/to/wechatpay/cert.pem';
+$platformCertificateFilePath = 'file:///path/to/wechatpay/cert.pem';
 // 加载平台证书
 $platformCertificateInstance = PemUtil::loadCertificate($platformCertificateFilePath);
 // 解析平台证书序列号
@@ -470,8 +471,8 @@ $res = $instance
     return Transformer::toArray((string)$response->getBody());
 })
 ->otherwise(static function($e) {
-    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
-        return Transformer::toArray((string)$e->getResponse()->getBody());
+    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
+        return Transformer::toArray((string)$e->getReason()->getBody());
     }
     return [];
 })
@@ -501,8 +502,43 @@ $res = $instance
 ])
 // 返回无sign字典，只能从异常通道获取返回值
 ->otherwise(static function($e) {
-    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
-        return Transformer::toArray((string) $e->getResponse()->getBody());
+    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
+        return Transformer::toArray((string)$e->getReason()->getBody());
+    }
+    return [];
+})
+->wait();
+print_r($res);
+```
+
+### 付款到银行卡
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_2)
+
+```php
+use WeChatPay\Crypto\Rsa;
+// 做一个匿名方法，供后续方便使用，$rsaPubKeyString 是`risk/getpublickey` 的返回值'pub_key'字符串
+$rsaPublicKeyInstance = Rsa::from($rsaPubKeyString, true);
+$encryptor = static function(string $msg) use ($rsaPublicKeyInstance): string {
+    return Rsa::encrypt($msg, $rsaPublicKeyInstance);
+};
+$res = $instance
+->mmpaysptrans->pay_bank
+->postAsync([
+    'xml' => [
+        'mch_id'           => '1900000109',
+        'partner_trade_no' => '1212121221227',
+        'enc_bank_no'      => $encryptor('6225............'),
+        'enc_true_name'    => $encryptor('张三'),
+        'bank_code'        => '1001',
+        'amount'           => '100000',
+        'desc'             => '理财',
+    ],
+    'security' => true,
+])
+->otherwise(static function($e) {
+    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
+        return Transformer::toArray((string)$e->getReason()->getBody());
     }
     return [];
 })
@@ -526,8 +562,8 @@ $res = $instance
 ])
 // 返回无sign字典，只能从异常通道获取返回值
 ->otherwise(static function($e) {
-    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
-        return Transformer::toArray((string) $e->getResponse()->getBody());
+    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
+        return Transformer::toArray((string)$e->getReason()->getBody());
     }
     return [];
 })
