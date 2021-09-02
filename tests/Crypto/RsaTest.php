@@ -9,6 +9,7 @@ use function method_exists;
 use function openssl_pkey_get_private;
 use function openssl_pkey_get_public;
 use function openssl_x509_read;
+use function random_bytes;
 use function sprintf;
 use function substr;
 

@@ -12,8 +12,8 @@ use function array_keys;
 use function base64_decode;
 use function base64_encode;
 use function is_int;
-use function is_resource;
 use function is_object;
+use function is_resource;
 use function ltrim;
 use function openssl_pkey_get_private;
 use function openssl_pkey_get_public;
@@ -25,6 +25,7 @@ use function pack;
 use function parse_url;
 use function preg_match;
 use function sprintf;
+use function str_replace;
 use function strlen;
 use function strpos;
 use function substr;
@@ -106,7 +107,7 @@ class Rsa
      */
     public static function fromPkcs8(string $thing)
     {
-        $pkey = openssl_pkey_get_private(static::cast(sprintf('private.pkcs8://%s', $thing)));
+        $pkey = openssl_pkey_get_private(static::parse(sprintf('private.pkcs8://%s', $thing)));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the PKCS#8 privateKey(%s).', $thing));
@@ -127,8 +128,8 @@ class Rsa
     public static function fromPkcs1(string $thing, bool $isPublic = false)
     {
         $pkey = $isPublic
-            ? openssl_pkey_get_public(static::cast(sprintf('public.pkcs1://%s', $thing), $isPublic))
-            : openssl_pkey_get_private(static::cast(sprintf('private.pkcs1://%s', $thing)));
+            ? openssl_pkey_get_public(static::parse(sprintf('public.pkcs1://%s', $thing), $isPublic))
+            : openssl_pkey_get_private(static::parse(sprintf('private.pkcs1://%s', $thing)));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the PKCS#1 %s(%s).', $isPublic ? 'publicKey' : 'privateKey', $thing));
@@ -147,7 +148,7 @@ class Rsa
      */
     public static function fromSpki(string $thing)
     {
-        $pkey = openssl_pkey_get_public(static::cast(sprintf('public.spki://%s', $thing), true));
+        $pkey = openssl_pkey_get_public(static::parse(sprintf('public.spki://%s', $thing), true));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the SPKI publicKey(%s).', $thing));
@@ -159,14 +160,14 @@ class Rsa
     /**
      * Loading the privateKey/publicKey from a string.
      *
-     * The `\$thing` can be one of the following rules:
+     * The `\$thing` can be one of the following:
      * - `file://` protocol privateKey/publicKey(x509 certificate) string.
      * - `public.spki://`, `public.pkcs1://`, `private.pkcs1://`, `private.pkcs8://` protocols string.
      * - full `PEM` format privateKey/publicKey(x509 certificate) string.
      * - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7).
      * - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      *
-     * @param \OpenSSLAsymmetricKey|resource|string|mixed $thing - The string.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $thing - The thing.
      * @param boolean $isPublic - Identify the \$thing whether or nor is the `publicKeyLike`, default is `false`
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
@@ -175,8 +176,8 @@ class Rsa
     public static function from($thing, bool $isPublic = false)
     {
         $pkey = $isPublic
-            ? openssl_pkey_get_public(static::cast($thing, $isPublic))
-            : openssl_pkey_get_private(static::cast($thing));
+            ? openssl_pkey_get_public(static::parse($thing, $isPublic))
+            : openssl_pkey_get_private(static::parse($thing));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load %s from(%s).', $isPublic ? 'publicKey' : 'privateKey', $thing));
@@ -186,41 +187,41 @@ class Rsa
     }
 
     /**
-     * Cast the `\$thing` for the `openssl_pkey_get_public` or `openssl_pkey_get_private` function can be acceptable
+     * Parse the `\$thing` for the `openssl_pkey_get_public`/`openssl_pkey_get_private` function.
      *
-     * `file://` protocol privateKey/publicKey, eg:
+     * The `\$thing` can be the `file://` protocol privateKey/publicKey string, eg:
      *   - `file:///my/path/to/private.pkcs1.key`
      *   - `file:///my/path/to/private.pkcs8.key`
      *   - `file:///my/path/to/public.spki.pem`
      *   - `file:///my/path/to/public.pkcs1.pem`
      *   - `file:///my/path/to/x509.crt` (for publicKey)
      *
-     * `public.spki://`, `public.pkcs1://`, `private.pkcs1://`, `private.pkcs8://` protocols, eg:
+     * The `\$thing` can be the `public.spki://`, `public.pkcs1://`, `private.pkcs1://`, `private.pkcs8://` protocols string, eg:
      *   - `public.spki://MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCg...`
      *   - `public.pkcs1://MIIBCgKCAQEAgYxTW5Yj...`
      *   - `private.pkcs1://MIIEpAIBAAKCAQEApdXuft3as2x...`
      *   - `private.pkcs8://MIIEpAIBAAKCAQEApdXuft3as2x...`
      *
-     * string with PEM `evelope`, eg:
+     * The `\$thing` can be the string with PEM `evelope`, eg:
      *   - `-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----`
      *   - `-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----`
      *   - `-----BEGIN RSA PUBLIC KEY-----...-----END RSA PUBLIC KEY-----`
      *   - `-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----`
      *   - `-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----` (for publicKey)
      *
-     * object/resouce, eg:
+     * The `\$thing` can be the \OpenSSLAsymmetricKey/\OpenSSLCertificate/resouce, eg:
      *   - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7) for publicKey/privateKey.
      *   - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      *
-     * @param \OpenSSLAsymmetricKey|resource|string|mixed $thing - The string.
-     * @param boolean $isPublic - Identify the \$thing whether or nor is `publicKeyLike` string, default is `false`
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $thing - The thing.
+     * @param boolean $isPublic - Identify the \$thing whether or nor is `publicKeyLike`, default is `false`
      * @return \OpenSSLAsymmetricKey|resource|string|mixed
      */
-    private static function cast($thing, bool $isPublic = false)
+    private static function parse($thing, bool $isPublic = false)
     {
         $src = $thing;
 
-        if (is_resource($src) || is_object($thing) || is_int(strpos($src, self::LOCAL_FILE_PROTOCOL))) {
+        if (is_resource($src) || is_object($src) || is_int(strpos($src, self::LOCAL_FILE_PROTOCOL))) {
             return $src;
         }
 
@@ -238,13 +239,12 @@ class Rsa
         }
 
         if (is_int(strpos($src, self::PKEY_NEEDLE))) {
-            if ($isPublic) {
-                preg_match(self::PKEY_PEM_FORMAT_PATTERN, $src, $matches);
+            if ($isPublic && preg_match(self::PKEY_PEM_FORMAT_PATTERN, $src, $matches)) {
                 [, $type, $base64] = $matches;
                 $mapRules = (array)array_combine(array_column(self::RULES, 1/*column*/), array_keys(self::RULES));
                 $protocol = $mapRules[$type] ?? '';
                 if ('public.pkcs1' === $protocol) {
-                    return self::cast(sprintf('%s://%s', $protocol, str_replace([self::CHR_CR, self::CHR_LF], '', $base64)));
+                    return self::parse(sprintf('%s://%s', $protocol, str_replace([self::CHR_CR, self::CHR_LF], '', $base64)));
                 }
             }
             return $src;
