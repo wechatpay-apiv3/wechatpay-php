@@ -103,17 +103,17 @@ $merchantCertificateSerial = '可以从商户平台直接获取到';// API证书
 // // 也可以使用openssl命令行获取证书序列号
 // // openssl x509 -in /path/to/merchant/apiclient_cert.pem -noout -serial | awk -F= '{print $2}'
 // // 或者从以下代码也可以直接加载
-// // 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
+// // 「商户证书」，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
 // $merchantCertificateFilePath = 'file:///path/to/merchant/apiclient_cert.pem';// 注意 `file://` 开头协议不能少
-// // 解析商户证书序列号
+// // 解析「商户证书」序列号
 // $merchantCertificateSerial = PemUtil::parseCertificateSerialNo($merchantCertificateFilePath);
 
-// 平台证书，可由下载器 `./bin/CertificateDownloader.php` 生成并假定保存为 `/path/to/wechatpay/cert.pem`
+// 「平台证书」，可由下载器 `./bin/CertificateDownloader.php` 生成并假定保存为 `/path/to/wechatpay/cert.pem`
 $platformCertificateFilePath = 'file:///path/to/wechatpay/cert.pem';// 注意 `file://` 开头协议不能少
-// 加载平台证书公钥
+// 加载「平台证书」公钥
 $platformPublicKeyInstance = Rsa::from($platformCertificateFilePath, true);
-// 解析平台证书序列号
-$platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateFilePath);// 平台证书序当前五年一换，缓存后就是个常量
+// 解析「平台证书」序列号，「平台证书」当前五年一换，缓存后就是个常量
+$platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateFilePath);
 
 // 工厂方法构造一个实例
 $instance = Builder::factory([
