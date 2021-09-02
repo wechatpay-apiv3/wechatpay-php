@@ -11,9 +11,12 @@ use function array_combine;
 use function array_keys;
 use function base64_decode;
 use function base64_encode;
+use function gettype;
+use function is_array;
 use function is_int;
 use function is_object;
 use function is_resource;
+use function is_string;
 use function ltrim;
 use function openssl_pkey_get_private;
 use function openssl_pkey_get_public;
@@ -167,7 +170,7 @@ class Rsa
      * - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7).
      * - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      *
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $thing - The thing.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array{string,string}|string|mixed $thing - The thing.
      * @param string $type - Either `self::KEY_TYPE_PUBLIC` or `self::KEY_TYPE_PRIVATE` string, default is `self::KEY_TYPE_PRIVATE`.
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
@@ -180,7 +183,11 @@ class Rsa
             : openssl_pkey_get_private(static::parse($thing));
 
         if (false === $pkey) {
-            throw new UnexpectedValueException(sprintf('Cannot load %s from(%s).', $isPublic ? 'publicKey' : 'privateKey', $thing));
+            throw new UnexpectedValueException(sprintf(
+                'Cannot load %s from(%s).',
+                $isPublic ? 'publicKey' : 'privateKey',
+                is_string($thing) ? $thing : gettype($thing)
+            ));
         }
 
         return $pkey;
@@ -213,15 +220,15 @@ class Rsa
      *   - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7) for publicKey/privateKey.
      *   - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      *
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $thing - The thing.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array{string,string}|string|mixed $thing - The thing.
      * @param string $type - Either `self::KEY_TYPE_PUBLIC` or `self::KEY_TYPE_PRIVATE` string, default is `self::KEY_TYPE_PRIVATE`.
-     * @return \OpenSSLAsymmetricKey|resource|string|mixed
+     * @return \OpenSSLAsymmetricKey|resource|array{string,string}|string|mixed
      */
     private static function parse($thing, string $type = self::KEY_TYPE_PRIVATE)
     {
         $src = $thing;
 
-        if (is_resource($src) || is_object($src) || is_int(strpos($src, self::LOCAL_FILE_PROTOCOL))) {
+        if (is_resource($src) || is_object($src) || is_array($src) || is_int(strpos($src, self::LOCAL_FILE_PROTOCOL))) {
             return $src;
         }
 

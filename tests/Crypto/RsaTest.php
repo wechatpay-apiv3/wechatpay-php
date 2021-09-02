@@ -195,6 +195,8 @@ class RsaTest extends TestCase
             'plaintext, `public.pkcs1://`, `private.pkcs8://`'       => [random_bytes(32), Rsa::fromPkcs1(substr($pub2, 15), Rsa::KEY_TYPE_PUBLIC), Rsa::fromPkcs8(substr($pri2, 16))],
             'plaintext, `pkcs#1 pubkey content`, `private.pkcs1://`' => [random_bytes(40), Rsa::from($pub7, Rsa::KEY_TYPE_PUBLIC), Rsa::fromPkcs1(substr($pri1, 16))],
             'plaintext, `pkcs#1 pubkey content`, `private.pkcs8://`' => [random_bytes(48), Rsa::from($pub7, Rsa::KEY_TYPE_PUBLIC), Rsa::fromPkcs8(substr($pri2, 16))],
+            'txt, `SPKI file://pubkey`, [`file://`,``] privateKey'   => [random_bytes(64), $pub3, [$pri3, '']],
+            'txt, `SPKI pubkey content`, [`contents`,``] privateKey' => [random_bytes(72), $pub5, [$pri5, '']],
         ];
 
         foreach ([$pub3, $pub4, $pub5, $pub6, $crt1, $crt2, $crt3] as $pubIndex => $pub) {
