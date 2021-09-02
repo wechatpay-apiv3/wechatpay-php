@@ -96,7 +96,7 @@ use WeChatPay\Util\PemUtil;
 // 商户号，假定为`1000100`
 $merchantId = '1000100';
 // 商户私钥，文件路径假定为 `/path/to/merchant/apiclient_key.pem`
-$merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';
+$merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';// 注意 `file://` 开头协议不能少
 // 加载商户私钥
 $merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath);
 $merchantCertificateSerial = '可以从商户平台直接获取到';// API证书不重置，商户证书序列号就是个常量
@@ -104,18 +104,16 @@ $merchantCertificateSerial = '可以从商户平台直接获取到';// API证书
 // // openssl x509 -in /path/to/merchant/apiclient_cert.pem -noout -serial | awk -F= '{print $2}'
 // // 或者从以下代码也可以直接加载
 // // 商户证书，文件路径假定为 `/path/to/merchant/apiclient_cert.pem`
-// $merchantCertificateFilePath = 'file:///path/to/merchant/apiclient_cert.pem';
-// // 加载商户证书
-// $merchantCertificateInstance = PemUtil::loadCertificate($merchantCertificateFilePath);
+// $merchantCertificateFilePath = 'file:///path/to/merchant/apiclient_cert.pem';// 注意 `file://` 开头协议不能少
 // // 解析商户证书序列号
-// $merchantCertificateSerial = PemUtil::parseCertificateSerialNo($merchantCertificateInstance);
+// $merchantCertificateSerial = PemUtil::parseCertificateSerialNo($merchantCertificateFilePath);
 
 // 平台证书，可由下载器 `./bin/CertificateDownloader.php` 生成并假定保存为 `/path/to/wechatpay/cert.pem`
-$platformCertificateFilePath = 'file:///path/to/wechatpay/cert.pem';
-// 加载平台证书
-$platformCertificateInstance = PemUtil::loadCertificate($platformCertificateFilePath);
+$platformCertificateFilePath = 'file:///path/to/wechatpay/cert.pem';// 注意 `file://` 开头协议不能少
+// 加载平台证书公钥
+$platformPublicKeyInstance = Rsa::from($platformCertificateFilePath, true);
 // 解析平台证书序列号
-$platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateInstance);
+$platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateFilePath);// 平台证书序当前五年一换，缓存后就是个常量
 
 // 工厂方法构造一个实例
 $instance = Builder::factory([
@@ -123,7 +121,7 @@ $instance = Builder::factory([
     'serial'     => $merchantCertificateSerial,
     'privateKey' => $merchantPrivateKeyInstance,
     'certs'      => [
-        $platformCertificateSerial => $platformCertificateInstance,
+        $platformCertificateSerial => $platformPublicKeyInstance,
     ],
     // APIv2密钥(32字节)--不使用APIv2可选
     // 'secret' => 'exposed_your_key_here_have_risks',// 值为占位符，如需使用APIv2请替换为实际值
@@ -902,6 +900,7 @@ AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_da
 - <a name="note-rfc3986"></a> [RFC3986](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)
   > section-3.3 `segments`: A path consists of a sequence of path segments separated by a slash ("/") character.
 - <a name="note-rfc6570"><a> [RFC6570](https://www.rfc-editor.org/rfc/rfc6570.html)
+- [PHP密钥/证书参数 相关说明](https://www.php.net/manual/zh/openssl.certparams.php)
 
 ## License
 

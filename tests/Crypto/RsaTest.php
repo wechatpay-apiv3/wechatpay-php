@@ -9,8 +9,10 @@ use function method_exists;
 use function openssl_pkey_get_private;
 use function openssl_pkey_get_public;
 use function openssl_x509_read;
+use function preg_match;
 use function random_bytes;
 use function sprintf;
+use function str_replace;
 use function substr;
 
 use WeChatPay\Crypto\Rsa;
@@ -35,7 +37,7 @@ class RsaTest extends TestCase
 
         preg_match(static::EVELOPE, $pkey ?: '', $matches);
 
-        return preg_replace('#\r|\n#', '', $matches['base64'] ?: '');
+        return str_replace(["\r", "\n"], '', $matches['base64'] ?: '');
     }
 
     public function testFromPkcs8(): void
@@ -138,14 +140,14 @@ class RsaTest extends TestCase
             'OpenSSLAsymmetricKey/resource(private)3' => [openssl_pkey_get_private($f),                               false],
             'PKCS#8 privateKey contents'              => [$f = (string)file_get_contents($f),                         false],
             'OpenSSLAsymmetricKey/resource(private)4' => [openssl_pkey_get_private($f),                               false],
-            '`file://` SPKI publicKey path string'    => [$f = 'file://' . sprintf(static::FIXTURES, 'spki', 'pem'),  true],
-            'OpenSSLAsymmetricKey/resource(public)1' => [openssl_pkey_get_public($f),                                 true],
-            'SKPI publicKey contents'                 => [$f = (string)file_get_contents($f),                         true],
-            'OpenSSLAsymmetricKey/resource(public)2' => [openssl_pkey_get_public($f),                                 true],
-            'pkcs1 publicKey contents'                 => [(string)file_get_contents(sprintf(static::FIXTURES, 'pkcs1', 'pem')), true],
+            '`file://` SPKI publicKey path string'    => [$f = 'file://' . sprintf(static::FIXTURES, 'spki', 'pem'),   true],
+            'OpenSSLAsymmetricKey/resource(public)1'  => [openssl_pkey_get_public($f),                                 true],
+            'SKPI publicKey contents'                 => [$f = (string)file_get_contents($f),                          true],
+            'OpenSSLAsymmetricKey/resource(public)2'  => [openssl_pkey_get_public($f),                                 true],
+            'pkcs1 publicKey contents'                => [(string)file_get_contents(sprintf(static::FIXTURES, 'pkcs1', 'pem')), true],
             '`file://` x509 certificate string'       => [$f = 'file://' . sprintf(static::FIXTURES, 'sha256', 'crt'), true],
             'x509 certificate contents string'        => [$f = (string)file_get_contents($f),                          true],
-            'OpenSSLCertificate/resource(public)4'   => [openssl_x509_read($f),                                        true],
+            'OpenSSLCertificate/resource'             => [openssl_x509_read($f),                                       true],
         ];
     }
 
