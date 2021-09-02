@@ -38,6 +38,11 @@ use UnexpectedValueException;
  */
 class Rsa
 {
+    /** asymmetric public key type string */
+    public const KEY_TYPE_PUBLIC = 'public';
+    /** asymmetric private key type string */
+    public const KEY_TYPE_PRIVATE = 'private';
+
     private const LOCAL_FILE_PROTOCOL = 'file://';
     private const PKEY_NEEDLE = ' KEY-';
     private const PKEY_FORMAT = "-----BEGIN %1\$s KEY-----\n%2\$s\n-----END %1\$s KEY-----";
@@ -117,14 +122,14 @@ class Rsa
      * Sugar for loading input `privateKey/publicKey` string, pure `base64-encoded-string` without LF and evelope.
      *
      * @param string $thing - The string in `PKCS#1` format.
-     * @param boolean $isPublic - The `$thing` is public key string.
+     * @param string $type - Either `self::KEY_TYPE_PUBLIC` or `self::KEY_TYPE_PRIVATE` string, default is `self::KEY_TYPE_PRIVATE`.
      * @return \OpenSSLAsymmetricKey|resource|mixed
      * @throws UnexpectedValueException
      */
-    public static function fromPkcs1(string $thing, bool $isPublic = false)
+    public static function fromPkcs1(string $thing, string $type = self::KEY_TYPE_PRIVATE)
     {
-        $pkey = $isPublic
-            ? openssl_pkey_get_public(static::parse(sprintf('public.pkcs1://%s', $thing), $isPublic))
+        $pkey = ($isPublic = $type === static::KEY_TYPE_PUBLIC)
+            ? openssl_pkey_get_public(static::parse(sprintf('public.pkcs1://%s', $thing), $type))
             : openssl_pkey_get_private(static::parse(sprintf('private.pkcs1://%s', $thing)));
 
         if (false === $pkey) {
@@ -143,7 +148,7 @@ class Rsa
      */
     public static function fromSpki(string $thing)
     {
-        $pkey = openssl_pkey_get_public(static::parse(sprintf('public.spki://%s', $thing), true));
+        $pkey = openssl_pkey_get_public(static::parse(sprintf('public.spki://%s', $thing), static::KEY_TYPE_PUBLIC));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the SPKI publicKey(%s).', $thing));
@@ -163,15 +168,15 @@ class Rsa
      * - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      *
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $thing - The thing.
-     * @param boolean $isPublic - Identify the \$thing whether or nor is the `publicKeyLike`, default is `false`
+     * @param string $type - Either `self::KEY_TYPE_PUBLIC` or `self::KEY_TYPE_PRIVATE` string, default is `self::KEY_TYPE_PRIVATE`.
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
      * @throws UnexpectedValueException
      */
-    public static function from($thing, bool $isPublic = false)
+    public static function from($thing, string $type = self::KEY_TYPE_PRIVATE)
     {
-        $pkey = $isPublic
-            ? openssl_pkey_get_public(static::parse($thing, $isPublic))
+        $pkey = ($isPublic = $type === static::KEY_TYPE_PUBLIC)
+            ? openssl_pkey_get_public(static::parse($thing, $type))
             : openssl_pkey_get_private(static::parse($thing));
 
         if (false === $pkey) {
@@ -209,10 +214,10 @@ class Rsa
      *   - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      *
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $thing - The thing.
-     * @param boolean $isPublic - Identify the \$thing whether or nor is `publicKeyLike`, default is `false`
+     * @param string $type - Either `self::KEY_TYPE_PUBLIC` or `self::KEY_TYPE_PRIVATE` string, default is `self::KEY_TYPE_PRIVATE`.
      * @return \OpenSSLAsymmetricKey|resource|string|mixed
      */
-    private static function parse($thing, bool $isPublic = false)
+    private static function parse($thing, string $type = self::KEY_TYPE_PRIVATE)
     {
         $src = $thing;
 
@@ -234,12 +239,12 @@ class Rsa
         }
 
         if (is_int(strpos($src, self::PKEY_NEEDLE))) {
-            if ($isPublic && preg_match(self::PKEY_PEM_FORMAT_PATTERN, $src, $matches)) {
-                [, $type, $base64] = $matches;
+            if ($type === self::KEY_TYPE_PUBLIC && preg_match(self::PKEY_PEM_FORMAT_PATTERN, $src, $matches)) {
+                [, $kind, $base64] = $matches;
                 $mapRules = (array)array_combine(array_column(self::RULES, 1/*column*/), array_keys(self::RULES));
-                $protocol = $mapRules[$type] ?? '';
+                $protocol = $mapRules[$kind] ?? '';
                 if ('public.pkcs1' === $protocol) {
-                    return self::parse(sprintf('%s://%s', $protocol, str_replace([self::CHR_CR, self::CHR_LF], '', $base64)));
+                    return self::parse(sprintf('%s://%s', $protocol, str_replace([self::CHR_CR, self::CHR_LF], '', $base64)), $type);
                 }
             }
             return $src;

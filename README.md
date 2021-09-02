@@ -98,7 +98,7 @@ $merchantId = '1000100';
 // 商户私钥，文件路径假定为 `/path/to/merchant/apiclient_key.pem`
 $merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';// 注意 `file://` 开头协议不能少
 // 加载商户私钥
-$merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath);
+$merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath, Rsa::KEY_TYPE_PRIVATE);
 $merchantCertificateSerial = '可以从商户平台直接获取到';// API证书不重置，商户证书序列号就是个常量
 // // 也可以使用openssl命令行获取证书序列号
 // // openssl x509 -in /path/to/merchant/apiclient_cert.pem -noout -serial | awk -F= '{print $2}'
@@ -111,7 +111,7 @@ $merchantCertificateSerial = '可以从商户平台直接获取到';// API证书
 // 「平台证书」，可由下载器 `./bin/CertificateDownloader.php` 生成并假定保存为 `/path/to/wechatpay/cert.pem`
 $platformCertificateFilePath = 'file:///path/to/wechatpay/cert.pem';// 注意 `file://` 开头协议不能少
 // 加载「平台证书」公钥
-$platformPublicKeyInstance = Rsa::from($platformCertificateFilePath, true);
+$platformPublicKeyInstance = Rsa::from($platformCertificateFilePath, Rsa::KEY_TYPE_PUBLIC);
 // 解析「平台证书」序列号，「平台证书」当前五年一换，缓存后就是个常量
 $platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateFilePath);
 

@@ -26,6 +26,13 @@ class RsaTest extends TestCase
 
     private const EVELOPE = '#-{5}BEGIN[^-]+-{5}\r?\n(?<base64>[^-]+)\r?\n-{5}END[^-]+-{5}#';
 
+
+    public function testClassConstants(): void
+    {
+        self::assertIsString(Rsa::KEY_TYPE_PRIVATE);
+        self::assertIsString(Rsa::KEY_TYPE_PUBLIC);
+    }
+
     /**
      * @param string $type
      * @param string $suffix
@@ -70,13 +77,13 @@ class RsaTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,boolean}>
+     * @return array<string,array{string,string}>
      */
     public function pkcs1PhrasesDataProvider(): array
     {
         return [
-            '`private.pkcs1://`' => [$this->getMockContents('pkcs1', 'key'), false],
-            '`public.pkcs1://`'  => [$this->getMockContents('pkcs1', 'pem'), true],
+            '`private.pkcs1://`' => [$this->getMockContents('pkcs1', 'key'), Rsa::KEY_TYPE_PRIVATE],
+            '`public.pkcs1://`'  => [$this->getMockContents('pkcs1', 'pem'), Rsa::KEY_TYPE_PUBLIC],
         ];
     }
 
@@ -85,7 +92,7 @@ class RsaTest extends TestCase
      *
      * @param string $thing
      */
-    public function testFromPkcs1(string $thing, bool $isPublic = false): void
+    public function testFromPkcs1(string $thing, string $type): void
     {
         if (method_exists($this, 'assertMatchesRegularExpression')) {
             $this->assertMatchesRegularExpression(self::BASE64_EXPRESSION, $thing);
@@ -93,7 +100,7 @@ class RsaTest extends TestCase
             self::assertRegExp(self::BASE64_EXPRESSION, $thing);
         }
 
-        $pkey = Rsa::fromPkcs1($thing, $isPublic);
+        $pkey = Rsa::fromPkcs1($thing, $type);
 
         if (8 === PHP_MAJOR_VERSION) {
             self::assertIsObject($pkey);
@@ -123,31 +130,31 @@ class RsaTest extends TestCase
     }
 
     /**
-     * @return array<string,array{\OpenSSLAsymmetricKey|resource|string|mixed,boolean}>
+     * @return array<string,array{\OpenSSLAsymmetricKey|resource|string|mixed,string}>
      */
     public function keyPhrasesDataProvider(): array
     {
         return [
-            '`private.pkcs1://` string'               => ['private.pkcs1://' . $this->getMockContents('pkcs1', 'key'), false],
-            '`private.pkcs8://` string'               => ['private.pkcs8://' . $this->getMockContents('pkcs8', 'key'), false],
-            '`public.spki://` string'                 => ['public.spki://' . $this->getMockContents('spki', 'pem'),   true],
-            '`public.pkcs1://` string'                => ['public.pkcs1://' . $this->getMockContents('pkcs1', 'pem'), true],
-            '`file://` PKCS#1 privateKey path string' => [$f = 'file://' . sprintf(static::FIXTURES, 'pkcs1', 'key'), false],
-            'OpenSSLAsymmetricKey/resource(private)1' => [openssl_pkey_get_private($f),                               false],
-            'PKCS#1 privateKey contents'              => [$f = (string)file_get_contents($f),                         false],
-            'OpenSSLAsymmetricKey/resource(private)2' => [openssl_pkey_get_private($f),                               false],
-            '`file://` PKCS#8 privateKey path string' => [$f = 'file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'), false],
-            'OpenSSLAsymmetricKey/resource(private)3' => [openssl_pkey_get_private($f),                               false],
-            'PKCS#8 privateKey contents'              => [$f = (string)file_get_contents($f),                         false],
-            'OpenSSLAsymmetricKey/resource(private)4' => [openssl_pkey_get_private($f),                               false],
-            '`file://` SPKI publicKey path string'    => [$f = 'file://' . sprintf(static::FIXTURES, 'spki', 'pem'),   true],
-            'OpenSSLAsymmetricKey/resource(public)1'  => [openssl_pkey_get_public($f),                                 true],
-            'SKPI publicKey contents'                 => [$f = (string)file_get_contents($f),                          true],
-            'OpenSSLAsymmetricKey/resource(public)2'  => [openssl_pkey_get_public($f),                                 true],
-            'pkcs1 publicKey contents'                => [(string)file_get_contents(sprintf(static::FIXTURES, 'pkcs1', 'pem')), true],
-            '`file://` x509 certificate string'       => [$f = 'file://' . sprintf(static::FIXTURES, 'sha256', 'crt'), true],
-            'x509 certificate contents string'        => [$f = (string)file_get_contents($f),                          true],
-            'OpenSSLCertificate/resource'             => [openssl_x509_read($f),                                       true],
+            '`private.pkcs1://` string'               => ['private.pkcs1://' . $this->getMockContents('pkcs1', 'key'),          Rsa::KEY_TYPE_PRIVATE],
+            '`private.pkcs8://` string'               => ['private.pkcs8://' . $this->getMockContents('pkcs8', 'key'),          Rsa::KEY_TYPE_PRIVATE],
+            '`public.spki://` string'                 => ['public.spki://' . $this->getMockContents('spki', 'pem'),             Rsa::KEY_TYPE_PUBLIC],
+            '`public.pkcs1://` string'                => ['public.pkcs1://' . $this->getMockContents('pkcs1', 'pem'),           Rsa::KEY_TYPE_PUBLIC],
+            '`file://` PKCS#1 privateKey path string' => [$f = 'file://' . sprintf(static::FIXTURES, 'pkcs1', 'key'),           Rsa::KEY_TYPE_PRIVATE],
+            'OpenSSLAsymmetricKey/resource(private)1' => [openssl_pkey_get_private($f),                                         Rsa::KEY_TYPE_PRIVATE],
+            'PKCS#1 privateKey contents'              => [$f = (string)file_get_contents($f),                                   Rsa::KEY_TYPE_PRIVATE],
+            'OpenSSLAsymmetricKey/resource(private)2' => [openssl_pkey_get_private($f),                                         Rsa::KEY_TYPE_PRIVATE],
+            '`file://` PKCS#8 privateKey path string' => [$f = 'file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'),           Rsa::KEY_TYPE_PRIVATE],
+            'OpenSSLAsymmetricKey/resource(private)3' => [openssl_pkey_get_private($f),                                         Rsa::KEY_TYPE_PRIVATE],
+            'PKCS#8 privateKey contents'              => [$f = (string)file_get_contents($f),                                   Rsa::KEY_TYPE_PRIVATE],
+            'OpenSSLAsymmetricKey/resource(private)4' => [openssl_pkey_get_private($f),                                         Rsa::KEY_TYPE_PRIVATE],
+            '`file://` SPKI publicKey path string'    => [$f = 'file://' . sprintf(static::FIXTURES, 'spki', 'pem'),            Rsa::KEY_TYPE_PUBLIC],
+            'OpenSSLAsymmetricKey/resource(public)1'  => [openssl_pkey_get_public($f),                                          Rsa::KEY_TYPE_PUBLIC],
+            'SKPI publicKey contents'                 => [$f = (string)file_get_contents($f),                                   Rsa::KEY_TYPE_PUBLIC],
+            'OpenSSLAsymmetricKey/resource(public)2'  => [openssl_pkey_get_public($f),                                          Rsa::KEY_TYPE_PUBLIC],
+            'pkcs1 publicKey contents'                => [(string)file_get_contents(sprintf(static::FIXTURES, 'pkcs1', 'pem')), Rsa::KEY_TYPE_PUBLIC],
+            '`file://` x509 certificate string'       => [$f = 'file://' . sprintf(static::FIXTURES, 'sha256', 'crt'),          Rsa::KEY_TYPE_PUBLIC],
+            'x509 certificate contents string'        => [$f = (string)file_get_contents($f),                                   Rsa::KEY_TYPE_PUBLIC],
+            'OpenSSLCertificate/resource'             => [openssl_x509_read($f),                                                Rsa::KEY_TYPE_PUBLIC],
         ];
     }
 
@@ -156,9 +163,9 @@ class RsaTest extends TestCase
      *
      * @param \OpenSSLAsymmetricKey|resource|string|mixed $thing
      */
-    public function testFrom($thing, bool $isPublic): void
+    public function testFrom($thing, string $type): void
     {
-        $pkey = Rsa::from($thing, $isPublic);
+        $pkey = Rsa::from($thing, $type);
 
         if (8 === PHP_MAJOR_VERSION) {
             self::assertIsObject($pkey);
@@ -184,15 +191,15 @@ class RsaTest extends TestCase
         $keys = [
             'plaintext, `public.spki://`, `private.pkcs1://`'        => [random_bytes( 8), Rsa::fromSpki(substr($pub1, 14)), Rsa::fromPkcs1(substr($pri1, 16))],
             'plaintext, `public.spki://`, `private.pkcs8://`'        => [random_bytes(16), Rsa::fromSpki(substr($pub1, 14)), Rsa::fromPkcs8(substr($pri2, 16))],
-            'plaintext, `public.pkcs1://`, `private.pkcs1://`'       => [random_bytes(24), Rsa::fromPkcs1(substr($pub2, 15), true), Rsa::fromPkcs1(substr($pri1, 16))],
-            'plaintext, `public.pkcs1://`, `private.pkcs8://`'       => [random_bytes(32), Rsa::fromPkcs1(substr($pub2, 15), true), Rsa::fromPkcs8(substr($pri2, 16))],
-            'plaintext, `pkcs#1 pubkey content`, `private.pkcs1://`' => [random_bytes(40), Rsa::from($pub7, true), Rsa::fromPkcs1(substr($pri1, 16))],
-            'plaintext, `pkcs#1 pubkey content`, `private.pkcs8://`' => [random_bytes(48), Rsa::from($pub7, true), Rsa::fromPkcs8(substr($pri2, 16))],
+            'plaintext, `public.pkcs1://`, `private.pkcs1://`'       => [random_bytes(24), Rsa::fromPkcs1(substr($pub2, 15), Rsa::KEY_TYPE_PUBLIC), Rsa::fromPkcs1(substr($pri1, 16))],
+            'plaintext, `public.pkcs1://`, `private.pkcs8://`'       => [random_bytes(32), Rsa::fromPkcs1(substr($pub2, 15), Rsa::KEY_TYPE_PUBLIC), Rsa::fromPkcs8(substr($pri2, 16))],
+            'plaintext, `pkcs#1 pubkey content`, `private.pkcs1://`' => [random_bytes(40), Rsa::from($pub7, Rsa::KEY_TYPE_PUBLIC), Rsa::fromPkcs1(substr($pri1, 16))],
+            'plaintext, `pkcs#1 pubkey content`, `private.pkcs8://`' => [random_bytes(48), Rsa::from($pub7, Rsa::KEY_TYPE_PUBLIC), Rsa::fromPkcs8(substr($pri2, 16))],
         ];
 
         foreach ([$pub3, $pub4, $pub5, $pub6, $crt1, $crt2, $crt3] as $pubIndex => $pub) {
             foreach ([$pri1, $pri2, $pri3, $pri4, $pri5, $pri6, $pri7, $pri8, $pri9, $pri0] as $priIndex => $pri) {
-                $keys["plaintext, publicKey{$pubIndex}, privateKey{$priIndex}"] = [random_bytes(56), Rsa::from($pub, true), Rsa::from($pri)];
+                $keys["plaintext, publicKey{$pubIndex}, privateKey{$priIndex}"] = [random_bytes(56), Rsa::from($pub, Rsa::KEY_TYPE_PUBLIC), Rsa::from($pri, Rsa::KEY_TYPE_PRIVATE)];
             }
         }
 
