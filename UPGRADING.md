@@ -2,7 +2,7 @@
 
 ## 从 1.1 升级至 1.2
 
-v1.2 对 `RSA公/私钥`做了加强，释放出 `Rsa::from` 统一加载函数，以接替`PemUtil::loadPrivateKey`，同时释放出`Rsa::fromPkcs1`, `Rsa::fromPkcs8`, `Rsa::fromSpki`及`Rsa::pkcs1ToSpki`方法，在不丢失精度的前提下，以支持`不落盘`云端部署（公/私钥可以存储在数据库等媒介中了）。
+v1.2 对 `RSA公/私钥`加载做了加强，释放出 `Rsa::from` 统一加载函数，以接替`PemUtil::loadPrivateKey`，同时释放出`Rsa::fromPkcs1`, `Rsa::fromPkcs8`, `Rsa::fromSpki`及`Rsa::pkcs1ToSpki`方法，在不丢失精度的前提下，支持`不落盘`从云端（如`公/私钥`存储在数据库/NoSQL等媒介中）加载。
 
 - `Rsa::from` 支持从文件/字符串/完整RSA公私钥字符串/X509证书加载，对应的测试用例覆盖见[这里](tests/Crypto/RsaTest.php);
 - `Rsa::fromPkcs1`是个语法糖，支持加载`PKCS#1`格式的公/私钥，入参是`base64`字符串；
@@ -10,9 +10,46 @@ v1.2 对 `RSA公/私钥`做了加强，释放出 `Rsa::from` 统一加载函数�
 - `Rsa::fromSpki`是个语法糖，支持加载`SPKI`格式的公钥，入参是`base64`字符串；
 - `Rsa::pkcs1ToSpki`是个`RSA公钥`格式转换函数，入参是`base64`字符串；
 
-特别地，对于`APIv2` 付款到银行卡功能，现在支持`不落盘`形式`加密敏感信息`了，即从[获取RSA加密公钥](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_7&index=4)接口获取的`pub_key`字符串，经`Rsa::from($pub_key, Rsa::KEY_TYPE_PUBLIC)`加载，用于`Rsa::encrypt`加密，详细用法见README示例；
+特别地，对于`APIv2` 付款到银行卡功能，现在可直接支持`加密敏感信息`了，即从[获取RSA加密公钥](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_7&index=4)接口获取的`pub_key`字符串，经`Rsa::from($pub_key, Rsa::KEY_TYPE_PUBLIC)`加载，用于`Rsa::encrypt`加密，详细用法见README示例；
 
-标记 `PemUtil::loadPrivateKey`及`PemUtil::loadPrivateKeyFromString`为`不推荐用法`，预期在v2.0大版本上删除；
+标记 `PemUtil::loadPrivateKey`及`PemUtil::loadPrivateKeyFromString`为`不推荐用法`，当前向下兼容v1.1及v1.0版本用法，预期在v2.0大版本上会移除这两个方法；
+
+推荐升级加载`RSA公/私钥`为以下形式：
+
+从文件加载「商户RSA私钥」，变化如下：
+
+```diff
++use WeChatPay\Crypto\Rsa;
+
+-$merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
+-$merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
++$merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';// 注意 `file://` 开头协议不能少
++$merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath, Rsa::KEY_TYPE_PRIVATE);
+```
+
+从文件加载「平台证书」，变化如下：
+
+```diff
+-$platformCertificateFilePath = '/path/to/wechatpay/cert.pem';
+-$platformCertificateInstance = PemUtil::loadCertificate($platformCertificateFilePath);
+-// 解析平台证书序列号
+-$platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateInstance);
++$platformCertificateFilePath = 'file:///path/to/wechatpay/cert.pem';// 注意 `file://` 开头协议不能少
++$platformPublicKeyInstance = Rsa::from($platformCertificateFilePath, Rsa::KEY_TYPE_PUBLIC);
++// 解析「平台证书」序列号，「平台证书」当前五年一换，缓存后就是个常量
++$platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateFilePath);
+```
+
+相对于地初始化工厂方法，平台证书相关入参初始化变化如下：
+
+```diff
+     'certs'      => [
+-        $platformCertificateSerial => $platformCertificateInstance,
++        $platformCertificateSerial => $platformPublicKeyInstance,
+     ],
+```
+
+更高级的加载`RSA共/私钥`，如从`Rsa::fromPkcs1`， `Rsa::fromPkcs8`, `Rsa::fromSpki` 可查询测试用例`RsaTests.php`。
 
 ## 从 1.0 升级至 1.1
 
@@ -313,14 +350,14 @@ PHP版本最低要求为`7.2.5`，请商户的技术开发人员**先评估**运
 ```diff
 - require_once "../lib/WxPay.Api.php";
 - require_once "WxPay.MicroPay.php";
-- 
+-
 - $auth_code = $_REQUEST["auth_code"];
 - $input = new WxPayMicroPay();
 - $input->SetAuth_code($auth_code);
 - $input->SetBody("刷卡测试样例-支付");
 - $input->SetTotal_fee("1");
 - $input->SetOut_trade_no("sdkphp".date("YmdHis"));
-- 
+-
 - $microPay = new MicroPay();
 - printf_info($microPay->pay($input));
 + use WeChatPay\Formatter;
