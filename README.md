@@ -516,7 +516,7 @@ print_r($res);
 ```php
 use WeChatPay\Crypto\Rsa;
 // 做一个匿名方法，供后续方便使用，$rsaPubKeyString 是`risk/getpublickey` 的返回值'pub_key'字符串
-$rsaPublicKeyInstance = Rsa::from($rsaPubKeyString, true);
+$rsaPublicKeyInstance = Rsa::from($rsaPubKeyString, Rsa::KEY_TYPE_PUBLIC);
 $encryptor = static function(string $msg) use ($rsaPublicKeyInstance): string {
     return Rsa::encrypt($msg, $rsaPublicKeyInstance);
 };

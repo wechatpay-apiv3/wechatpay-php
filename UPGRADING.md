@@ -10,7 +10,7 @@ v1.2 对 `RSA公/私钥`做了加强，释放出 `Rsa::from` 统一加载函数�
 - `Rsa::fromSpki`是个语法糖，支持加载`SPKI`格式的公钥，入参是`base64`字符串；
 - `Rsa::pkcs1ToSpki`是个`RSA公钥`格式转换函数，入参是`base64`字符串；
 
-特别地，对于`APIv2` 付款到银行卡功能，现在支持`不落盘`形式`加密敏感信息`了，即从[获取RSA加密公钥](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_7&index=4)接口获取的`pub_key`字符串，经`Rsa::from($pub_key, true)`加载，用于`Rsa::encrypt`加密，详细用法见README示例；
+特别地，对于`APIv2` 付款到银行卡功能，现在支持`不落盘`形式`加密敏感信息`了，即从[获取RSA加密公钥](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_7&index=4)接口获取的`pub_key`字符串，经`Rsa::from($pub_key, Rsa::KEY_TYPE_PUBLIC)`加载，用于`Rsa::encrypt`加密，详细用法见README示例；
 
 标记 `PemUtil::loadPrivateKey`及`PemUtil::loadPrivateKeyFromString`为`不推荐用法`，预期在v2.0大版本上删除；
 
