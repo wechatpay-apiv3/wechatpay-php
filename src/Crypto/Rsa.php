@@ -68,7 +68,6 @@ class Rsa
      * @param string $thing - The string
      *
      * @return string The `ASN.1` 128bit hexadecimal length string
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     private static function encodeLength(string $thing): string
     {
@@ -87,7 +86,6 @@ class Rsa
      * @param string $thing - The base64-encoded string, without evelope style
      *
      * @return string The `SPKI` style public key without evelope string
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     public static function pkcs1ToSpki(string $thing): string
     {
@@ -103,7 +101,6 @@ class Rsa
      * @param string $thing - The string in `PKCS#8` format.
      * @return \OpenSSLAsymmetricKey|resource|mixed
      * @throws UnexpectedValueException
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     public static function fromPkcs8(string $thing)
     {
@@ -123,7 +120,6 @@ class Rsa
      * @param boolean $isPublic - The `$thing` is public key string.
      * @return \OpenSSLAsymmetricKey|resource|mixed
      * @throws UnexpectedValueException
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     public static function fromPkcs1(string $thing, bool $isPublic = false)
     {
@@ -144,7 +140,6 @@ class Rsa
      * @param string $thing - The string in `SKPI` format.
      * @return \OpenSSLAsymmetricKey|resource|mixed
      * @throws UnexpectedValueException
-     * @license https://github.com/TheNorthMemory/easyalipay/blob/v0.2.0/LICENSE
      */
     public static function fromSpki(string $thing)
     {
