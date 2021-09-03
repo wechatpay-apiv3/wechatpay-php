@@ -591,10 +591,9 @@ echo $xml;
 ```php
 use WeChatPay\Formatter;
 use WeChatPay\Crypto\Rsa;
-use WeChatPay\Util\PemUtil;
 
-$merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
-$merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
+$merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';
+$merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath);
 
 $params = [
     'appId'     => 'wx8888888888888888',
@@ -691,7 +690,6 @@ echo json_encode($params);
 样例代码如下：
 
 ```php
-use WeChatPay\Util\PemUtil;
 use WeChatPay\Crypto\Rsa;
 use WeChatPay\Crypto\AesGcm;
 use WeChatPay\Formatter;
@@ -706,7 +704,7 @@ $apiv3Key = '';// 在商户平台上设置的APIv3密钥
 
 // 根据通知的平台证书序列号，查询本地平台证书文件，
 // 假定为 `/path/to/wechatpay/inWechatpaySerial.pem`
-$certInstance = PemUtil::loadCertificate('/path/to/wechatpay/inWechatpaySerial.pem');
+$platformPublicKeyInstance = Rsa::from('file:///path/to/wechatpay/inWechatpaySerial.pem', Rsa::KEY_TYPE_PUBLIC);
 
 // 检查通知时间偏移量，允许5分钟之内的偏移
 $timeOffsetStatus = 300 >= abs(Formatter::timestamp() - (int)$inWechatpayTimestamp);
@@ -714,7 +712,7 @@ $verifiedStatus = Rsa::verify(
     // 构造验签名串
     Formatter::joinedByLineFeed($inWechatpayTimestamp, $inWechatpayNonce, $inBody),
     $inWechatpaySignature,
-    $certInstance
+    $platformPublicKeyInstance
 );
 if ($timeOffsetStatus && $verifiedStatus) {
     $inBodyArray = (array)json_decode($inBody, true);

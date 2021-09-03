@@ -40,7 +40,7 @@ v1.2 对 `RSA公/私钥`加载做了加强，释放出 `Rsa::from` 统一加载�
 +$platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateFilePath);
 ```
 
-相对于地初始化工厂方法，平台证书相关入参初始化变化如下：
+相对应地初始化工厂方法，平台证书相关入参初始化变化如下：
 
 ```diff
      'certs'      => [
@@ -49,7 +49,35 @@ v1.2 对 `RSA公/私钥`加载做了加强，释放出 `Rsa::from` 统一加载�
      ],
 ```
 
-更高级的加载`RSA共/私钥`，如从`Rsa::fromPkcs1`， `Rsa::fromPkcs8`, `Rsa::fromSpki` 可查询测试用例`RsaTests.php`。
+APIv3相关「RSA数据签名」，变化如下：
+
+```diff
+-$merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
+-$merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
++$merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';
++$merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath);
+```
+
+APIv3回调通知「验签」，变化如下：
+
+```diff
+ // 根据通知的平台证书序列号，查询本地平台证书文件，
+ // 假定为 `/path/to/wechatpay/inWechatpaySerial.pem`
+-$certInstance = PemUtil::loadCertificate('/path/to/wechatpay/inWechatpaySerial.pem');
++$platformPublicKeyInstance = Rsa::from('file:///path/to/wechatpay/inWechatpaySerial.pem', Rsa::KEY_TYPE_PUBLIC);
+
+ // 检查通知时间偏移量，允许5分钟之内的偏移
+ $timeOffsetStatus = 300 >= abs(Formatter::timestamp() - (int)$inWechatpayTimestamp);
+ $verifiedStatus = Rsa::verify(
+     // 构造验签名串
+     Formatter::joinedByLineFeed($inWechatpayTimestamp, $inWechatpayNonce, $inBody),
+     $inWechatpaySignature,
+-    $certInstance
++    $platformPublicKeyInstance
+ );
+```
+
+更高级的加载`RSA共/私钥`方式，如从`Rsa::fromPkcs1`， `Rsa::fromPkcs8`, `Rsa::fromSpki`等语法糖加载，可查询参考测试用例[RsaTest.php](tests/Crypto/RsaTest.php)做法，请按需自行拓展使用。
 
 ## 从 1.0 升级至 1.1
 
