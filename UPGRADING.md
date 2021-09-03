@@ -77,7 +77,7 @@ APIv3回调通知「验签」，变化如下：
  );
 ```
 
-更高级的加载`RSA共/私钥`方式，如从`Rsa::fromPkcs1`， `Rsa::fromPkcs8`, `Rsa::fromSpki`等语法糖加载，可查询参考测试用例[RsaTest.php](tests/Crypto/RsaTest.php)做法，请按需自行拓展使用。
+更高级的加载`RSA公/私钥`方式，如从`Rsa::fromPkcs1`， `Rsa::fromPkcs8`, `Rsa::fromSpki`等语法糖加载，可查询参考测试用例[RsaTest.php](tests/Crypto/RsaTest.php)做法，请按需自行拓展使用。
 
 ## 从 1.0 升级至 1.1
 
