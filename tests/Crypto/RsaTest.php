@@ -14,6 +14,7 @@ use function random_bytes;
 use function sprintf;
 use function str_replace;
 use function substr;
+use function rtrim;
 
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
@@ -155,6 +156,14 @@ class RsaTest extends TestCase
             '`file://` x509 certificate string'       => [$f = 'file://' . sprintf(static::FIXTURES, 'sha256', 'crt'),          Rsa::KEY_TYPE_PUBLIC],
             'x509 certificate contents string'        => [$f = (string)file_get_contents($f),                                   Rsa::KEY_TYPE_PUBLIC],
             'OpenSSLCertificate/resource'             => [openssl_x509_read($f),                                                Rsa::KEY_TYPE_PUBLIC],
+            '`file://` PKCS#8 encrypted privateKey'   => [
+                [
+                    $f = 'file://' . sprintf(static::FIXTURES, 'encrypted.pkcs8', 'key'),
+                    $w = rtrim((string)file_get_contents(sprintf(static::FIXTURES, 'pwd', 'txt')))
+                ],
+                Rsa::KEY_TYPE_PRIVATE
+            ],
+            'PKCS#8 encrypted privateKey contents'   => [[(string)file_get_contents($f), $w], Rsa::KEY_TYPE_PRIVATE],
         ];
     }
 
@@ -186,6 +195,7 @@ class RsaTest extends TestCase
             [$pri7], [$pri8], [$pri9], [$pri0],
             [$pub3], [$pub4], [$pub5], [$pub6],
             [$pub7], [$crt1], [$crt2], [$crt3]
+            ,[$encryptedKey1] ,[$encryptedKey2]
         ] = array_values($this->keyPhrasesDataProvider());
 
         $keys = [
@@ -197,6 +207,8 @@ class RsaTest extends TestCase
             'plaintext, `pkcs#1 pubkey content`, `private.pkcs8://`' => [random_bytes(48), Rsa::from($pub7, Rsa::KEY_TYPE_PUBLIC), Rsa::fromPkcs8(substr($pri2, 16))],
             'txt, `SPKI file://pubkey`, [`file://`,``] privateKey'   => [random_bytes(64), $pub3, [$pri3, '']],
             'txt, `SPKI pubkey content`, [`contents`,``] privateKey' => [random_bytes(72), $pub5, [$pri5, '']],
+            'str, `SPKI file://pubkey`, [`file://`privateKey, pwd]'  => [random_bytes(64), $pub3, $encryptedKey1],
+            'str, `SPKI pubkey content`, [`encrypted contents`,pwd]' => [random_bytes(72), $pub5, $encryptedKey2],
         ];
 
         foreach ([$pub3, $pub4, $pub5, $pub6, $crt1, $crt2, $crt3] as $pubIndex => $pub) {
