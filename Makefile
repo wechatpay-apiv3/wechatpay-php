@@ -5,6 +5,8 @@ keygen:
 	openssl rsa -in ./tests/fixtures/mock.pkcs8.key -out ./tests/fixtures/mock.pkcs1.key
 	openssl rsa -in ./tests/fixtures/mock.pkcs8.key -pubout -out ./tests/fixtures/mock.spki.pem
 	openssl rsa -pubin -in ./tests/fixtures/mock.spki.pem -RSAPublicKey_out -out ./tests/fixtures/mock.pkcs1.pem
+	openssl rand -out ./tests/fixtures/mock.pwd.txt -hex 16
+	openssl pkcs8 -in ./tests/fixtures/mock.pkcs8.key -passout file:./tests/fixtures/mock.pwd.txt -topk8 -out ./tests/fixtures/mock.encrypted.pkcs8.key
 
 x509crt:
 	fixtures="./tests/fixtures/" && serial=$$(openssl rand -hex 20 | \

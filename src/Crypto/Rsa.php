@@ -169,7 +169,7 @@ class Rsa
      * - full `PEM` format privateKey/publicKey(x509 certificate) string.
      * - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7).
      * - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
-     * - `Array` of `[privateKeyString,passpharse]` for encrypted privateKey.
+     * - `Array` of `[privateKeyString,passphrase]` for encrypted privateKey.
      *
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array{string,string}|string|mixed $thing - The thing.
      * @param string $type - Either `self::KEY_TYPE_PUBLIC` or `self::KEY_TYPE_PRIVATE` string, default is `self::KEY_TYPE_PRIVATE`.
@@ -221,9 +221,9 @@ class Rsa
      *   - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7) for publicKey/privateKey.
      *   - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      *
-     * The `\$thing` can be the Array<$privateKey,$passpharse> style for loading privateKey, eg:
-     *   - [`file:///my/path/to/private.pkcs8.key`, 'your_pass_pharse']
-     *   - [`-----BEGIN ENCRYPTED PRIVATE KEY-----...-----END ENCRYPTED PRIVATE KEY-----`, 'your_pass_pharse']
+     * The `\$thing` can be the Array{$privateKey,$passphrase} style for loading privateKey, eg:
+     *   - [`file:///my/path/to/private.pkcs8.key`, 'your_pass_phrase']
+     *   - [`-----BEGIN ENCRYPTED PRIVATE KEY-----...-----END ENCRYPTED PRIVATE KEY-----`, 'your_pass_phrase']
      *
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array{string,string}|string|mixed $thing - The thing.
      * @param string $type - Either `self::KEY_TYPE_PUBLIC` or `self::KEY_TYPE_PRIVATE` string, default is `self::KEY_TYPE_PRIVATE`.
