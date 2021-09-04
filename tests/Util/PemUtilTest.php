@@ -40,7 +40,7 @@ class PemUtilTest extends TestCase
         $certString = (string)file_get_contents($certFile);
         $privString = (string)file_get_contents($privFile);
 
-        self::$environment = [$serial, $certFile, $certString, $privFile, $privString];
+        self::$environment = [$serial, $certFile, $certString, $privFile, $privString, 'file://' . $certFile];
     }
 
     public static function tearDownAfterClass(): void
@@ -104,12 +104,14 @@ class PemUtilTest extends TestCase
 
     public function testParseCertificateSerialNo(): void
     {
-        [$serialNo, $certFile, $certString] = self::$environment;
+        [$serialNo, $certFile, $certString, , , $certFileProtocolString] = self::$environment;
         $serialNoFromPemUtilFile = PemUtil::parseCertificateSerialNo(PemUtil::loadCertificate($certFile));
         $serialNoFromPemUtilString = PemUtil::parseCertificateSerialNo(PemUtil::loadCertificateFromString($certString));
         $serialNoFromCertString = PemUtil::parseCertificateSerialNo($certString);
+        $serialNoFromCertFileProtocolString = PemUtil::parseCertificateSerialNo($certFileProtocolString);
         self::assertEquals($serialNo, $serialNoFromPemUtilFile);
         self::assertEquals($serialNo, $serialNoFromPemUtilString);
         self::assertEquals($serialNo, $serialNoFromCertString);
+        self::assertEquals($serialNo, $serialNoFromCertFileProtocolString);
     }
 }

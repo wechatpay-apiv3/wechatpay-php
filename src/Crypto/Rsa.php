@@ -164,9 +164,9 @@ class Rsa
      * Loading the privateKey/publicKey.
      *
      * The `\$thing` can be one of the following:
-     * - `file://` protocol privateKey/publicKey(x509 certificate) string.
+     * - `file://` protocol `PKCS#1/PKCS#8 privateKey`/`SPKI publicKey`/`x509 certificate(for publicKey)` string.
      * - `public.spki://`, `public.pkcs1://`, `private.pkcs1://`, `private.pkcs8://` protocols string.
-     * - full `PEM` format privateKey/publicKey(x509 certificate) string.
+     * - full `PEM` in `PKCS#1/PKCS#8` format `privateKey`/`publicKey`/`x509 certificate(for publicKey)` string.
      * - `\OpenSSLAsymmetricKey` (PHP8) or `resource#pkey` (PHP7).
      * - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      * - `Array` of `[privateKeyString,passphrase]` for encrypted privateKey.
@@ -201,7 +201,6 @@ class Rsa
      *   - `file:///my/path/to/private.pkcs1.key`
      *   - `file:///my/path/to/private.pkcs8.key`
      *   - `file:///my/path/to/public.spki.pem`
-     *   - `file:///my/path/to/public.pkcs1.pem`
      *   - `file:///my/path/to/x509.crt` (for publicKey)
      *
      * The `\$thing` can be the `public.spki://`, `public.pkcs1://`, `private.pkcs1://`, `private.pkcs8://` protocols string, eg:
@@ -222,7 +221,7 @@ class Rsa
      *   - `\OpenSSLCertificate` (PHP8) or `resource#X509` (PHP7) for publicKey.
      *
      * The `\$thing` can be the Array{$privateKey,$passphrase} style for loading privateKey, eg:
-     *   - [`file:///my/path/to/private.pkcs8.key`, 'your_pass_phrase']
+     *   - [`file:///my/path/to/encrypted.private.pkcs8.key`, 'your_pass_phrase']
      *   - [`-----BEGIN ENCRYPTED PRIVATE KEY-----...-----END ENCRYPTED PRIVATE KEY-----`, 'your_pass_phrase']
      *
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array{string,string}|string|mixed $thing - The thing.

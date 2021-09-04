@@ -106,13 +106,15 @@ OK (490 tests, 2177 assertions)
 rm -rf ./tests/fixtures/mock.*
 ```
 
-如果希望静态测试，或者无`make`环境，希望手动进行测试，则可以提供以下6个文件(文件名需相同)，来代替测试用例准备工作。
+如果希望静态测试，或者无`make`环境，希望手动进行测试，则可以提供以下8个文件(文件名需相同)，来代替测试用例准备工作。
 
 ```
 tests/fixtures
+├── mock.encrypted.pkcs8.key
 ├── mock.pkcs1.key
 ├── mock.pkcs1.pem
 ├── mock.pkcs8.key
+├── mock.pwd.txt
 ├── mock.serial.txt
 ├── mock.sha256.crt
 ├── mock.spki.pem
@@ -122,9 +124,11 @@ tests/fixtures
 
 |文件名|含义|
 |---|---|
+|mock.encrypted.pkcs8.key|RSA私钥`PKCS#8`加密格式|
 |mock.pkcs1.key|RSA私钥`PKCS#1`格式|
 |mock.pkcs1.pem|RSA公钥`PKCS#1`格式|
 |mock.pkcs8.key|RSA私钥`PKCS#8`格式|
+|mock.pwd.txt|RSA私钥`PKCS#8`加密格式的密码|
 |mock.serial.txt|X509`证书序列号`，16进制格式|
 |mock.sha256.crt|`X509证书`，sha256签名格式|
 |mock.spki.pem|RSA公钥`SPKI`格式|

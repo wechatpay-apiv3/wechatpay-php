@@ -139,7 +139,7 @@ $instance = Builder::factory([
 - `mchid` 为你的`商户号`，一般是10字节纯数字
 - `serial` 为你的`商户证书序列号`，一般是40字节字符串
 - `privateKey` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件，支持纯字符串或者文件`resource`格式
-- `certs[$serial_number => #resource]` 为通过下载工具下载的平台证书`key/value`键值对，键为`平台证书序列号`，值为`平台证书`pem格式的纯字符串或者文件`resource`格式
+- `certs[$serial_number => #resource]` 为通过下载工具下载的`平台证书序列号`及`平台公钥`键值对，键为`平台证书序列号`，值为`平台证书`内置的`平台公钥`，推荐由`Rsa::from`函数加载后的`对象`或`资源`对象
 - `secret` 为APIv2版的`密钥`，商户平台上设置的32字节字符串
 - `merchant[cert => $path]` 为你的`商户证书`,一般是文件名为`apiclient_cert.pem`文件路径，接受`[$path, $passphrase]` 格式，其中`$passphrase`为证书密码
 - `merchant[key => $path]` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件路径，接受`[$path, $passphrase]` 格式，其中`$passphrase`为私钥密码
