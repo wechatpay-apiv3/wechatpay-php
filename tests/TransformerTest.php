@@ -53,6 +53,12 @@ class TransformerTest extends TestCase
                     'settlement_refund_fee','settlement_total_fee', 'success_time', 'total_fee', 'transaction_id',
                 ],
             ],
+            'getpublickey.response.sample.xml' => [
+                file_get_contents($baseDir . 'getpublickey.response.sample.xml') ?: '',
+                [
+                    'return_code', 'return_msg', 'result_code', 'mch_id', 'pub_key',
+                ],
+            ],
         ];
     }
 

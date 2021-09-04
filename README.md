@@ -462,7 +462,7 @@ $res = $instance
       'desc'             => '理赔',
       'spbill_create_ip' => '192.168.0.1',
     ],
-    'security' => true,
+    'security' => true, //请求需要双向证书
     'debug' => true //开启调试模式
 ])
 ->then(static function($response) {
@@ -495,6 +495,7 @@ $res = $instance
         'mch_id' => '1900000109',
         'sign_type' => 'MD5',
     ],
+    'security' => true, //请求需要双向证书
     // 特殊接入点，仅对本次请求有效
     'base_uri' => 'https://fraud.mch.weixin.qq.com/',
 ])
@@ -521,7 +522,7 @@ $encryptor = static function(string $msg) use ($rsaPublicKeyInstance): string {
     return Rsa::encrypt($msg, $rsaPublicKeyInstance);
 };
 $res = $instance
-->mmpaysptrans->pay_bank
+->v2->mmpaysptrans->pay_bank
 ->postAsync([
     'xml' => [
         'mch_id'           => '1900000109',
@@ -532,7 +533,41 @@ $res = $instance
         'amount'           => '100000',
         'desc'             => '理财',
     ],
-    'security' => true,
+    'security' => true, //请求需要双向证书
+])
+->otherwise(static function($e) {
+    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
+        return Transformer::toArray((string)$e->getReason()->getBody());
+    }
+    return [];
+})
+->wait();
+print_r($res);
+```
+
+### 刷脸支付-人脸识别-获取调用凭证
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/wxfacepay/develop/android/faceuser.html)
+
+```php
+use WeChatPay\Formatter;
+
+$res = $instance
+->v2->face->get_wxpayface_authinfo
+->postAsync([
+    'xml' => [
+        'store_id'   => '1234567',
+        'store_name' => '云店(广州白云机场店)',
+        'device_id'  => 'abcdef',
+        'rawdata'    => '从客户端`getWxpayfaceRawdata`方法取得的数据',
+        'appid'      => 'wx8888888888888888',
+        'mch_id'     => '1900000109',
+        'now'        => (string)Formatter::timestamp(),
+        'version'    => '1',
+        'sign_type'  => 'HMAC-SHA256',
+    ],
+    // 特殊接入点，仅对本次请求有效
+    'base_uri' => 'https://payapp.weixin.qq.com/',
 ])
 ->otherwise(static function($e) {
     if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
@@ -860,7 +895,7 @@ $stack->before('http_errors', static function (callable $handler) use ($remoteVe
 }, 'verifier');
 
 // 链式/同步/异步请求APIv3即可，例如:
-$instance->V3->Certificates->getAsync()->then(static function($res) { return $res->getBody(); })->wait();
+$instance->v3->certificates->getAsync()->then(static function($res) { return $res->getBody(); })->wait();
 ```
 
 ## 常见问题
