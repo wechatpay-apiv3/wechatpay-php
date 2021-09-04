@@ -488,6 +488,7 @@ print_r($res);
 [官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_7&index=4)
 
 ```php
+use WeChatPay\Transformer;
 $res = $instance
 ->v2->risk->getpublickey
 ->postAsync([
@@ -515,6 +516,7 @@ print_r($res);
 [官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_2)
 
 ```php
+use WeChatPay\Transformer;
 use WeChatPay\Crypto\Rsa;
 // 做一个匿名方法，供后续方便使用，$rsaPubKeyString 是`risk/getpublickey` 的返回值'pub_key'字符串
 $rsaPublicKeyInstance = Rsa::from($rsaPubKeyString, Rsa::KEY_TYPE_PUBLIC);
@@ -535,6 +537,9 @@ $res = $instance
     ],
     'security' => true, //请求需要双向证书
 ])
+->then(static function($response) {
+    return Transformer::toArray((string)$response->getBody());
+})
 ->otherwise(static function($e) {
     if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
         return Transformer::toArray((string)$e->getReason()->getBody());
@@ -551,6 +556,7 @@ print_r($res);
 
 ```php
 use WeChatPay\Formatter;
+use WeChatPay\Transformer;
 
 $res = $instance
 ->v2->face->get_wxpayface_authinfo
@@ -569,6 +575,9 @@ $res = $instance
     // 特殊接入点，仅对本次请求有效
     'base_uri' => 'https://payapp.weixin.qq.com/',
 ])
+->then(static function($response) {
+    return Transformer::toArray((string)$response->getBody());
+})
 ->otherwise(static function($e) {
     if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
         return Transformer::toArray((string)$e->getReason()->getBody());
@@ -584,6 +593,7 @@ print_r($res);
 [官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/sp_coupon.php?chapter=23_1&index=2)
 
 ```php
+use WeChatPay\Transformer;
 $res = $instance
 ->v2->sandboxnew->pay->getsignkey
 ->postAsync([
