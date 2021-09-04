@@ -190,6 +190,25 @@ class ClientDecoratorTest extends TestCase
         ['handler' => $stack] = $settings;
         self::assertInstanceOf(HandlerStack::class, $stack);
 
+        self::assertArrayHasKey('base_uri', $settings);
+        /** @var \GuzzleHttp\Psr7\Uri $baseUri */
+        ['base_uri' => $baseUri] = $settings;
+        self::assertEquals($config['base_uri'] ?? 'https://api.mch.weixin.qq.com/', (string)$baseUri);
+
+        self::assertArrayHasKey('headers', $settings);
+        /** @var array<string,mixed> $headers */
+        ['headers' => $headers] = $settings;
+        self::assertIsArray($headers);
+        self::assertArrayHasKey('Content-Type', $headers);
+        self::assertArrayHasKey('Accept', $headers);
+        /**
+         * @var string $accept
+         * @var string $contentType
+         */
+        ['Accept' => $accept, 'Content-Type' => $contentType] = $headers;
+        self::assertEquals('application/json, text/plain, application/x-gzip', $accept);
+        self::assertEquals('application/json; charset=utf-8', $contentType);
+
         $stackDebugInfo = strval($stack);
         self::assertStringContainsString('verifier', $stackDebugInfo);
         self::assertStringContainsString('signer', $stackDebugInfo);
@@ -207,6 +226,24 @@ class ClientDecoratorTest extends TestCase
         /** @var HandlerStack $stack */
         ['handler' => $stack] = $settings;
         self::assertInstanceOf(HandlerStack::class, $stack);
+
+        /** @var \GuzzleHttp\Psr7\Uri $baseUri */
+        ['base_uri' => $baseUri] = $settings;
+        self::assertEquals($config['base_uri'] ?? 'https://api.mch.weixin.qq.com/', (string)$baseUri);
+
+        self::assertArrayHasKey('headers', $settings);
+        /** @var array<string,mixed> $headers */
+        ['headers' => $headers] = $settings;
+        self::assertIsArray($headers);
+        self::assertArrayHasKey('Content-Type', $headers);
+        self::assertArrayHasKey('Accept', $headers);
+        /**
+         * @var string $accept
+         * @var string $contentType
+         */
+        ['Accept' => $accept, 'Content-Type' => $contentType] = $headers;
+        self::assertEquals('text/xml, text/plain, application/x-gzip', $accept);
+        self::assertEquals('text/xml; charset=utf-8', $contentType);
 
         $stackDebugInfo = strval($stack);
         self::assertStringNotContainsString('verifier', $stackDebugInfo);
