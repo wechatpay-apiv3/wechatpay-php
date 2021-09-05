@@ -265,17 +265,22 @@ class Rsa
     }
 
     /**
-     * Encrypts text with `OPENSSL_PKCS1_OAEP_PADDING`.
+     * Encrypts text by the given `$publicKey` in the `$padding`(default is `OPENSSL_PKCS1_OAEP_PADDING`) mode.
+     *
+     * Some of APIv2 were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
+     *
+     * **Warning:** While the `$padding` is `OPENSSL_NO_PADDING` value, the `$plaintext` must be padded by `caller-self`, be careful about this.
      *
      * @param string $plaintext - Cleartext to encode.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $publicKey - A PEM encoded public key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $publicKey - The public key.
+     * @param int $padding - One of OPENSSL_PKCS1_PADDING, OPENSSL_SSLV23_PADDING, OPENSSL_PKCS1_OAEP_PADDING, OPENSSL_NO_PADDING, default is `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @return string - The base64-encoded ciphertext.
      * @throws UnexpectedValueException
      */
-    public static function encrypt(string $plaintext, $publicKey): string
+    public static function encrypt(string $plaintext, $publicKey, int $padding = OPENSSL_PKCS1_OAEP_PADDING): string
     {
-        if (!openssl_public_encrypt($plaintext, $encrypted, $publicKey, OPENSSL_PKCS1_OAEP_PADDING)) {
+        if (!openssl_public_encrypt($plaintext, $encrypted, $publicKey, $padding)) {
             throw new UnexpectedValueException('Encrypting the input $plaintext failed, please checking your $publicKey whether or nor correct.');
         }
 
@@ -287,7 +292,7 @@ class Rsa
      *
      * @param string $message - Content will be `openssl_verify`.
      * @param string $signature - The base64-encoded ciphertext.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $publicKey - A PEM encoded public key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $publicKey - The public key.
      *
      * @return boolean - True is passed, false is failed.
      * @throws UnexpectedValueException
@@ -305,7 +310,7 @@ class Rsa
      * Creates and returns a `base64_encode` string that uses `OPENSSL_ALGO_SHA256`.
      *
      * @param string $message - Content will be `openssl_sign`.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $privateKey - A PEM encoded private key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $privateKey - The private key.
      *
      * @return string - The base64-encoded signature.
      * @throws UnexpectedValueException
@@ -320,17 +325,22 @@ class Rsa
     }
 
     /**
-     * Decrypts base64 encoded string with `privateKey` with `OPENSSL_PKCS1_OAEP_PADDING`.
+     * Decrypts base64 encoded string with `$privateKey` in the `$padding`(default is `OPENSSL_PKCS1_OAEP_PADDING`) mode.
+     *
+     * Some of APIv2 were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
+     *
+     * **Warning:** While the `$padding` is `OPENSSL_NO_PADDING` value, the `$decrypted` value must be unpadded by `caller-self`, be careful about this.
      *
      * @param string $ciphertext - Was previously encrypted string using the corresponding public key.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $privateKey - A PEM encoded private key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|array{string,string}|mixed $privateKey - The private key.
+     * @param int $padding - One of OPENSSL_PKCS1_PADDING, OPENSSL_SSLV23_PADDING, OPENSSL_PKCS1_OAEP_PADDING, OPENSSL_NO_PADDING, default is `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @return string - The utf-8 plaintext.
      * @throws UnexpectedValueException
      */
-    public static function decrypt(string $ciphertext, $privateKey): string
+    public static function decrypt(string $ciphertext, $privateKey, int $padding = OPENSSL_PKCS1_OAEP_PADDING): string
     {
-        if (!openssl_private_decrypt(base64_decode($ciphertext), $decrypted, $privateKey, OPENSSL_PKCS1_OAEP_PADDING)) {
+        if (!openssl_private_decrypt(base64_decode($ciphertext), $decrypted, $privateKey, $padding)) {
             throw new UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $privateKey whether or nor correct.');
         }
 

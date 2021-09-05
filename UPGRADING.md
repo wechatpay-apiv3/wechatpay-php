@@ -52,6 +52,7 @@ v1.2 对 `RSA公/私钥`加载做了加强，释放出 `Rsa::from` 统一加载�
 APIv3相关「RSA数据签名」，变化如下：
 
 ```diff
+-use WeChatPay\Util\PemUtil;
 -$merchantPrivateKeyFilePath = '/path/to/merchant/apiclient_key.pem';
 -$merchantPrivateKeyInstance = PemUtil::loadPrivateKey($merchantPrivateKeyFilePath);
 +$merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';
@@ -61,6 +62,7 @@ APIv3相关「RSA数据签名」，变化如下：
 APIv3回调通知「验签」，变化如下：
 
 ```diff
+-use WeChatPay\Util\PemUtil;
  // 根据通知的平台证书序列号，查询本地平台证书文件，
  // 假定为 `/path/to/wechatpay/inWechatpaySerial.pem`
 -$certInstance = PemUtil::loadCertificate('/path/to/wechatpay/inWechatpaySerial.pem');
