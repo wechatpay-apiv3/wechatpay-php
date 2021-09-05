@@ -283,13 +283,22 @@ class RsaTest extends TestCase
                 random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], UnexpectedValueException::class
             ],
             'encrypted as OPENSSL_PKCS1_PADDING, and decrpted as OPENSSL_SSLV23_PADDING'      => [
-                random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_SSLV23_PADDING], null
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_SSLV23_PADDING], UnexpectedValueException::class
             ],
             'encrypted as OPENSSL_SSLV23_PADDING, and decrpted as OPENSSL_PKCS1_PADDING'      => [
-                random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], null
+                random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], UnexpectedValueException::class
             ],
             'encrypted as OPENSSL_SSLV23_PADDING, and decrpted as OPENSSL_PKCS1_OAEP_PADDING' => [
                 random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], UnexpectedValueException::class
+            ],
+            'encrypted as OPENSSL_SSLV23_PADDING, and decrpted as OPENSSL_SSLV23_PADDING'  => [
+                random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_SSLV23_PADDING], UnexpectedValueException::class
+            ],
+            'encrypted as OPENSSL_PKCS1_OAEP_PADDING, and decrpted as OPENSSL_PKCS1_OAEP_PADDING'  => [
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_OAEP_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], null
+            ],
+            'encrypted as OPENSSL_PKCS1_PADDING, and decrpted as OPENSSL_PKCS1_PADDING'  => [
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], null
             ],
         ];
     }
@@ -305,12 +314,14 @@ class RsaTest extends TestCase
         string $plaintext, array $publicKeyAndPaddingMode, array $privateKeyAndPaddingMode, ?string $exception = null
     ): void
     {
-        $ciphertext = Rsa::encrypt($plaintext, ...$publicKeyAndPaddingMode);
         if ($exception) {
             $this->expectException($exception);
         }
+        $ciphertext = Rsa::encrypt($plaintext, ...$publicKeyAndPaddingMode);
         $decrypted = Rsa::decrypt($ciphertext, ...$privateKeyAndPaddingMode);
         if ($exception === null) {
+            self::assertNotEmpty($ciphertext);
+            self::assertNotEmpty($decrypted);
             self::assertEquals($plaintext, $decrypted);
         }
     }
