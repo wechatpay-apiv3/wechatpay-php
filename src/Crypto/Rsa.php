@@ -38,7 +38,7 @@ use function wordwrap;
 use UnexpectedValueException;
 
 /**
- * Provides some methods for the RSA `OPENSSL_ALGO_SHA256` with `OPENSSL_PKCS1_OAEP_PADDING`.
+ * RSA `PKEY` loader and encrypt/decrypt/sign/verify methods.
  */
 class Rsa
 {
@@ -48,18 +48,18 @@ class Rsa
     public const KEY_TYPE_PRIVATE = 'private';
 
     private const LOCAL_FILE_PROTOCOL = 'file://';
-    private const PKEY_NEEDLE = ' KEY-';
-    private const PKEY_FORMAT = "-----BEGIN %1\$s KEY-----\n%2\$s\n-----END %1\$s KEY-----";
+    private const PKEY_PEM_NEEDLE = ' KEY-';
+    private const PKEY_PEM_FORMAT = "-----BEGIN %1\$s KEY-----\n%2\$s\n-----END %1\$s KEY-----";
     private const PKEY_PEM_FORMAT_PATTERN = '#-{5}BEGIN ((?:RSA )?(?:PUBLIC|PRIVATE)) KEY-{5}\r?\n([^-]+)\r?\n-{5}END \1 KEY-{5}#';
     private const CHR_CR = "\r";
     private const CHR_LF = "\n";
 
     /** @var array<string,array{string,string,int}> - Supported loading rules */
     private const RULES = [
-        'private.pkcs1' => [self::PKEY_FORMAT, 'RSA PRIVATE', 16],
-        'private.pkcs8' => [self::PKEY_FORMAT, 'PRIVATE',     16],
-        'public.pkcs1'  => [self::PKEY_FORMAT, 'RSA PUBLIC',  15],
-        'public.spki'   => [self::PKEY_FORMAT, 'PUBLIC',      14],
+        'private.pkcs1' => [self::PKEY_PEM_FORMAT, 'RSA PRIVATE', 16],
+        'private.pkcs8' => [self::PKEY_PEM_FORMAT, 'PRIVATE',     16],
+        'public.pkcs1'  => [self::PKEY_PEM_FORMAT, 'RSA PUBLIC',  15],
+        'public.spki'   => [self::PKEY_PEM_FORMAT, 'PUBLIC',      14],
     ];
 
     /**
@@ -250,7 +250,7 @@ class Rsa
             }
         }
 
-        if (is_int(strpos($src, self::PKEY_NEEDLE))) {
+        if (is_int(strpos($src, self::PKEY_PEM_NEEDLE))) {
             if ($type === self::KEY_TYPE_PUBLIC && preg_match(self::PKEY_PEM_FORMAT_PATTERN, $src, $matches)) {
                 [, $kind, $base64] = $matches;
                 $mapRules = (array)array_combine(array_column(self::RULES, 1/*column*/), array_keys(self::RULES));
@@ -293,8 +293,6 @@ class Rsa
      * Encrypts text by the given `$publicKey` in the `$padding`(default is `OPENSSL_PKCS1_OAEP_PADDING`) mode.
      *
      * Some of APIv2 were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
-     *
-     * **Warning:** While the `$padding` is `OPENSSL_NO_PADDING` value, the `$plaintext` must be padded by `caller-self`, be careful about this.
      *
      * @param string $plaintext - Cleartext to encode.
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $publicKey - The public key.
@@ -355,8 +353,6 @@ class Rsa
      * Decrypts base64 encoded string with `$privateKey` in the `$padding`(default is `OPENSSL_PKCS1_OAEP_PADDING`) mode.
      *
      * Some of APIv2 were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
-     *
-     * **Warning:** While the `$padding` is `OPENSSL_NO_PADDING` value, the `$decrypted` value must be unpadded by `caller-self`, be careful about this.
      *
      * @param string $ciphertext - Was previously encrypted string using the corresponding public key.
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|array{string,string}|mixed $privateKey - The private key.
