@@ -21,7 +21,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.2.0`测试版本。
+当前版本为`1.2.1`测试版本。
 请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 **版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本遵循[语义化版本号](https://semver.org/lang/zh-CN/)规则。
@@ -60,7 +60,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.2.0"
+    "wechatpay/wechatpay": "^1.2.1"
 }
 ```
 
@@ -139,7 +139,7 @@ $instance = Builder::factory([
 - `mchid` 为你的`商户号`，一般是10字节纯数字
 - `serial` 为你的`商户证书序列号`，一般是40字节字符串
 - `privateKey` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件，支持纯字符串或者文件`resource`格式
-- `certs[$serial_number => #resource]` 为通过下载工具下载的平台证书`key/value`键值对，键为`平台证书序列号`，值为`平台证书`pem格式的纯字符串或者文件`resource`格式
+- `certs[$serial_number => #resource]` 为通过下载工具下载的`平台证书序列号`及`平台公钥`键值对，键为`平台证书序列号`，值为`平台证书`内置的`平台公钥`，推荐由`Rsa::from`函数加载后的`对象`或`资源`对象
 - `secret` 为APIv2版的`密钥`，商户平台上设置的32字节字符串
 - `merchant[cert => $path]` 为你的`商户证书`,一般是文件名为`apiclient_cert.pem`文件路径，接受`[$path, $passphrase]` 格式，其中`$passphrase`为证书密码
 - `merchant[key => $path]` 为你的`商户API私钥`，一般是通过官方证书生成工具生成的文件名是`apiclient_key.pem`文件路径，接受`[$path, $passphrase]` 格式，其中`$passphrase`为私钥密码
@@ -462,7 +462,7 @@ $res = $instance
       'desc'             => '理赔',
       'spbill_create_ip' => '192.168.0.1',
     ],
-    'security' => true,
+    'security' => true, //请求需要双向证书
     'debug' => true //开启调试模式
 ])
 ->then(static function($response) {
@@ -488,6 +488,7 @@ print_r($res);
 [官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_7&index=4)
 
 ```php
+use WeChatPay\Transformer;
 $res = $instance
 ->v2->risk->getpublickey
 ->postAsync([
@@ -495,6 +496,7 @@ $res = $instance
         'mch_id' => '1900000109',
         'sign_type' => 'MD5',
     ],
+    'security' => true, //请求需要双向证书
     // 特殊接入点，仅对本次请求有效
     'base_uri' => 'https://fraud.mch.weixin.qq.com/',
 ])
@@ -514,6 +516,7 @@ print_r($res);
 [官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay_yhk.php?chapter=24_2)
 
 ```php
+use WeChatPay\Transformer;
 use WeChatPay\Crypto\Rsa;
 // 做一个匿名方法，供后续方便使用，$rsaPubKeyString 是`risk/getpublickey` 的返回值'pub_key'字符串
 $rsaPublicKeyInstance = Rsa::from($rsaPubKeyString, Rsa::KEY_TYPE_PUBLIC);
@@ -521,7 +524,7 @@ $encryptor = static function(string $msg) use ($rsaPublicKeyInstance): string {
     return Rsa::encrypt($msg, $rsaPublicKeyInstance);
 };
 $res = $instance
-->mmpaysptrans->pay_bank
+->v2->mmpaysptrans->pay_bank
 ->postAsync([
     'xml' => [
         'mch_id'           => '1900000109',
@@ -532,8 +535,49 @@ $res = $instance
         'amount'           => '100000',
         'desc'             => '理财',
     ],
-    'security' => true,
+    'security' => true, //请求需要双向证书
 ])
+->then(static function($response) {
+    return Transformer::toArray((string)$response->getBody());
+})
+->otherwise(static function($e) {
+    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
+        return Transformer::toArray((string)$e->getReason()->getBody());
+    }
+    return [];
+})
+->wait();
+print_r($res);
+```
+
+### 刷脸支付-人脸识别-获取调用凭证
+
+[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/wxfacepay/develop/android/faceuser.html)
+
+```php
+use WeChatPay\Formatter;
+use WeChatPay\Transformer;
+
+$res = $instance
+->v2->face->get_wxpayface_authinfo
+->postAsync([
+    'xml' => [
+        'store_id'   => '1234567',
+        'store_name' => '云店(广州白云机场店)',
+        'device_id'  => 'abcdef',
+        'rawdata'    => '从客户端`getWxpayfaceRawdata`方法取得的数据',
+        'appid'      => 'wx8888888888888888',
+        'mch_id'     => '1900000109',
+        'now'        => (string)Formatter::timestamp(),
+        'version'    => '1',
+        'sign_type'  => 'HMAC-SHA256',
+    ],
+    // 特殊接入点，仅对本次请求有效
+    'base_uri' => 'https://payapp.weixin.qq.com/',
+])
+->then(static function($response) {
+    return Transformer::toArray((string)$response->getBody());
+})
 ->otherwise(static function($e) {
     if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
         return Transformer::toArray((string)$e->getReason()->getBody());
@@ -549,6 +593,7 @@ print_r($res);
 [官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/api/tools/sp_coupon.php?chapter=23_1&index=2)
 
 ```php
+use WeChatPay\Transformer;
 $res = $instance
 ->v2->sandboxnew->pay->getsignkey
 ->postAsync([
@@ -860,7 +905,7 @@ $stack->before('http_errors', static function (callable $handler) use ($remoteVe
 }, 'verifier');
 
 // 链式/同步/异步请求APIv3即可，例如:
-$instance->V3->Certificates->getAsync()->then(static function($res) { return $res->getBody(); })->wait();
+$instance->v3->certificates->getAsync()->then(static function($res) { return $res->getBody(); })->wait();
 ```
 
 ## 常见问题

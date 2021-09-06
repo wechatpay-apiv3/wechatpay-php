@@ -3,7 +3,6 @@
 namespace WeChatPay;
 
 use function strlen;
-use function array_replace_recursive;
 use function trigger_error;
 use function sprintf;
 
@@ -33,7 +32,7 @@ trait ClientXmlTrait
 
     abstract protected static function body(MessageInterface $message): string;
 
-    abstract protected static function withDefaults(array $config = []): array;
+    abstract protected static function withDefaults(array ...$config): array;
 
     /**
      * APIv2's transformRequest, did the `datasign` and `array2xml` together
@@ -124,10 +123,9 @@ trait ClientXmlTrait
         $stack->before('prepare_body', static::transformRequest($config['mchid'] ?? null, $config['secret'] ?? '', $config['merchant'] ?? []), 'transform_request');
         $stack->before('http_errors', static::transformResponse($config['secret'] ?? ''), 'transform_response');
         $config['handler'] = $stack;
-        $config['headers'] = array_replace_recursive(static::$headers, $config['headers'] ?? []);
 
         unset($config['mchid'], $config['serial'], $config['privateKey'], $config['certs'], $config['secret'], $config['merchant']);
 
-        return new Client(static::withDefaults($config));
+        return new Client(static::withDefaults(['headers' => static::$headers], $config));
     }
 }

@@ -47,9 +47,9 @@ final class ClientDecorator implements ClientDecoratorInterface
      *
      * @return array<string, string|mixed> - With the built-in configuration.
      */
-    protected static function withDefaults(array $config = []): array
+    protected static function withDefaults(array ...$config): array
     {
-        return array_replace_recursive(static::$defaults, ['headers' => static::userAgent()], $config);
+        return array_replace_recursive(static::$defaults, ['headers' => static::userAgent()], ...$config);
     }
 
     /**

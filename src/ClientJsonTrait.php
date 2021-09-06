@@ -9,6 +9,7 @@ use function is_numeric;
 use function is_resource;
 use function is_object;
 use function is_array;
+use function implode;
 use function count;
 use function sprintf;
 use function array_key_exists;
@@ -51,7 +52,7 @@ trait ClientJsonTrait
 
     abstract protected static function body(MessageInterface $message): string;
 
-    abstract protected static function withDefaults(array $config = []): array;
+    abstract protected static function withDefaults(array ...$config): array;
 
     /**
      * APIv3's signer middleware stack

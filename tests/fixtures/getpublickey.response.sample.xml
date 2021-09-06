@@ -1,0 +1,15 @@
+<xml>
+<return_code><![CDATA[SUCCESS]]></return_code>
+<return_msg><![CDATA[OK]]></return_msg>
+<result_code><![CDATA[SUCCESS]]></result_code>
+<mch_id><![CDATA[123456]]></mch_id>
+<pub_key><![CDATA[-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEArT82k67xybiJS9AD8nNAeuDYdrtCRaxkS6cgs8L9h83eqlDTlrdw
+zBVSv5V4imTq/URbXn4K0V/KJ1TwDrqOI8hamGB0fvU13WW1NcJuv41RnJVua0QA
+lS3tS1JzOZpMS9BEGeFvyFF/epbi/m9+2kUWG94FccArNnBtBqqvFncXgQsm98JB
+3a62NbS1ePP/hMI7Kkz+JNMyYsWkrOUFDCXAbSZkWBJekY4nGZtK1erqGRve8Jbx
+TWirAm/s08rUrjOuZFA21/EI2nea3DidJMTVnXVPY2qcAjF+595shwUKyTjKB8v1
+REPB3hPF1Z75O6LwuLfyPiCrCTmVoyfqjwIDAQAB
+-----END RSA PUBLIC KEY-----
+]]></pub_key>
+</xml>

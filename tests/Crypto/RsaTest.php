@@ -3,6 +3,9 @@
 namespace WeChatPay\Tests\Crypto;
 
 use const PHP_MAJOR_VERSION;
+use const OPENSSL_PKCS1_OAEP_PADDING;
+use const OPENSSL_PKCS1_PADDING;
+use const OPENSSL_SSLV23_PADDING;
 
 use function file_get_contents;
 use function method_exists;
@@ -15,6 +18,8 @@ use function sprintf;
 use function str_replace;
 use function substr;
 use function rtrim;
+
+use UnexpectedValueException;
 
 use WeChatPay\Crypto\Rsa;
 use PHPUnit\Framework\TestCase;
@@ -259,6 +264,66 @@ class RsaTest extends TestCase
         $mytext = Rsa::decrypt($ciphertext, $privateKey);
         self::assertIsString($mytext);
         self::assertEquals($plaintext, $mytext);
+    }
+
+    /**
+     * @return array<string,array{string,array{\OpenSSLAsymmetricKey|resource|mixed,int},array{\OpenSSLAsymmetricKey|resource|mixed,int},?class-string<\UnexpectedValueException>}>
+     */
+    public function crossPaddingPhrasesProvider(): array
+    {
+        [, , , , , , , [$privateKey], , , , , , [$publicKey]] = array_values($this->keyPhrasesDataProvider());
+        return [
+            'encrypted as OPENSSL_PKCS1_OAEP_PADDING, and decrpted as OPENSSL_PKCS1_PADDING'  => [
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_OAEP_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], UnexpectedValueException::class
+            ],
+            'encrypted as OPENSSL_PKCS1_OAEP_PADDING, and decrpted as OPENSSL_SSLV23_PADDING' => [
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_OAEP_PADDING], [$privateKey, OPENSSL_SSLV23_PADDING], UnexpectedValueException::class
+            ],
+            'encrypted as OPENSSL_PKCS1_PADDING, and decrpted as OPENSSL_PKCS1_OAEP_PADDING'  => [
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], UnexpectedValueException::class
+            ],
+            'encrypted as OPENSSL_PKCS1_PADDING, and decrpted as OPENSSL_SSLV23_PADDING'      => [
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_SSLV23_PADDING], UnexpectedValueException::class
+            ],
+            'encrypted as OPENSSL_SSLV23_PADDING, and decrpted as OPENSSL_PKCS1_PADDING'      => [
+                random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], UnexpectedValueException::class
+            ],
+            'encrypted as OPENSSL_SSLV23_PADDING, and decrpted as OPENSSL_PKCS1_OAEP_PADDING' => [
+                random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], UnexpectedValueException::class
+            ],
+            'encrypted as OPENSSL_SSLV23_PADDING, and decrpted as OPENSSL_SSLV23_PADDING'  => [
+                random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_SSLV23_PADDING], UnexpectedValueException::class
+            ],
+            'encrypted as OPENSSL_PKCS1_OAEP_PADDING, and decrpted as OPENSSL_PKCS1_OAEP_PADDING'  => [
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_OAEP_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], null
+            ],
+            'encrypted as OPENSSL_PKCS1_PADDING, and decrpted as OPENSSL_PKCS1_PADDING'  => [
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], null
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider crossPaddingPhrasesProvider
+     * @param string $plaintext
+     * @param array{\OpenSSLAsymmetricKey|resource|mixed,int} $publicKeyAndPaddingMode
+     * @param array{\OpenSSLAsymmetricKey|resource|mixed,int} $privateKeyAndPaddingMode
+     * @param ?class-string<\UnexpectedValueException> $exception
+     */
+    public function testCrossEncryptDecryptWithDifferentPadding(
+        string $plaintext, array $publicKeyAndPaddingMode, array $privateKeyAndPaddingMode, ?string $exception = null
+    ): void
+    {
+        if ($exception) {
+            $this->expectException($exception);
+        }
+        $ciphertext = Rsa::encrypt($plaintext, ...$publicKeyAndPaddingMode);
+        $decrypted = Rsa::decrypt($ciphertext, ...$privateKeyAndPaddingMode);
+        if ($exception === null) {
+            self::assertNotEmpty($ciphertext);
+            self::assertNotEmpty($decrypted);
+            self::assertEquals($plaintext, $decrypted);
+        }
     }
 
     /**
