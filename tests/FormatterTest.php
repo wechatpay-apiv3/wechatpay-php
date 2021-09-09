@@ -302,6 +302,16 @@ class FormatterTest extends TestCase
         // `default SORT_REGULAR`
         self::assertTrue(ksort($sample3, SORT_REGULAR));
         self::assertEquals(array_keys($excepted), array_keys($sample3));
+
+        $sample4 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
+        // `natural ordering`
+        self::assertTrue(ksort($sample4, SORT_NATURAL));
+        self::assertEquals(array_keys($excepted), array_keys($sample4));
+
+        $sample5 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
+        // `dictionary order`
+        self::assertTrue(ksort($sample5, SORT_STRING));
+        self::assertEquals(array_keys($excepted), array_keys($sample5));
     }
 
     /**
