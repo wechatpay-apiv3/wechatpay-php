@@ -2,6 +2,11 @@
 
 namespace WeChatPay\Tests;
 
+use const SORT_FLAG_CASE;
+use const SORT_STRING;
+use const SORT_NATURAL;
+use const SORT_REGULAR;
+
 use function method_exists;
 use function strlen;
 use function strval;
@@ -236,7 +241,7 @@ class FormatterTest extends TestCase
     /**
      * @return array<string,array<array<string,string>>>
      */
-    public function ksortByFlagNaturePhrasesProvider(): array
+    public function ksortPhrasesProvider(): array
     {
         return [
             'normal' => [
@@ -247,17 +252,66 @@ class FormatterTest extends TestCase
                 ['rfc1' => '1', 'b' => '4', 'rfc822' => '2', 'rfc2086' => '3'],
                 ['b' => '4', 'rfc1' => '1', 'rfc822' => '2', 'rfc2086' => '3'],
             ],
+            'issue #41 `re_openid` with `remark` keys' => [
+                [
+                    'mch_billno' => 'etGkDmT3BJyuhnhU9d', 'mch_id' => 'xxxxx', 'wxappid' => 'wx01111111', 'send_name' => 'aaaaa', 're_openid' => 'o8xSOxxxxxxx',
+                    'total_amount' => '100', 'total_num' => '1', 'wishing' => '红包祝福语', 'client_ip' => '192.168.0.1', 'act_name' => '活动名称', 'remark' => '备注',
+                ],
+                [
+                    'act_name' => '活动名称', 'client_ip' => '192.168.0.1', 'mch_billno' => 'etGkDmT3BJyuhnhU9d', 'mch_id' => 'xxxxx', 're_openid' => 'o8xSOxxxxxxx',
+                    'remark' => '备注', 'send_name' => 'aaaaa', 'total_amount' => '100', 'total_num' => '1', 'wishing' => '红包祝福语', 'wxappid' => 'wx01111111',
+                ],
+            ],
+            'the key point of the issue #41 different' => [
+                [
+                    're_openid' => 'o8xSOxxxxxxx', 'remark' => '备注',
+                ],
+                [
+                    're_openid' => 'o8xSOxxxxxxx', 'remark' => '备注',
+                ],
+            ],
         ];
     }
 
     /**
      * @param array<string,string> $thing
      * @param array<string,string> $excepted
-     * @dataProvider ksortByFlagNaturePhrasesProvider
+     * @dataProvider ksortPhrasesProvider
      */
     public function testKsort(array $thing, array $excepted): void
     {
         self::assertEquals(Formatter::ksort($thing), $excepted);
+    }
+
+    public function testKsortWithDifferentFlags(): void
+    {
+        $excepted = ['re_openid' => 'o8xSOxxxxxxx', 'remark' => '备注'];
+        // `_` chrcode is 95, `m` is 109, the ordering should be the above
+
+        $sample1 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
+        // `natural ordering`
+        self::assertTrue(ksort($sample1, SORT_FLAG_CASE | SORT_NATURAL));
+        self::assertNotEquals(array_keys($excepted), array_keys($sample1));
+
+        $sample2 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
+        // `dictionary order`
+        self::assertTrue(ksort($sample2, SORT_FLAG_CASE | SORT_STRING));
+        self::assertEquals(array_keys($excepted), array_keys($sample2));
+
+        $sample3 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
+        // `default SORT_REGULAR`
+        self::assertTrue(ksort($sample3, SORT_REGULAR));
+        self::assertEquals(array_keys($excepted), array_keys($sample3));
+
+        $sample4 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
+        // `natural ordering`
+        self::assertTrue(ksort($sample4, SORT_NATURAL));
+        self::assertEquals(array_keys($excepted), array_keys($sample4));
+
+        $sample5 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
+        // `dictionary order`
+        self::assertTrue(ksort($sample5, SORT_STRING));
+        self::assertEquals(array_keys($excepted), array_keys($sample5));
     }
 
     /**

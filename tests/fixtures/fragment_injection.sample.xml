@@ -1,0 +1,14 @@
+<batchjob>
+    <payment>
+    <account>5678-attacker</account>
+    <rcpt>206-1234</rcpt>
+    <amount>100.00</amount>
+    <comment></comment>
+    </payment>
+    <payment>
+    <account>1234-victim</account>
+    <rcpt>206-1234</rcpt>
+    <amount>100.00</amount>
+    <comment>Hacked</comment>
+    </payment>
+</batchjob>

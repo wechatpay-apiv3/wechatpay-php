@@ -11,9 +11,17 @@ use const LIBXML_NOBLANKS;
 use function array_walk;
 use function is_array;
 use function is_object;
+use function is_string;
 use function preg_replace;
 use function strpos;
 use function preg_match;
+use function sprintf;
+use function trigger_error;
+use function libxml_clear_errors;
+use function libxml_disable_entity_loader;
+use function libxml_get_last_error;
+use function libxml_use_internal_errors;
+use function simplexml_load_string;
 
 use SimpleXMLElement;
 use Traversable;
@@ -40,9 +48,22 @@ class Transformer
     {
         LIBXML_VERSION < 20900 && $previous = libxml_disable_entity_loader(true);
 
+        libxml_use_internal_errors(true);
         $el = simplexml_load_string(static::sanitize($xml), SimpleXMLElement::class, LIBXML_NONET | LIBXML_COMPACT | LIBXML_NOCDATA | LIBXML_NOBLANKS);
 
         LIBXML_VERSION < 20900 && isset($previous) && libxml_disable_entity_loader($previous);
+
+        if (false === $el && false !== ($err = libxml_get_last_error())) {
+            // while parsing failed, let's clean the internal buffer and
+            // only leave the last error message which still can be fetched by the `error_get_last()` function.
+            libxml_clear_errors();
+            @trigger_error(sprintf(
+                'Parsing the $xml failed with the last error(level=%d,code=%d,message=%s).',
+                $err->level, $err->code, $err->message
+            ));
+
+            return [];
+        }
 
         return static::cast($el);
     }

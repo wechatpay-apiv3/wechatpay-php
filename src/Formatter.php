@@ -13,8 +13,7 @@ use function array_merge;
 use function ksort;
 use function is_null;
 
-use const SORT_FLAG_CASE;
-use const SORT_NATURAL;
+use const SORT_STRING;
 
 use InvalidArgumentException;
 
@@ -113,7 +112,7 @@ class Formatter
     }
 
     /**
-     * Sort an array by key with `SORT_FLAG_CASE | SORT_NATURAL` flag.
+     * Sort an array by key with `SORT_STRING` flag.
      *
      * @param array<string, string|int> $thing - The input array.
      *
@@ -121,7 +120,7 @@ class Formatter
      */
     public static function ksort(array $thing = []): array
     {
-        ksort($thing, SORT_FLAG_CASE | SORT_NATURAL);
+        ksort($thing, SORT_STRING);
 
         return $thing;
     }

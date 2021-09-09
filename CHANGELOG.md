@@ -1,5 +1,13 @@
 # 变更历史
 
+## 1.2.2 - 2021-09-09
+
+[变更细节](../../compare/v1.2.1...v1.2.2)
+
+- 以`at sign`形式，温和提示`APIv2`的`DEP_XML_PROTOCOL_IS_REACHABLE_EOL`，相关[#38](https://github.com/wechatpay-apiv3/wechatpay-php/issues/38)；
+- 优化`Transformer::toArray`函数，对入参`xml`非法时，返回空`array`，并把最后一条错误信息温和地打入`E_USER_NOTICE`通道；
+- 修正`Formatter::ksort`排列键值时兼容问题，使用`字典序(dictionary order)`排序，相关[#41](https://github.com/wechatpay-apiv3/wechatpay-php/issues/41), 感谢 @suiaiyun 报告此问题；
+
 ## 1.2.1 - 2021-09-06
 
 [变更细节](../../compare/v1.2.0...v1.2.1)
