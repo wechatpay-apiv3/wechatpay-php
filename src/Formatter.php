@@ -14,7 +14,7 @@ use function ksort;
 use function is_null;
 
 use const SORT_FLAG_CASE;
-use const SORT_NATURAL;
+use const SORT_STRING;
 
 use InvalidArgumentException;
 
@@ -121,7 +121,7 @@ class Formatter
      */
     public static function ksort(array $thing = []): array
     {
-        ksort($thing, SORT_FLAG_CASE | SORT_NATURAL);
+        ksort($thing, SORT_FLAG_CASE | SORT_STRING);
 
         return $thing;
     }
