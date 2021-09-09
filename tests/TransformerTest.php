@@ -9,6 +9,10 @@ use const JSON_UNESCAPED_UNICODE;
 use function array_map;
 use function file_get_contents;
 use function json_encode;
+use function is_string;
+use function error_clear_last;
+use function error_get_last;
+use function method_exists;
 
 use WeChatPay\Transformer;
 use PHPUnit\Framework\TestCase;
@@ -80,6 +84,45 @@ class TransformerTest extends TestCase
             static::assertStringNotContainsString('<![CDATA[', $array[$key]);
             static::assertStringNotContainsString(']]>', $array[$key]);
         }, $keys);
+    }
+
+    /**
+     * @return array<string,array{string,?string}>
+     */
+    public function xmlToArrayBadPhrasesDataProvider(): array
+    {
+        $baseDir = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR;
+
+        return [
+            $f = 'fragment_injection.sample.xml'    => [(string)file_get_contents($baseDir . $f), null],
+            $f = 'invalid.xxe_injection.sample.xml' => [(string)file_get_contents($baseDir . $f), null],
+            $f = 'invalid.bad_entity.sample.xml'    => [(string)file_get_contents($baseDir . $f), '#^Parsing the \$xml failed with the last error#'],
+            $f = 'invalid.normal_404.sample.html'   => [(string)file_get_contents($baseDir . $f), '#^Parsing the \$xml failed with the last error#'],
+        ];
+    }
+
+    /**
+     * @dataProvider xmlToArrayBadPhrasesDataProvider
+     * @param string $xmlString
+     * @param ?string $pattern
+     */
+    public function testToArrayBadPhrases(string $xmlString, ?string $pattern): void
+    {
+        error_clear_last();
+        $array = Transformer::toArray($xmlString);
+        self::assertIsArray($array);
+        if (is_string($pattern)) {
+            self::assertEmpty($array);
+            /** @var array{'message':string,'type':int,'file':string,'line':int} $err */
+            $err = error_get_last();
+            if (method_exists($this, 'assertMatchesRegularExpression')) {
+                $this->assertMatchesRegularExpression($pattern, $err['message']);
+            } else {
+                self::assertRegExp($pattern, $err['message']);
+            }
+        } else {
+            self::assertNotEmpty($array);
+        }
     }
 
     /**

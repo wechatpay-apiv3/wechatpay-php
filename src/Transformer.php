@@ -7,7 +7,6 @@ use const LIBXML_NONET;
 use const LIBXML_COMPACT;
 use const LIBXML_NOCDATA;
 use const LIBXML_NOBLANKS;
-use const E_USER_DEPRECATED;
 
 use function array_walk;
 use function is_array;
@@ -56,14 +55,12 @@ class Transformer
 
         if (false === $el && false !== ($err = libxml_get_last_error())) {
             // while parsing failed, let's clean the internal buffer and
-            // only leave the last error message which is still can be fetched by the `error_get_last()` function.
+            // only leave the last error message which still can be fetched by the `error_get_last()` function.
             libxml_clear_errors();
             @trigger_error(sprintf(
                 'Parsing the $xml failed with the last error(level=%d,code=%d,message=%s).',
-                $err->level,
-                $err->code,
-                $err->message
-            ), E_USER_DEPRECATED);
+                $err->level, $err->code, $err->message
+            ));
 
             return [];
         }
