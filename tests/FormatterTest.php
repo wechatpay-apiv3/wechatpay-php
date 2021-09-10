@@ -301,8 +301,8 @@ class FormatterTest extends TestCase
     {
         return [
             '`SORT_FLAG_CASE | SORT_NATURAL` flag' => [
-                // charcode of the `_` is 95, `m` is 109, the ordering should be the following
                 $input = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'],
+                // charcode of the `_` is 95, `m` is 109, the ordering should be the following
                 $excepted = ['re_openid' => 'o8xSOxxxxxxx', 'remark' => '备注'],
                 SORT_FLAG_CASE | SORT_NATURAL,
                 'assertNotEquals',
@@ -332,8 +332,8 @@ class FormatterTest extends TestCase
                 'assertEquals',
             ],
             'case-insensitive with `SORT_FLAG_CASE | SORT_STRING` flag(NOT EQUALS)' => [
-                // charcode of the `R` is 82, 'M' is 77, `_` is 95, `m` is 109
                 $input = ['re_openid' => 'o8xSOxxxxxxx', 'REMARK' => 'REMARK', 'remark' => '备注', 'RE_OPENID' => 'RE_OPENID',],
+                // charcode of the `R` is 82, 'M' is 77, `_` is 95, `m` is 109
                 $excepted = ['REMARK' => 'REMARK', 'RE_OPENID' => 'RE_OPENID', 're_openid' => 'o8xSOxxxxxxx', 'remark' => '备注',],
                 SORT_FLAG_CASE | SORT_STRING,
                 'assertNotEquals',
