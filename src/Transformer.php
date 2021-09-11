@@ -61,8 +61,6 @@ class Transformer
                 'Parsing the $xml failed with the last error(level=%d,code=%d,message=%s).',
                 $err->level, $err->code, $err->message
             ));
-
-            return [];
         }
 
         return static::cast($el);
@@ -77,6 +75,8 @@ class Transformer
      */
     protected static function cast($thing): array
     {
+        if (false === $thing) { return []; }
+
         $data = (array) $thing;
         array_walk($data, static function(&$value) { static::value($value); });
 
