@@ -53,14 +53,18 @@ class Transformer
 
         LIBXML_VERSION < 20900 && isset($previous) && libxml_disable_entity_loader($previous);
 
-        if (false === $el && false !== ($err = libxml_get_last_error())) {
+        if (false === $el) {
             // while parsing failed, let's clean the internal buffer and
             // only leave the last error message which still can be fetched by the `error_get_last()` function.
-            libxml_clear_errors();
-            @trigger_error(sprintf(
-                'Parsing the $xml failed with the last error(level=%d,code=%d,message=%s).',
-                $err->level, $err->code, $err->message
-            ));
+            if (false !== ($err = libxml_get_last_error())) {
+                libxml_clear_errors();
+                @trigger_error(sprintf(
+                    'Parsing the $xml failed with the last error(level=%d,code=%d,message=%s).',
+                    $err->level, $err->code, $err->message
+                ));
+            }
+
+            return [];
         }
 
         return static::cast($el);
@@ -69,14 +73,12 @@ class Transformer
     /**
      * Recursive cast the $thing as array data structure.
      *
-     * @param array<string,mixed>|object|\SimpleXMLElement|false $thing - The thing
+     * @param array<string,mixed>|object|\SimpleXMLElement $thing - The thing
      *
      * @return array<string,string|array|mixed>
      */
     protected static function cast($thing): array
     {
-        if (false === $thing) { return []; }
-
         $data = (array) $thing;
         array_walk($data, static function(&$value) { static::value($value); });
 
