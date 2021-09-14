@@ -106,7 +106,7 @@ class TransformerTest extends TestCase
      * @param string $xmlString
      * @param ?string $pattern
      */
-    public function testToArrayBadPhrases(string $xmlString, ?string $pattern): void
+    public function testToArrayBadPhrases(string $xmlString, ?string $pattern = null): void
     {
         error_clear_last();
         $array = Transformer::toArray($xmlString);

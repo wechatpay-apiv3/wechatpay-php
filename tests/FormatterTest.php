@@ -250,7 +250,7 @@ class FormatterTest extends TestCase
             ],
             'key with numeric' => [
                 ['rfc1' => '1', 'b' => '4', 'rfc822' => '2', 'rfc2086' => '3'],
-                ['b' => '4', 'rfc1' => '1', 'rfc822' => '2', 'rfc2086' => '3'],
+                ['b' => '4', 'rfc1' => '1', 'rfc2086' => '3', 'rfc822' => '2'],
             ],
             'issue #41 `re_openid` with `remark` keys' => [
                 [
@@ -267,7 +267,17 @@ class FormatterTest extends TestCase
                     're_openid' => 'o8xSOxxxxxxx', 'remark' => '备注',
                 ],
                 [
+                    // charcode of the `_` is 95, `m` is 109, the ordering should be the following
                     're_openid' => 'o8xSOxxxxxxx', 'remark' => '备注',
+                ],
+            ],
+            'case-sensitive cover' => [
+                [
+                    'remark' => '备注', 'RE_OPENID' => 'RE_OPENID', 're_openid' => 'o8xSOxxxxxxx', 'REMARK' => 'REMARK',
+                ],
+                [
+                    // charcode of the `R` is 82, 'M' is 77, `_` is 95, `m` is 109, the ordering should be the following
+                    'REMARK' => 'REMARK', 'RE_OPENID' => 'RE_OPENID', 're_openid' => 'o8xSOxxxxxxx', 'remark' => '备注',
                 ],
             ],
         ];
@@ -280,38 +290,82 @@ class FormatterTest extends TestCase
      */
     public function testKsort(array $thing, array $excepted): void
     {
-        self::assertEquals(Formatter::ksort($thing), $excepted);
+        self::assertEquals(array_keys($excepted), array_keys(Formatter::ksort($thing)));
+        self::assertEquals(array_values($excepted), array_values(Formatter::ksort($thing)));
     }
 
-    public function testKsortWithDifferentFlags(): void
+    /**
+     * @return array<string,array{array<string,string>,array<string,string>,int,string}>
+     */
+    public function ksortWithDifferentFlagsPharasesProvider(): array
     {
-        $excepted = ['re_openid' => 'o8xSOxxxxxxx', 'remark' => '备注'];
-        // `_` chrcode is 95, `m` is 109, the ordering should be the above
+        return [
+            '`SORT_FLAG_CASE | SORT_NATURAL` flag' => [
+                $input = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'],
+                // charcode of the `_` is 95, `m` is 109, the ordering should be the following
+                $excepted = ['re_openid' => 'o8xSOxxxxxxx', 'remark' => '备注'],
+                SORT_FLAG_CASE | SORT_NATURAL,
+                'assertNotEquals',
+            ],
+            '`SORT_FLAG_CASE | SORT_STRING` flag' => [
+                $input,
+                $excepted,
+                SORT_FLAG_CASE | SORT_STRING,
+                'assertEquals',
+            ],
+            '`SORT_NATURAL` flag' => [
+                $input,
+                $excepted,
+                SORT_NATURAL,
+                'assertEquals',
+            ],
+            'default `SORT_REGULAR` flag' => [
+                $input,
+                $excepted,
+                SORT_REGULAR,
+                'assertEquals',
+            ],
+            '`dictionary order` = `SORT_STRING` flag' => [
+                $input,
+                $excepted,
+                SORT_STRING,
+                'assertEquals',
+            ],
+            'case-insensitive with `SORT_FLAG_CASE | SORT_STRING` flag(NOT EQUALS)' => [
+                $input = ['re_openid' => 'o8xSOxxxxxxx', 'REMARK' => 'REMARK', 'remark' => '备注', 'RE_OPENID' => 'RE_OPENID',],
+                // charcode of the `R` is 82, 'M' is 77, `_` is 95, `m` is 109
+                $excepted = ['REMARK' => 'REMARK', 'RE_OPENID' => 'RE_OPENID', 're_openid' => 'o8xSOxxxxxxx', 'remark' => '备注',],
+                SORT_FLAG_CASE | SORT_STRING,
+                'assertNotEquals',
+            ],
+            'case-sensitive with `SORT_STRING` flag' => [
+                $input,
+                $excepted,
+                SORT_STRING,
+                'assertEquals',
+            ],
+            'case-insensitive with `SORT_FLAG_CASE | SORT_STRING` flag(EQUALS)' => [
+                $input,
+                // dependency on the `\$input where the `REMARK` was listed before `remark`
+                ['re_openid' => 'o8xSOxxxxxxx', 'RE_OPENID' => 'RE_OPENID', 'REMARK' => 'REMARK', 'remark' => '备注',],
+                SORT_FLAG_CASE | SORT_STRING,
+                'assertEquals',
+            ],
+        ];
+    }
 
-        $sample1 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
-        // `natural ordering`
-        self::assertTrue(ksort($sample1, SORT_FLAG_CASE | SORT_NATURAL));
-        self::assertNotEquals(array_keys($excepted), array_keys($sample1));
-
-        $sample2 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
-        // `dictionary order`
-        self::assertTrue(ksort($sample2, SORT_FLAG_CASE | SORT_STRING));
-        self::assertEquals(array_keys($excepted), array_keys($sample2));
-
-        $sample3 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
-        // `default SORT_REGULAR`
-        self::assertTrue(ksort($sample3, SORT_REGULAR));
-        self::assertEquals(array_keys($excepted), array_keys($sample3));
-
-        $sample4 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
-        // `natural ordering`
-        self::assertTrue(ksort($sample4, SORT_NATURAL));
-        self::assertEquals(array_keys($excepted), array_keys($sample4));
-
-        $sample5 = ['remark' => '备注', 're_openid' => 'o8xSOxxxxxxx'];
-        // `dictionary order`
-        self::assertTrue(ksort($sample5, SORT_STRING));
-        self::assertEquals(array_keys($excepted), array_keys($sample5));
+    /**
+     * @param array<string,string> $input
+     * @param array<string,string> $excepted
+     * @param integer $flag
+     * @param string $assertMethod
+     * @dataProvider ksortWithDifferentFlagsPharasesProvider
+     */
+    public function testKsortWithDifferentFlags(array $input, array $excepted, int $flag, string $assertMethod): void
+    {
+        self::assertTrue(ksort($input, $flag));
+        self::{$assertMethod}(array_keys($excepted), array_keys($input));
+        self::{$assertMethod}(array_values($excepted), array_values($input));
     }
 
     /**
