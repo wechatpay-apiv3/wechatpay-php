@@ -19,7 +19,7 @@ x509crt:
 	&& openssl x509 -in $${fixtures}mock.sha256.crt -noout -text
 
 stats:
-	vendor/bin/phpstan analyse --no-progress
+	vendor/bin/phpstan analyse --no-progress --memory-limit 200M
 
 test:
 	vendor/bin/phpunit
