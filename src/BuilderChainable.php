@@ -7,6 +7,8 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Signature of the Chainable `GuzzleHttp\Client` interface
+ * @property-read OpenAPI\V2 $v2 - The entrance of the APIv2 endpoint
+ * @property-read OpenAPI\V3 $v3 - The entrance of the APIv3 endpoint
  */
 interface BuilderChainable
 {

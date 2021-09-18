@@ -80,14 +80,13 @@ class BuilderTest extends TestCase
         self::assertNotEmpty($traits);
         self::assertContains(\WeChatPay\BuilderTrait::class, is_array($traits) ? $traits : []);
 
-        /** @phpstan-ignore-next-line */
         self::assertInstanceOf(BuilderChainable::class, $instance->v3);
         /** @phpstan-ignore-next-line */
         self::assertInstanceOf(BuilderChainable::class, $instance->v3->pay->transcations->native);
         /** @phpstan-ignore-next-line */
         self::assertInstanceOf(BuilderChainable::class, $instance->v3->combineTransactions->{'{combine_out_trade_no}'});
         /** @phpstan-ignore-next-line */
-        self::assertInstanceOf(BuilderChainable::class, $instance->V3->Marketing->Busifavor->Users['{openid}/coupons/{coupon_code}']->Appids['{appid}']);
+        self::assertInstanceOf(BuilderChainable::class, $instance->v3->marketing->busifavor->users['{openid}/coupons/{coupon_code}']->appids['{appid}']);
 
         /** @phpstan-ignore-next-line */
         self::assertInstanceOf(BuilderChainable::class, $instance['v2/pay/micropay']);
@@ -104,7 +103,7 @@ class BuilderTest extends TestCase
         self::assertContains('combine-transactions', $copy);
 
         /** @phpstan-ignore-next-line */
-        $copy = iterator_to_array($instance->V3->Marketing->Busifavor->Users['{openid}']->Coupons->{'{coupon_code}'}->Appids->_appid_);
+        $copy = iterator_to_array($instance->v3->marketing->busifavor->users['{openid}']->coupons->{'{coupon_code}'}->appids->_appid_);
         self::assertIsArray($copy);
         self::assertNotEmpty($copy);
         self::assertNotContains('V3', $copy);
