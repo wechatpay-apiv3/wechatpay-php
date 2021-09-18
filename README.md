@@ -471,6 +471,7 @@ $res = $instance
     return Transformer::toArray((string)$response->getBody());
 })
 ->otherwise(static function($e) {
+    // 更多`$e`异常类型判断是必须的，这里仅列出一种可能情况，请根据实际对接过程调整并增加
     if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
         return Transformer::toArray((string)$e->getReason()->getBody());
     }
@@ -502,10 +503,14 @@ $res = $instance
     // 特殊接入点，仅对本次请求有效
     'base_uri' => 'https://fraud.mch.weixin.qq.com/',
 ])
-// 返回无sign字典，只能从异常通道获取返回值
+// 返回无sign字典，默认只能从异常通道获取返回值
 ->otherwise(static function($e) {
+    // 更多`$e`异常类型判断是必须的，这里仅列出可能的两种情况，请根据实际对接过程调整并增加
     if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
         return Transformer::toArray((string)$e->getReason()->getBody());
+    }
+    if ($e instanceof \Psr\Http\Message\MessageInterface) {
+        return Transformer::toArray((string)$e->getBody());
     }
     return [];
 })
@@ -543,6 +548,7 @@ $res = $instance
     return Transformer::toArray((string)$response->getBody());
 })
 ->otherwise(static function($e) {
+    // 更多`$e`异常类型判断是必须的，这里仅列出一种可能情况，请根据实际对接过程调整并增加
     if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
         return Transformer::toArray((string)$e->getReason()->getBody());
     }
@@ -581,6 +587,7 @@ $res = $instance
     return Transformer::toArray((string)$response->getBody());
 })
 ->otherwise(static function($e) {
+    // 更多`$e`异常类型判断是必须的，这里仅列出一种可能情况，请根据实际对接过程调整并增加
     if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
         return Transformer::toArray((string)$e->getReason()->getBody());
     }
@@ -607,8 +614,12 @@ $res = $instance
 ])
 // 返回无sign字典，只能从异常通道获取返回值
 ->otherwise(static function($e) {
+    // 更多`$e`异常类型判断是必须的，这里仅列出可能的两种情况，请根据实际对接过程调整并增加
     if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
         return Transformer::toArray((string)$e->getReason()->getBody());
+    }
+    if ($e instanceof \Psr\Http\Message\MessageInterface) {
+        return Transformer::toArray((string)$e->getBody());
     }
     return [];
 })
@@ -762,13 +773,17 @@ $verifiedStatus = Rsa::verify(
     $platformPublicKeyInstance
 );
 if ($timeOffsetStatus && $verifiedStatus) {
+    // 转换通知的JSON文本消息为PHP Array数组
     $inBodyArray = (array)json_decode($inBody, true);
+    // 使用PHP7的数据解构语法，从Array中解构并赋值变量
     ['resource' => [
         'ciphertext'      => $ciphertext,
         'nonce'           => $nonce,
         'associated_data' => $aad
     ]] = $inBodyArray;
+    // 加密文本消息解密
     $inBodyResource = AesGcm::decrypt($ciphertext, $apiv3Key, $nonce, $aad);
+    // 把解密后的文本转换为PHP Array数组
     $inBodyResourceArray = (array)json_decode($inBodyResource, true);
     // print_r($inBodyResourceArray);// 打印解密后的结果
 }
