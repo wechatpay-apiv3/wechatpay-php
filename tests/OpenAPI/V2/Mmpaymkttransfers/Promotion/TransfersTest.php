@@ -47,7 +47,7 @@ class TransfersTest extends TestCase
      * @param string $mchid
      * @param ResponseInterface $respondor
      */
-    public function testTransfersRequest(string $mchid, ResponseInterface $respondor): void
+    public function testPost(string $mchid, ResponseInterface $respondor): void
     {
         $instance = Builder::factory([
             'mchid'      => $mchid,
@@ -95,7 +95,7 @@ class TransfersTest extends TestCase
      * @param string $mchid
      * @param ResponseInterface $respondor
      */
-    public function testTransfersAsyncRequest(string $mchid, ResponseInterface $respondor): void
+    public function testPostAsync(string $mchid, ResponseInterface $respondor): void
     {
         $instance = Builder::factory([
             'mchid'      => $mchid,

@@ -54,7 +54,7 @@ class UploadmediaTest extends TestCase
      * @param string $mchid
      * @param ResponseInterface $respondor
      */
-    public function testTransfersRequest(string $mchid, string $secret, ResponseInterface $respondor): void
+    public function testPost(string $mchid, string $secret, ResponseInterface $respondor): void
     {
         $instance = Builder::factory([
             'mchid'      => $mchid,
@@ -104,7 +104,7 @@ class UploadmediaTest extends TestCase
      * @param string $mchid
      * @param ResponseInterface $respondor
      */
-    public function testTransfersAsyncRequest(string $mchid, string $secret, ResponseInterface $respondor): void
+    public function testPostAsync(string $mchid, string $secret, ResponseInterface $respondor): void
     {
         $instance = Builder::factory([
             'mchid'      => $mchid,
