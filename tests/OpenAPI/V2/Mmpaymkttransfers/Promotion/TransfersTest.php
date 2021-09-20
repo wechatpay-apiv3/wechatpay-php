@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeChatPay\Tests\OpenAPI;
+namespace WeChatPay\Tests\OpenAPI\V2\Mmpaymkttransfers\Promotion;
 
 use WeChatPay\Builder;
 use WeChatPay\Formatter;
@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 use WeChatPay\Transformer;
 use WeChatPay\ClientDecoratorInterface;
 
-class V2MmpaymkttransfersPromotionTransfersTest extends TestCase
+class TransfersTest extends TestCase
 {
     /** @var MockHandler $mock */
     private $mock;
