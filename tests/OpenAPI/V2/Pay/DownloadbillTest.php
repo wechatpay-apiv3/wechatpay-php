@@ -151,9 +151,6 @@ class DownloadbillTest extends TestCase
         /** @var HandlerStack $stack */
         $stack->remove('transform_response');
 
-        /** @var callable $assert */
-        $assert = [$this, 'responseAssertion'];
-
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([
             'handler' => $stack,
