@@ -460,7 +460,7 @@ $res = $instance
       'openid'           => 'oxTWIuGaIt6gTKsQRLau2M0yL16E',
       'check_name'       => 'FORCE_CHECK',
       're_user_name'     => '王小王',
-      'amount'           => 10099,
+      'amount'           => '10099',
       'desc'             => '理赔',
       'spbill_create_ip' => '192.168.0.1',
     ],
