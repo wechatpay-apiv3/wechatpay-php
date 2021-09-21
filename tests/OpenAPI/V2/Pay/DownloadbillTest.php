@@ -35,6 +35,30 @@ class DownloadbillTest extends TestCase
     }
 
     /**
+     * @param string $mchid
+     * @return array{\WeChatPay\BuilderChainable,HandlerStack}
+     */
+    private function prepareEnvironment(string $mchid): array
+    {
+        $instance = Builder::factory([
+            'mchid'      => $mchid,
+            'serial'     => 'nop',
+            'privateKey' => 'any',
+            'certs'      => ['any' => null],
+            'secret'     => '',
+            'handler'    => $this->guzzleMockStack(),
+        ]);
+
+        $stack = clone $instance->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
+        /** @var HandlerStack $stack */
+        $stack->remove('transform_response');
+
+        $endpoint = $instance->chain('v2/pay/downloadbill');
+
+        return [$endpoint, $stack];
+    }
+
+    /**
      * @return array<string,array{string,ResponseInterface}>
      */
     public function mockRequestsDataProvider(): array
@@ -60,21 +84,10 @@ class DownloadbillTest extends TestCase
      */
     public function testPost(string $mchid, ResponseInterface $respondor): void
     {
-        $instance = Builder::factory([
-            'mchid'      => $mchid,
-            'serial'     => 'nop',
-            'privateKey' => 'any',
-            'certs'      => ['any' => null],
-            'secret'     => '',
-            'handler'    => $this->guzzleMockStack(),
-        ]);
+        [$endpoint, $stack] = $this->prepareEnvironment($mchid);
+
         $this->mock->reset();
         $this->mock->append($respondor);
-
-        $endpoint = $instance->chain('v2/pay/downloadbill');
-        $stack = clone $endpoint->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
-        /** @var HandlerStack $stack */
-        $stack->remove('transform_response');
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         $res = @$endpoint->post([
@@ -135,21 +148,10 @@ class DownloadbillTest extends TestCase
      */
     public function testPostAsync(string $mchid, ResponseInterface $respondor): void
     {
-        $instance = Builder::factory([
-            'mchid'      => $mchid,
-            'serial'     => 'nop',
-            'privateKey' => 'any',
-            'certs'      => ['any' => null],
-            'secret'     => '',
-            'handler'    => $this->guzzleMockStack(),
-        ]);
+        [$endpoint, $stack] = $this->prepareEnvironment($mchid);
+
         $this->mock->reset();
         $this->mock->append($respondor);
-
-        $endpoint = $instance->chain('v2/pay/downloadbill');
-        $stack = clone $endpoint->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
-        /** @var HandlerStack $stack */
-        $stack->remove('transform_response');
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([

@@ -34,6 +34,43 @@ class UploadmediaTest extends TestCase
     }
 
     /**
+     * @param string $mchid
+     * @param string $secret
+     * @return array{\WeChatPay\BuilderChainable,HandlerStack,MultipartStream}
+     */
+    private function prepareEnvironment(string $mchid, string $secret): array
+    {
+        $instance = Builder::factory([
+            'mchid'      => $mchid,
+            'serial'     => 'nop',
+            'privateKey' => 'any',
+            'certs'      => ['any' => null],
+            'secret'     => $secret,
+            'handler'    => $this->guzzleMockStack(),
+        ]);
+
+        // samples howto control the `HandlerStack`, only effect this request
+        $stack = clone $instance->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
+        /** @var HandlerStack $stack */
+        $stack->remove('transform_request');
+
+        $endpoint = $instance->chain('v2/secapi/mch/uploadmedia');
+
+        $logo  = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'logo.png';
+        $media = new LazyOpenStream($logo, 'rb');
+
+        $data = ['mch_id' => $mchid, 'media_hash' => Utils::hash($media, 'md5'),];
+        $data['sign'] = Hash::sign(Hash::ALGO_MD5, Formatter::queryStringLike(Formatter::ksort($data)), $secret);
+        $elements = [['name' => 'media', 'contents' => $media, 'filename' => basename($logo),]];
+        foreach($data as $key => $value) {
+            $elements[] = ['name' => $key, 'contents' => $value];
+        }
+        $body = new MultipartStream($elements);
+
+        return [$endpoint, $stack, $body];
+    }
+
+    /**
      * @return array<string,array{string,string,ResponseInterface}>
      */
     public function mockRequestsDataProvider(): array
@@ -60,33 +97,10 @@ class UploadmediaTest extends TestCase
      */
     public function testPost(string $mchid, string $secret, ResponseInterface $respondor): void
     {
-        $instance = Builder::factory([
-            'mchid'      => $mchid,
-            'serial'     => 'nop',
-            'privateKey' => 'any',
-            'certs'      => ['any' => null],
-            'secret'     => $secret,
-            'handler'    => $this->guzzleMockStack(),
-        ]);
+        [$endpoint, $stack, $body] = $this->prepareEnvironment($mchid, $secret);
+
         $this->mock->reset();
         $this->mock->append($respondor);
-
-        $endpoint = $instance->chain('v2/secapi/mch/uploadmedia');
-        // samples howto control the `HandlerStack`, only effect this request
-        $stack = clone $endpoint->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
-        /** @var HandlerStack $stack */
-        $stack->remove('transform_request');
-
-        $logo  = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'logo.png';
-        $media = new LazyOpenStream($logo, 'rb');
-
-        $data = ['mch_id' => $mchid, 'media_hash' => Utils::hash($media, 'md5'),];
-        $data['sign'] = Hash::sign(Hash::ALGO_MD5, Formatter::queryStringLike(Formatter::ksort($data)), $secret);
-        $elements = [['name' => 'media', 'contents' => $media, 'filename' => basename($logo),]];
-        foreach($data as $key => $value) {
-            $elements[] = ['name' => $key, 'contents' => $value];
-        }
-        $body = new MultipartStream($elements);
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         $res = @$endpoint->post([
@@ -119,33 +133,10 @@ class UploadmediaTest extends TestCase
      */
     public function testPostAsync(string $mchid, string $secret, ResponseInterface $respondor): void
     {
-        $instance = Builder::factory([
-            'mchid'      => $mchid,
-            'serial'     => 'nop',
-            'privateKey' => 'any',
-            'certs'      => ['any' => null],
-            'secret'     => $secret,
-            'handler'    => $this->guzzleMockStack(),
-        ]);
+        [$endpoint, $stack, $body] = $this->prepareEnvironment($mchid, $secret);
+
         $this->mock->reset();
         $this->mock->append($respondor);
-
-        $endpoint = $instance->chain('v2/secapi/mch/uploadmedia');
-        // samples howto control the `HandlerStack`, only effect this request
-        $stack = clone $endpoint->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
-        /** @var HandlerStack $stack */
-        $stack->remove('transform_request');
-
-        $logo  = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'logo.png';
-        $media = new LazyOpenStream($logo, 'rb');
-
-        $data = ['mch_id' => $mchid, 'media_hash' => Utils::hash($media, 'md5'),];
-        $data['sign'] = Hash::sign(Hash::ALGO_MD5, Formatter::queryStringLike(Formatter::ksort($data)), $secret);
-        $elements = [['name' => 'media', 'contents' => $media, 'filename' => basename($logo),]];
-        foreach($data as $key => $value) {
-            $elements[] = ['name' => $key, 'contents' => $value];
-        }
-        $body = new MultipartStream($elements);
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([

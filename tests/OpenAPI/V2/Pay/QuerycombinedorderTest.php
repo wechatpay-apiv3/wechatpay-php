@@ -25,6 +25,26 @@ class QuerycombinedorderTest extends TestCase
     }
 
     /**
+     * @param string $mchid
+     * @return array{\WeChatPay\BuilderChainable}
+     */
+    private function prepareEnvironment(string $mchid, string $secret): array
+    {
+        $instance = Builder::factory([
+            'mchid'      => $mchid,
+            'serial'     => 'nop',
+            'privateKey' => 'any',
+            'certs'      => ['any' => null],
+            'secret'     => $secret,
+            'handler'    => $this->guzzleMockStack(),
+        ]);
+
+        $endpoint = $instance->chain('v2/pay/querycombinedorder');
+
+        return [$endpoint];
+    }
+
+    /**
      * @return array<string,array{string,string,ResponseInterface}>
      */
     public function mockRequestsDataProvider(): array
@@ -53,18 +73,10 @@ class QuerycombinedorderTest extends TestCase
      */
     public function testPost(string $mchid, string $secret, ResponseInterface $respondor): void
     {
-        $instance = Builder::factory([
-            'mchid'      => $mchid,
-            'serial'     => 'nop',
-            'privateKey' => 'any',
-            'certs'      => ['any' => null],
-            'secret'     => $secret,
-            'handler'    => $this->guzzleMockStack(),
-        ]);
+        [$endpoint] = $this->prepareEnvironment($mchid, $secret);
+
         $this->mock->reset();
         $this->mock->append($respondor);
-
-        $endpoint = $instance->chain('v2/pay/querycombinedorder');
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         $res = @$endpoint->post(['xml' => [ 'combine_mch_id' => $mchid, ]]);
@@ -91,18 +103,10 @@ class QuerycombinedorderTest extends TestCase
      */
     public function testPostAsync(string $mchid, string $secret, ResponseInterface $respondor): void
     {
-        $instance = Builder::factory([
-            'mchid'      => $mchid,
-            'serial'     => 'nop',
-            'privateKey' => 'any',
-            'certs'      => ['any' => null],
-            'secret'     => $secret,
-            'handler'    => $this->guzzleMockStack(),
-        ]);
+        [$endpoint] = $this->prepareEnvironment($mchid, $secret);
+
         $this->mock->reset();
         $this->mock->append($respondor);
-
-        $endpoint = $instance->chain('v2/pay/querycombinedorder');
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([

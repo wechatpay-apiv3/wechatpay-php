@@ -26,6 +26,31 @@ class TransfersTest extends TestCase
     }
 
     /**
+     * @param string $mchid
+     * @return array{\WeChatPay\BuilderChainable,HandlerStack}
+     */
+    private function prepareEnvironment(string $mchid): array
+    {
+        $instance = Builder::factory([
+            'mchid'      => $mchid,
+            'serial'     => 'nop',
+            'privateKey' => 'any',
+            'certs'      => ['any' => null],
+            'secret'     => '',
+            'handler'    => $this->guzzleMockStack(),
+        ]);
+
+        // samples howto control the `HandlerStack`, only effect this request
+        $stack = clone $instance->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
+        /** @var HandlerStack $stack */
+        $stack->remove('transform_response');
+
+        $endpoint = $instance->chain('v2/mmpaymkttransfers/promotion/transfers');
+
+        return [$endpoint, $stack];
+    }
+
+    /**
      * @return array<string,array{string,ResponseInterface}>
      */
     public function mockRequestsDataProvider(): array
@@ -49,23 +74,11 @@ class TransfersTest extends TestCase
      */
     public function testPost(string $mchid, ResponseInterface $respondor): void
     {
-        $instance = Builder::factory([
-            'mchid'      => $mchid,
-            'serial'     => 'nop',
-            'privateKey' => 'any',
-            'certs'      => ['any' => null],
-            'secret'     => Formatter::nonce(32),
-            'handler'    => $this->guzzleMockStack(),
-        ]);
+        [$endpoint, $stack] = $this->prepareEnvironment($mchid);
+
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        $endpoint = $instance->chain('v2/mmpaymkttransfers/promotion/transfers');
-
-        // samples howto control the `HandlerStack`, only effect this request
-        $stack = clone $endpoint->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
-        /** @var HandlerStack $stack */
-        $stack->remove('transform_response');
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         $res = @$endpoint->post(['xml' => [ 'mchid' => $mchid, ], 'handler' => $stack]);
         static::responseAssertion($res);
@@ -101,23 +114,11 @@ class TransfersTest extends TestCase
      */
     public function testPostAsync(string $mchid, ResponseInterface $respondor): void
     {
-        $instance = Builder::factory([
-            'mchid'      => $mchid,
-            'serial'     => 'nop',
-            'privateKey' => 'any',
-            'certs'      => ['any' => null],
-            'secret'     => Formatter::nonce(32),
-            'handler'    => $this->guzzleMockStack(),
-        ]);
+        [$endpoint, $stack] = $this->prepareEnvironment($mchid);
+
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        $endpoint = $instance->chain('v2/mmpaymkttransfers/promotion/transfers');
-
-        // samples howto control the `HandlerStack`, only effect this request
-        $stack = clone $endpoint->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
-        /** @var HandlerStack $stack */
-        $stack->remove('transform_response');
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([
             'xml' => [ 'mchid' => $mchid, ], 'handler' => $stack
