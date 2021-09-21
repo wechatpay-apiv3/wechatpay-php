@@ -48,6 +48,7 @@ class QuerycombinedorderTest extends TestCase
     /**
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
+     * @param string $secret
      * @param ResponseInterface $respondor
      */
     public function testPost(string $mchid, string $secret, ResponseInterface $respondor): void
@@ -67,7 +68,15 @@ class QuerycombinedorderTest extends TestCase
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         $res = @$endpoint->post(['xml' => [ 'combine_mch_id' => $mchid, ]]);
-        $txt = (string) $res->getBody();
+        static::responseAssertion($res);
+    }
+
+    /**
+     * @param ResponseInterface $response
+     */
+    private static function responseAssertion(ResponseInterface $response): void
+    {
+        $txt = (string) $response->getBody();
         $array = Transformer::toArray($txt);
         static::assertArrayHasKey('combine_mch_id', $array);
         static::assertArrayHasKey('return_code', $array);
@@ -77,6 +86,7 @@ class QuerycombinedorderTest extends TestCase
     /**
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
+     * @param string $secret
      * @param ResponseInterface $respondor
      */
     public function testPostAsync(string $mchid, string $secret, ResponseInterface $respondor): void
@@ -95,12 +105,10 @@ class QuerycombinedorderTest extends TestCase
         $endpoint = $instance->chain('v2/pay/querycombinedorder');
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        @$endpoint->postAsync(['xml' => [ 'combine_mch_id' => $mchid, ], ])->then(static function(ResponseInterface $res) {
-            $txt = (string) $res->getBody();
-            $array = Transformer::toArray($txt);
-            static::assertArrayHasKey('combine_mch_id', $array);
-            static::assertArrayHasKey('return_code', $array);
-            static::assertArrayHasKey('result_code', $array);
+        @$endpoint->postAsync([
+            'xml' => [ 'combine_mch_id' => $mchid, ],
+        ])->then(static function(ResponseInterface $res) {
+            static::responseAssertion($res);
         })->wait();
     }
 }

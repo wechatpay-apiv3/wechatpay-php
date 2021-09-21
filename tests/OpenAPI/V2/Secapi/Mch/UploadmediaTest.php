@@ -2,7 +2,10 @@
 
 namespace WeChatPay\Tests\OpenAPI\V2\Secapi\Mch;
 
+use const DIRECTORY_SEPARATOR;
+
 use function basename;
+use function dirname;
 
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -52,6 +55,7 @@ class UploadmediaTest extends TestCase
     /**
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
+     * @param string $secret
      * @param ResponseInterface $respondor
      */
     public function testPost(string $mchid, string $secret, ResponseInterface $respondor): void
@@ -91,7 +95,15 @@ class UploadmediaTest extends TestCase
             // 'ssl_key' => 'file:///path/to/apiclient_key.pem',
             // 'cert' => 'file:///path/to/apiclient_cert.pem',
         ]);
-        $txt = (string) $res->getBody();
+        static::responseAssertion($res);
+    }
+
+    /**
+     * @param ResponseInterface $response
+     */
+    private static function responseAssertion(ResponseInterface $response): void
+    {
+        $txt = (string) $response->getBody();
         $array = Transformer::toArray($txt);
         static::assertArrayHasKey('sign', $array);
         static::assertArrayHasKey('media_id', $array);
@@ -102,6 +114,7 @@ class UploadmediaTest extends TestCase
     /**
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
+     * @param string $secret
      * @param ResponseInterface $respondor
      */
     public function testPostAsync(string $mchid, string $secret, ResponseInterface $respondor): void
@@ -141,12 +154,7 @@ class UploadmediaTest extends TestCase
             // 'ssl_key' => 'file:///path/to/apiclient_key.pem',
             // 'cert' => 'file:///path/to/apiclient_cert.pem',
         ])->then(static function(ResponseInterface $res) {
-            $txt = (string) $res->getBody();
-            $array = Transformer::toArray($txt);
-            static::assertArrayHasKey('sign', $array);
-            static::assertArrayHasKey('media_id', $array);
-            static::assertArrayHasKey('return_code', $array);
-            static::assertArrayHasKey('result_code', $array);
+            static::responseAssertion($res);
         })->wait();
     }
 }

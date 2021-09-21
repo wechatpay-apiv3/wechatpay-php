@@ -68,11 +68,7 @@ class TransfersTest extends TestCase
         $stack->remove('transform_response');
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         $res = @$endpoint->post(['xml' => [ 'mchid' => $mchid, ], 'handler' => $stack]);
-        $txt = (string) $res->getBody();
-        $array = Transformer::toArray($txt);
-        static::assertArrayHasKey('mchid', $array);
-        static::assertArrayHasKey('return_code', $array);
-        static::assertArrayHasKey('result_code', $array);
+        static::responseAssertion($res);
 
         $this->mock->reset();
         $this->mock->append($respondor);
@@ -82,12 +78,20 @@ class TransfersTest extends TestCase
         } catch (RejectionException $e) {
             /** @var ResponseInterface $res */
             $res = $e->getReason();
-            $txt = (string) $res->getBody();
-            $array = Transformer::toArray($txt);
-            static::assertArrayHasKey('mchid', $array);
-            static::assertArrayHasKey('return_code', $array);
-            static::assertArrayHasKey('result_code', $array);
+            static::responseAssertion($res);
         }
+    }
+
+    /**
+     * @param ResponseInterface $response
+     */
+    private static function responseAssertion(ResponseInterface $response): void
+    {
+        $txt = (string) $response->getBody();
+        $array = Transformer::toArray($txt);
+        static::assertArrayHasKey('mchid', $array);
+        static::assertArrayHasKey('return_code', $array);
+        static::assertArrayHasKey('result_code', $array);
     }
 
     /**
@@ -115,23 +119,19 @@ class TransfersTest extends TestCase
         /** @var HandlerStack $stack */
         $stack->remove('transform_response');
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        @$endpoint->postAsync(['xml' => [ 'mchid' => $mchid, ], 'handler' => $stack])->then(static function(ResponseInterface $res) {
-            $txt = (string) $res->getBody();
-            $array = Transformer::toArray($txt);
-            static::assertArrayHasKey('mchid', $array);
-            static::assertArrayHasKey('return_code', $array);
-            static::assertArrayHasKey('result_code', $array);
+        @$endpoint->postAsync([
+            'xml' => [ 'mchid' => $mchid, ], 'handler' => $stack
+        ])->then(static function(ResponseInterface $res) {
+            static::responseAssertion($res);
         })->wait();
 
         $this->mock->reset();
         $this->mock->append($respondor);
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        @$endpoint->postAsync(['xml' => [ 'mchid' => $mchid, ]])->otherwise(static function($res) {
-            $txt = (string) $res->getBody();
-            $array = Transformer::toArray($txt);
-            static::assertArrayHasKey('mchid', $array);
-            static::assertArrayHasKey('return_code', $array);
-            static::assertArrayHasKey('result_code', $array);
+        @$endpoint->postAsync([
+            'xml' => [ 'mchid' => $mchid, ]
+        ])->otherwise(static function($res) {
+            static::responseAssertion($res);
         })->wait();
     }
 }
