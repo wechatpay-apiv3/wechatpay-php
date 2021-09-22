@@ -51,13 +51,25 @@ class TransfersTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,ResponseInterface}>
+     * @return array<string,array{string,array<string,string>,ResponseInterface}>
      */
     public function mockRequestsDataProvider(): array
     {
         return [
             'return_code=SUCCESS' => [
                 $mchid = '1230000109',
+                [
+                    'mchid'            => $mchid,
+                    'mch_appid'        => 'wx8888888888888888',
+                    'device_info'      => '013467007045764',
+                    'partner_trade_no' => '10000098201411111234567890',
+                    'openid'           => 'oxTWIuGaIt6gTKsQRLau2M0yL16E',
+                    'check_name'       => 'FORCE_CHECK',
+                    're_user_name'     => '王小王',
+                    'amount'           => '10099',
+                    'desc'             => '理赔',
+                    'spbill_create_ip' => '192.168.0.1',
+                ],
                 new Response(200, [], Transformer::toXml([
                     'mchid'       => $mchid,
                     'return_code' => 'SUCCESS',
@@ -70,9 +82,10 @@ class TransfersTest extends TestCase
     /**
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
+     * @param array<string,string> $data
      * @param ResponseInterface $respondor
      */
-    public function testPost(string $mchid, ResponseInterface $respondor): void
+    public function testPost(string $mchid, array $data, ResponseInterface $respondor): void
     {
         [$endpoint, $stack] = $this->prepareEnvironment($mchid);
 
@@ -80,14 +93,14 @@ class TransfersTest extends TestCase
         $this->mock->append($respondor);
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        $res = @$endpoint->post(['xml' => [ 'mchid' => $mchid, ], 'handler' => $stack]);
+        $res = @$endpoint->post(['xml' => $data, 'handler' => $stack]);
         static::responseAssertion($res);
 
         $this->mock->reset();
         $this->mock->append($respondor);
         try {
             // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-            @$endpoint->post(['xml' => [ 'mchid' => $mchid, ]]);
+            @$endpoint->post(['xml' => $data]);
         } catch (RejectionException $e) {
             /** @var ResponseInterface $res */
             $res = $e->getReason();
@@ -110,9 +123,10 @@ class TransfersTest extends TestCase
     /**
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
+     * @param array<string,string> $data
      * @param ResponseInterface $respondor
      */
-    public function testPostAsync(string $mchid, ResponseInterface $respondor): void
+    public function testPostAsync(string $mchid, array $data, ResponseInterface $respondor): void
     {
         [$endpoint, $stack] = $this->prepareEnvironment($mchid);
 
@@ -121,7 +135,7 @@ class TransfersTest extends TestCase
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([
-            'xml' => [ 'mchid' => $mchid, ], 'handler' => $stack
+            'xml' => $data, 'handler' => $stack
         ])->then(static function(ResponseInterface $res) {
             static::responseAssertion($res);
         })->wait();
@@ -130,7 +144,7 @@ class TransfersTest extends TestCase
         $this->mock->append($respondor);
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([
-            'xml' => [ 'mchid' => $mchid, ]
+            'xml' => $data
         ])->otherwise(static function($res) {
             static::responseAssertion($res);
         })->wait();

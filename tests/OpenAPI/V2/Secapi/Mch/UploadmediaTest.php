@@ -36,7 +36,7 @@ class UploadmediaTest extends TestCase
     /**
      * @param string $mchid
      * @param string $secret
-     * @return array{\WeChatPay\BuilderChainable,HandlerStack,MultipartStream}
+     * @return array{\WeChatPay\BuilderChainable,HandlerStack}
      */
     private function prepareEnvironment(string $mchid, string $secret): array
     {
@@ -56,22 +56,11 @@ class UploadmediaTest extends TestCase
 
         $endpoint = $instance->chain('v2/secapi/mch/uploadmedia');
 
-        $logo  = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'logo.png';
-        $media = new LazyOpenStream($logo, 'rb');
-
-        $data = ['mch_id' => $mchid, 'media_hash' => Utils::hash($media, 'md5'),];
-        $data['sign'] = Hash::sign(Hash::ALGO_MD5, Formatter::queryStringLike(Formatter::ksort($data)), $secret);
-        $elements = [['name' => 'media', 'contents' => $media, 'filename' => basename($logo),]];
-        foreach($data as $key => $value) {
-            $elements[] = ['name' => $key, 'contents' => $value];
-        }
-        $body = new MultipartStream($elements);
-
-        return [$endpoint, $stack, $body];
+        return [$endpoint, $stack];
     }
 
     /**
-     * @return array<string,array{string,string,ResponseInterface}>
+     * @return array<string,array{string,string,MultipartStream,ResponseInterface}>
      */
     public function mockRequestsDataProvider(): array
     {
@@ -84,8 +73,20 @@ class UploadmediaTest extends TestCase
             'result_code' => 'SUCCESS',
         ];
         $data['sign'] = Hash::sign(Hash::ALGO_MD5, Formatter::queryStringLike(Formatter::ksort($data)), $secret);
+
+        $logo  = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'logo.png';
+        $media = new LazyOpenStream($logo, 'rb');
+
+        $formDataStructure = ['mch_id' => $mchid, 'media_hash' => Utils::hash($media, 'md5'),];
+        $formDataStructure['sign'] = Hash::sign(Hash::ALGO_MD5, Formatter::queryStringLike(Formatter::ksort($formDataStructure)), $secret);
+        $elements = [['name' => 'media', 'contents' => $media, 'filename' => basename($logo),]];
+        foreach($formDataStructure as $key => $value) {
+            $elements[] = ['name' => $key, 'contents' => $value];
+        }
+        $body = new MultipartStream($elements);
+
         return [
-            'return_code=SUCCESS' => [$mchid, $secret, new Response(200, [], Transformer::toXml($data))],
+            'return_code=SUCCESS' => [$mchid, $secret, $body, new Response(200, [], Transformer::toXml($data))],
         ];
     }
 
@@ -93,11 +94,12 @@ class UploadmediaTest extends TestCase
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
      * @param string $secret
+     * @param MultipartStream $body
      * @param ResponseInterface $respondor
      */
-    public function testPost(string $mchid, string $secret, ResponseInterface $respondor): void
+    public function testPost(string $mchid, string $secret, MultipartStream $body, ResponseInterface $respondor): void
     {
-        [$endpoint, $stack, $body] = $this->prepareEnvironment($mchid, $secret);
+        [$endpoint, $stack] = $this->prepareEnvironment($mchid, $secret);
 
         $this->mock->reset();
         $this->mock->append($respondor);
@@ -129,11 +131,12 @@ class UploadmediaTest extends TestCase
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
      * @param string $secret
+     * @param MultipartStream $body
      * @param ResponseInterface $respondor
      */
-    public function testPostAsync(string $mchid, string $secret, ResponseInterface $respondor): void
+    public function testPostAsync(string $mchid, string $secret, MultipartStream $body, ResponseInterface $respondor): void
     {
-        [$endpoint, $stack, $body] = $this->prepareEnvironment($mchid, $secret);
+        [$endpoint, $stack] = $this->prepareEnvironment($mchid, $secret);
 
         $this->mock->reset();
         $this->mock->append($respondor);

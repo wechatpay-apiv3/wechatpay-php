@@ -45,7 +45,7 @@ class QuerycombinedorderTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,string,ResponseInterface}>
+     * @return array<string,array{string,string,array<string,string>,ResponseInterface}>
      */
     public function mockRequestsDataProvider(): array
     {
@@ -60,8 +60,14 @@ class QuerycombinedorderTest extends TestCase
             'result_code'    => 'SUCCESS',
         ];
         $data['sign'] = Hash::sign(Hash::ALGO_MD5, Formatter::queryStringLike(Formatter::ksort($data)), $secret);
+        $xmlDataStructure = [
+            'combine_appid'        => 'wx8888888888888888',
+            'combine_mch_id'       => $mchid,
+            'combine_out_trade_no' => '1217752501201407033233368018',
+        ];
+
         return [
-            'return_code=SUCCESS' => [$mchid, $secret, new Response(200, [], Transformer::toXml($data))],
+            'return_code=SUCCESS' => [$mchid, $secret, $xmlDataStructure, new Response(200, [], Transformer::toXml($data))],
         ];
     }
 
@@ -69,9 +75,10 @@ class QuerycombinedorderTest extends TestCase
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
      * @param string $secret
+     * @param array<string,string> $data
      * @param ResponseInterface $respondor
      */
-    public function testPost(string $mchid, string $secret, ResponseInterface $respondor): void
+    public function testPost(string $mchid, string $secret, array $data, ResponseInterface $respondor): void
     {
         [$endpoint] = $this->prepareEnvironment($mchid, $secret);
 
@@ -79,7 +86,7 @@ class QuerycombinedorderTest extends TestCase
         $this->mock->append($respondor);
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        $res = @$endpoint->post(['xml' => [ 'combine_mch_id' => $mchid, ]]);
+        $res = @$endpoint->post(['xml' => $data]);
         static::responseAssertion($res);
     }
 
@@ -99,9 +106,10 @@ class QuerycombinedorderTest extends TestCase
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
      * @param string $secret
+     * @param array<string,string> $data
      * @param ResponseInterface $respondor
      */
-    public function testPostAsync(string $mchid, string $secret, ResponseInterface $respondor): void
+    public function testPostAsync(string $mchid, string $secret, array $data, ResponseInterface $respondor): void
     {
         [$endpoint] = $this->prepareEnvironment($mchid, $secret);
 
@@ -110,7 +118,7 @@ class QuerycombinedorderTest extends TestCase
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([
-            'xml' => [ 'combine_mch_id' => $mchid, ],
+            'xml' => $data,
         ])->then(static function(ResponseInterface $res) {
             static::responseAssertion($res);
         })->wait();

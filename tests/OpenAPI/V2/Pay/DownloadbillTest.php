@@ -59,7 +59,7 @@ class DownloadbillTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,ResponseInterface}>
+     * @return array<string,array{string,array<string,string>,ResponseInterface}>
      */
     public function mockRequestsDataProvider(): array
     {
@@ -71,18 +71,27 @@ class DownloadbillTest extends TestCase
         ];
         $file   = dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'bill.ALL.csv';
         $stream = new LazyOpenStream($file, 'rb');
+
+        $xmlDataStructure = [
+            'appid'     => 'wx8888888888888888',
+            'mch_id'    => $mchid,
+            'bill_type' => 'ALL',
+            'bill_date' => '20140603',
+        ];
+
         return [
-            'return_code=FAIL' => [$mchid, new Response(200, [], Transformer::toXml($data))],
-            'CSV stream'       => [$mchid, new Response(200, [], $stream)],
+            'return_code=FAIL' => [$mchid, $xmlDataStructure, new Response(200, [], Transformer::toXml($data))],
+            'CSV stream'       => [$mchid, $xmlDataStructure, new Response(200, [], $stream)],
         ];
     }
 
     /**
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
+     * @param array<string,string> $data
      * @param ResponseInterface $respondor
      */
-    public function testPost(string $mchid, ResponseInterface $respondor): void
+    public function testPost(string $mchid, array $data, ResponseInterface $respondor): void
     {
         [$endpoint, $stack] = $this->prepareEnvironment($mchid);
 
@@ -92,12 +101,7 @@ class DownloadbillTest extends TestCase
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         $res = @$endpoint->post([
             'handler' => $stack,
-            'xml' => [
-                'appid'     => 'wx8888888888888888',
-                'mch_id'    => $mchid,
-                'bill_type' => 'ALL',
-                'bill_date' => '20140603',
-            ],
+            'xml'     => $data,
         ]);
         static::responseAssertion($res);
     }
@@ -144,9 +148,10 @@ class DownloadbillTest extends TestCase
     /**
      * @dataProvider mockRequestsDataProvider
      * @param string $mchid
+     * @param array<string,string> $data
      * @param ResponseInterface $respondor
      */
-    public function testPostAsync(string $mchid, ResponseInterface $respondor): void
+    public function testPostAsync(string $mchid, array $data, ResponseInterface $respondor): void
     {
         [$endpoint, $stack] = $this->prepareEnvironment($mchid);
 
@@ -156,12 +161,7 @@ class DownloadbillTest extends TestCase
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([
             'handler' => $stack,
-            'xml' => [
-                'appid'     => 'wx8888888888888888',
-                'mch_id'    => $mchid,
-                'bill_type' => 'ALL',
-                'bill_date' => '20140603',
-            ],
+            'xml'     => $data,
         ])->then(static function(ResponseInterface $response) {
             static::responseAssertion($response, true);
         })->wait();
