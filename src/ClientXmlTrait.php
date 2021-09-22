@@ -52,7 +52,7 @@ trait ClientXmlTrait
             return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): PromiseInterface {
                 $data = $options['xml'] ?? [];
 
-                if ($mchid && $mchid !== ($inputMchId = $data['mch_id'] ?? $data['mchid'] ?? null)) {
+                if ($mchid && $mchid !== ($inputMchId = $data['mch_id'] ?? $data['mchid'] ?? $data['combine_mch_id'] ?? null)) {
                     throw new Exception\InvalidArgumentException(sprintf(Exception\EV2_REQ_XML_NOTMATCHED_MCHID, $inputMchId ?? '', $mchid));
                 }
 

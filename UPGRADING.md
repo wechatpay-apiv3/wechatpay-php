@@ -1,5 +1,9 @@
 # 升级指南
 
+## 从 1.2 升级到 1.3
+
+v1.3主要更新内容是为IDE增加`接口`及`参数`描述提示，以单独的安装包发行，建议仅在`composer --dev`即(`Add requirement to require-dev.`)，生产运行时环境完全无需。
+
 ## 从 1.1 升级至 1.2
 
 v1.2 对 `RSA公/私钥`加载做了加强，释放出 `Rsa::from` 统一加载函数，以接替`PemUtil::loadPrivateKey`，同时释放出`Rsa::fromPkcs1`, `Rsa::fromPkcs8`, `Rsa::fromSpki`及`Rsa::pkcs1ToSpki`方法，在不丢失精度的前提下，支持`不落盘`从云端（如`公/私钥`存储在数据库/NoSQL等媒介中）加载。
