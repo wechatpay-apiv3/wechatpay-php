@@ -14,7 +14,7 @@ interface ClientDecoratorInterface
     /**
      * @var string - This library version
      */
-    public const VERSION = '1.3.1';
+    public const VERSION = '1.3.2';
 
     /**
      * @var string - The HTTP transfer `xml` based protocol

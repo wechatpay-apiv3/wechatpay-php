@@ -9,6 +9,7 @@ use function hash;
 use function hash_file;
 use function base64_decode;
 use function json_decode;
+use function json_encode;
 
 use WeChatPay\Util\MediaUtil;
 use GuzzleHttp\Psr7\LazyOpenStream;
@@ -76,5 +77,46 @@ class MediaUtilTest extends TestCase
 
         self::assertIsString($util->getContentType());
         self::assertStringStartsWith('multipart/form-data; boundary=', $util->getContentType());
+    }
+
+    /**
+     * @dataProvider fileDataProvider
+     *
+     * @param string $file
+     * @param ?StreamInterface $stream
+     * @param string $expectedFilename
+     * @param string $expectedSha256Digest
+     */
+    public function testSetMeta($file, $stream = null, string $expectedFilename = '', string $expectedSha256Digest = ''): void
+    {
+        $media = new MediaUtil($file, $stream);
+        $json = $media->getMeta();
+        self::assertJson($json);
+
+        $array = json_decode($json, true);
+        self::assertIsArray($array);
+        self::assertArrayHasKey('filename', $array);
+        self::assertArrayHasKey('sha256', $array);
+        self::assertArrayNotHasKey('bank_type', $array);
+
+        ['filename' => $filename, 'sha256' => $digest] = $array;
+        self::assertEquals($expectedFilename, $filename);
+        self::assertEquals($expectedSha256Digest, $digest);
+        self::assertEquals($json, (string)$media->getStream());
+
+        $meta = json_encode(['filename' => $filename, 'sha256' => $digest, 'bank_type' => 'LQT']) ?: null;
+        self::assertIsInt($media->setMeta($meta));
+
+        $json = $media->getMeta();
+        self::assertJson($json);
+        self::assertEquals($meta, $json);
+        self::assertEquals($meta, (string)$media->getStream());
+        self::assertEquals($json, (string)$media->getStream());
+
+        $array = json_decode((string)$media->getStream(), true);
+        self::assertIsArray($array);
+        self::assertArrayHasKey('filename', $array);
+        self::assertArrayHasKey('sha256', $array);
+        self::assertArrayHasKey('bank_type', $array);
     }
 }
