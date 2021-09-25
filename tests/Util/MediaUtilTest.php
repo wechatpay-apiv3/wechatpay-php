@@ -7,6 +7,7 @@ use const DIRECTORY_SEPARATOR;
 use function dirname;
 use function hash;
 use function hash_file;
+use function base64_encode;
 use function base64_decode;
 use function json_decode;
 use function json_encode;
@@ -47,6 +48,18 @@ class MediaUtilTest extends TestCase
                 ),
                 'transparent.gif',
                 hash(self::ALGO_SHA256, base64_decode($data)) ?: '',
+            ],
+            'data://text/csv;base64 string' => [//RFC2397
+                'active_user_batch_tasks_001.csv',
+                new LazyOpenStream(
+                    'data://text/csv;base64,' . base64_encode($data = implode('\n', [
+                        'LQT_Wechatpay_Platform_Certificate_Encrypted_Line_One',
+                        'LQT_Wechatpay_Platform_Certificate_Encrypted_Line_Two',
+                    ])),
+                    self::FOPEN_MODE_BINARYREAD
+                ),
+                'active_user_batch_tasks_001.csv',
+                hash(self::ALGO_SHA256, $data) ?: '',
             ],
         ];
     }

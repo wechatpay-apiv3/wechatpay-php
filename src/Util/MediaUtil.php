@@ -17,7 +17,7 @@ use GuzzleHttp\Psr7\CachingStream;
 use Psr\Http\Message\StreamInterface;
 
 /**
- * Util for Media(image or video) uploading.
+ * Util for Media(image, video or text/csv whose are the platform acceptable file types etc) uploading.
  */
 class MediaUtil
 {
@@ -54,6 +54,8 @@ class MediaUtil
      *                         images(jpg|bmp|png)
      *                         or
      *                         video(avi|wmv|mpeg|mp4|mov|mkv|flv|f4v|m4v|rmvb)
+     *                         or
+     *                         text/csv whose are the platform acceptable etc.
      * @param ?StreamInterface $fileStream  File content stream, optional
      */
     public function __construct(string $filepath, ?StreamInterface $fileStream = null)
@@ -84,7 +86,7 @@ class MediaUtil
             // but the `MultipartStream` did checked this prop with the `substr` method, which method described
             // the first paramter must be the string on the `strict_types` mode.
             // Decorate the `getMetadata` for this case.
-            'getMetadata' => function($key = null) use ($buffer) {
+            'getMetadata' => static function($key = null) use ($buffer) {
                 if ('uri' === $key) { return 'php://temp'; }
                 return $buffer->getMetadata($key);
             },
@@ -120,7 +122,7 @@ class MediaUtil
     /**
      * Set the `meta` part of the `multipart/form-data` stream
      *
-     * Note: The `meta` won't be the `media file`'s `meta data` anymore.
+     * Note: The `meta` weren't be the `media file`'s `meta data` anymore.
      *
      *       Previous whose were designed as `{filename,sha256}`,
      *       but another API was described asof `{bank_type,filename,sha256}`.
