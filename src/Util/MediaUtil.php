@@ -9,6 +9,7 @@ use UnexpectedValueException;
 
 use GuzzleHttp\Utils as GHU;
 use GuzzleHttp\Psr7\Utils;
+use GuzzleHttp\Psr7\BufferStream;
 use GuzzleHttp\Psr7\LazyOpenStream;
 use GuzzleHttp\Psr7\MultipartStream;
 use GuzzleHttp\Psr7\FnStream;
@@ -16,7 +17,7 @@ use GuzzleHttp\Psr7\CachingStream;
 use Psr\Http\Message\StreamInterface;
 
 /**
- * Util for Media(image or video) uploading.
+ * Util for Media(image, video or text/csv whose are the platform acceptable file types etc) uploading.
  */
 class MediaUtil
 {
@@ -26,20 +27,19 @@ class MediaUtil
     private $filepath;
 
     /**
-     * @var ?StreamInterface - file content stream to upload
+     * @var ?StreamInterface - The `file` stream
      */
     private $fileStream;
 
     /**
-     * @var string - upload meta json string
+     * @var StreamInterface - The `meta` stream
      */
-    private $meta;
+    private $metaStream;
 
     /**
-     * @var MultipartStream - upload contents stream
+     * @var MultipartStream - The `multipart/form-data` stream
      */
     private $multipart;
-
 
     /**
      * @var StreamInterface - multipart stream wrapper
@@ -54,6 +54,8 @@ class MediaUtil
      *                         images(jpg|bmp|png)
      *                         or
      *                         video(avi|wmv|mpeg|mp4|mov|mkv|flv|f4v|m4v|rmvb)
+     *                         or
+     *                         text/csv whose are the platform acceptable etc.
      * @param ?StreamInterface $fileStream  File content stream, optional
      */
     public function __construct(string $filepath, ?StreamInterface $fileStream = null)
@@ -77,16 +79,28 @@ class MediaUtil
             throw new UnexpectedValueException(sprintf('Cannot open or caching the file: `%s`', $this->filepath));
         }
 
-        $json = GHU::jsonEncode([
-            'filename' => $basename,
-            'sha256'   => Utils::hash($stream, 'sha256'),
+        $buffer = new BufferStream();
+        $metaStream = FnStream::decorate($buffer, [
+            'getSize' => static function () { return null; },
+            // The `BufferStream` doen't have `uri` metadata(`null` returned),
+            // but the `MultipartStream` did checked this prop with the `substr` method, which method described
+            // the first paramter must be the string on the `strict_types` mode.
+            // Decorate the `getMetadata` for this case.
+            'getMetadata' => static function($key = null) use ($buffer) {
+                if ('uri' === $key) { return 'php://temp'; }
+                return $buffer->getMetadata($key);
+            },
         ]);
-        $this->meta = $json;
+
+        $this->fileStream = $this->fileStream ?? $stream;
+        $this->metaStream = $metaStream;
+
+        $this->setMeta();
 
         $multipart = new MultipartStream([
             [
                 'name'     => 'meta',
-                'contents' => $json,
+                'contents' => $this->metaStream,
                 'headers'  => [
                     'Content-Type' => 'application/json',
                 ],
@@ -94,29 +108,55 @@ class MediaUtil
             [
                 'name'     => 'file',
                 'filename' => $basename,
-                'contents' => $stream,
+                'contents' => $this->fileStream,
             ],
         ]);
         $this->multipart = $multipart;
 
         $this->stream = FnStream::decorate($multipart, [
-             /** @var callable __toString -  for signature */
-            '__toString' => static function () use ($json) { return $json; },
-             /** @var callable getSize - let the `CURL` to use `CURLOPT_UPLOAD` context */
+            '__toString' => function () { return $this->getMeta(); },
             'getSize' => static function () { return null; },
         ]);
     }
 
     /**
-     * Get the `meta` of the multipart data string
+     * Set the `meta` part of the `multipart/form-data` stream
+     *
+     * Note: The `meta` weren't be the `media file`'s `meta data` anymore.
+     *
+     *       Previous whose were designed as `{filename,sha256}`,
+     *       but another API was described asof `{bank_type,filename,sha256}`.
+     *
+     *       Exposed the ability of setting the `meta` for the `new` data structure.
+     *
+     * @param ?string $json - The `meta` string
+     * @since v1.3.2
      */
-    public function getMeta(): string
+    public function setMeta(?string $json = null): int
     {
-        return $this->meta;
+        $content = $json ?? GHU::jsonEncode([
+            'filename' => basename($this->filepath),
+            'sha256' => $this->fileStream ? Utils::hash($this->fileStream, 'sha256') : '',
+        ]);
+        // clean the metaStream's buffer string
+        $this->metaStream->getContents();
+
+        return $this->metaStream->write($content);
     }
 
     /**
-     * Get the `GuzzleHttp\Psr7\CachingStream`|`GuzzleHttp\Psr7\LazyOpenStream` context
+     * Get the `meta` string
+     */
+    public function getMeta(): string
+    {
+        $json = (string)$this->metaStream;
+        $this->setMeta($json);
+
+        return $json;
+    }
+
+    /**
+     * Get the `FnStream` which is the `MultipartStream` decorator
      */
     public function getStream(): StreamInterface
     {
