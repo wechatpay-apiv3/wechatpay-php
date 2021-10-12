@@ -31,7 +31,7 @@
         "ext-simplexml": "*",
         "ext-openssl": "*",
         "guzzlehttp/uri-template": "^0.2 || ^1.0",
-        "guzzlehttp/guzzle": "^7.0"
+        "guzzlehttp/guzzle": "^6.0 || ^7.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.5.5 || ^9.3.5",
