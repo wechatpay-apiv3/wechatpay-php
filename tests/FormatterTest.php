@@ -47,13 +47,13 @@ class FormatterTest extends TestCase
     {
         if ($size < 1) {
             $this->expectException(InvalidArgumentException::class);
-            // for PHPUnit7
-            if (method_exists($this, 'expectExceptionMessageRegExp')) {
-                $this->expectExceptionMessageRegExp($pattern);
-            }
             // for PHPUnit8+
             if (method_exists($this, 'expectExceptionMessageMatches')) {
                 $this->expectExceptionMessageMatches($pattern);
+            }
+            // for PHPUnit7
+            elseif (method_exists($this, 'expectExceptionMessageRegExp')) {
+                $this->expectExceptionMessageRegExp($pattern);
             }
         }
 
