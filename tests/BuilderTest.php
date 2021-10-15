@@ -27,9 +27,12 @@ class BuilderTest extends TestCase
         if (method_exists($this, 'expectError')) {
             $this->expectError();
         }
+        // for PHPUnit7
         if (method_exists($this, 'expectExceptionMessageRegExp')) {
             $this->expectExceptionMessageRegExp('#^Call to private#');
-        } else {
+        }
+        // for PHPUnit8+
+        if (method_exists($this, 'expectExceptionMessageMatches')) {
             $this->expectExceptionMessageMatches('#^Call to private#');
         }
         new Builder(); /** @phpstan-ignore-line */

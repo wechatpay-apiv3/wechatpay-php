@@ -129,9 +129,12 @@ class ClientDecoratorTest extends TestCase
     public function testConstructorExceptions(array $config, string $pattern): void
     {
         $this->expectException(InvalidArgumentException::class);
+        // for PHPUnit7
         if (method_exists($this, 'expectExceptionMessageRegExp')) {
             $this->expectExceptionMessageRegExp($pattern);
-        } else {
+        }
+        // for PHPUnit8+
+        if (method_exists($this, 'expectExceptionMessageMatches')) {
             $this->expectExceptionMessageMatches($pattern);
         }
         new ClientDecorator($config);
