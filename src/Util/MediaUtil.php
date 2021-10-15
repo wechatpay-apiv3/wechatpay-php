@@ -4,10 +4,10 @@ namespace WeChatPay\Util;
 
 use function basename;
 use function sprintf;
+use function json_encode;
 
 use UnexpectedValueException;
 
-use GuzzleHttp\Utils as GHU;
 use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Psr7\BufferStream;
 use GuzzleHttp\Psr7\LazyOpenStream;
@@ -134,7 +134,7 @@ class MediaUtil
      */
     public function setMeta(?string $json = null): int
     {
-        $content = $json ?? GHU::jsonEncode([
+        $content = $json ?? (string)json_encode([
             'filename' => basename($this->filepath),
             'sha256' => $this->fileStream ? Utils::hash($this->fileStream, 'sha256') : '',
         ]);

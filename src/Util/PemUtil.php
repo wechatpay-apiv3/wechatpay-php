@@ -2,7 +2,6 @@
 
 namespace WeChatPay\Util;
 
-use function openssl_get_privatekey;
 use function openssl_x509_read;
 use function openssl_x509_parse;
 use function file_get_contents;

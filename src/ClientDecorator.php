@@ -10,6 +10,8 @@ use function implode;
 use function strncasecmp;
 use function strcasecmp;
 use function substr;
+use function constant;
+use function defined;
 
 use const PHP_OS;
 use const PHP_VERSION;
@@ -59,7 +61,7 @@ final class ClientDecorator implements ClientDecoratorInterface
     {
         return ['User-Agent' => implode(' ', [
             sprintf('wechatpay-php/%s', static::VERSION),
-            sprintf('GuzzleHttp/%d', defined(ClientInterface::class . '::VERSION') ? ClientInterface::VERSION : ClientInterface::MAJOR_VERSION),
+            sprintf('GuzzleHttp/%s', constant(ClientInterface::class . (defined(ClientInterface::class . '::VERSION') ? '::VERSION' : '::MAJOR_VERSION'))),
             sprintf('curl/%s', ((array)call_user_func('\curl_version'))['version'] ?? 'unknown'),
             sprintf('(%s/%s)', PHP_OS, php_uname('r')),
             sprintf('PHP/%s', PHP_VERSION),

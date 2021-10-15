@@ -1,5 +1,19 @@
 # 升级指南
 
+## 从 1.3 升级至 1.4
+
+v1.4版，对`Guzzle6`提供了**有限**兼容支持，最低兼容至**v6.5.0**，原因是测试依赖的前向兼容`GuzzleHttp\Handler\MockHandler::reset()`方法，在这个版本上才可用，相关见 [Guzzle#2143](https://github.com/guzzle/guzzle/pull/2143)；
+
+另外，`Guzzle6`的PHP版本要求是 **>=5.5**，而本类库前向兼容时，读取RSA证书序列号用到了PHP的[#7151 serialNumberHex support](http://bugs.php.net/71519)功能，顾PHP的最低版本可降级至**7.1.2**这个版本；
+
+同时，测试用例依赖的`PHPUnit8`调整最低版本至**v8.5.16**，原因是本类库的前向用例覆盖用到了`TestCase::expectError`方法，其在PHP7.4/8.0上有[bug #4663](https://github.com/sebastianbergmann/phpunit/issues/4663)，顾调整至这个版本。
+
+为**有限**兼容**Guzzle6**，类库放弃使用`\GuzzleHttp\Utils::jsonEncode`及`\GuzzleHttp\Utils::jsonDecode`封装方法，取而代之为PHP原生`json_encode`/`json_decode`方法，极端情况下(`meta`数据非法)可能会在`APIv3媒体文件上传`的几个接口上，本该抛送客户端异常而代之为返回服务端异常；这种场景下，会对调试带来部分困难，评估下来可控，遂放弃使用`\GuzzleHttp\Utils`的封装，待`Guzzle6 EOL`时，再择机回滚至使用这两个封装方法。
+
+**警告**：PHP7.1已于*1 Dec 2019*完成其**PHP官方支持**生命周期，本类库在PHP7.1环境上也仅有限支持可用，请**商户/开发者**自行评估继续使用PHP7.1的风险。
+
+Guzzle7+PHP7.2/7.3/7.4/8.0环境下，本次版本升级不受影响。
+
 ## 从 1.2 升级到 1.3
 
 v1.3主要更新内容是为IDE增加`接口`及`参数`描述提示，以单独的安装包发行，建议仅在`composer --dev`即(`Add requirement to require-dev.`)，生产运行时环境完全无需。
