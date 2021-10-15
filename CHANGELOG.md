@@ -5,7 +5,7 @@
 [变更细节](../../compare/v1.3.2...v1.4.0)
 
 - 调整`Guzzle`最低版本支持至v6.5.0，相应降低PHP版本要求至7.1.2，相关见[#71519](http://bugs.php.net/71519);
-- 调整`PHPUnit`最低版本至v8.5.16，相关问题见[#4663](https://github.com/sebastianbergmann/phpunit/issues/4663);
+- 调整`PHPUnit`最低版本至v7.5.0||v8.5.16||v9.3.5，相关问题见[#4663](https://github.com/sebastianbergmann/phpunit/issues/4663);
 
 详细说明可见[1.3至1.4升级指南](UPGRADING.md)
 
