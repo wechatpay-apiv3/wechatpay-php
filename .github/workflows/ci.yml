@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0']
+        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1']
         os: [ubuntu-latest, macOS-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -65,8 +65,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
 
+      - run: composer config platform.php 8.0.999
+        if: matrix.php > 8.0
+
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --no-interaction --no-progress
 
       - run: vendor/bin/phpstan analyse --no-progress
 
