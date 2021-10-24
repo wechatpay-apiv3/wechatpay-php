@@ -18,7 +18,6 @@ require_once $file;
 unset($possibleFiles, $possibleFile, $file);
 
 use GuzzleHttp\Middleware;
-use GuzzleHttp\Utils;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 use WeChatPay\Builder;
@@ -59,7 +58,7 @@ class CertificateDownloader
         return static function(ResponseInterface $response) use ($apiv3Key, &$certs): ResponseInterface {
             $body = (string) $response->getBody();
             /** @var object{data:array<object{encrypt_certificate:object{serial_no:string,nonce:string,associated_data:string}}>} $json */
-            $json = Utils::jsonDecode($body);
+            $json = \json_decode($body);
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
             \array_map(static function($row) use ($apiv3Key, &$certs) {
                 $cert = $row->encrypt_certificate;
@@ -121,7 +120,7 @@ class CertificateDownloader
         return static function(ResponseInterface $response) use ($outputDir, &$certs): ResponseInterface {
             $body = (string) $response->getBody();
             /** @var object{data:array<object{effective_time:string,expire_time:string:serial_no:string}>} $json */
-            $json = Utils::jsonDecode($body);
+            $json = \json_decode($body);
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
             \array_walk($data, static function($row, $index, $certs) use ($outputDir) {
                 $serialNo = $row->serial_no;

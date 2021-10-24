@@ -15,8 +15,6 @@ use function sprintf;
 use function array_key_exists;
 use function array_keys;
 
-use Throwable;
-
 use GuzzleHttp\Client;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\HandlerStack;
@@ -126,7 +124,7 @@ trait ClientJsonTrait
                     Formatter::response($timestamp, $nonce, static::body($response)),
                     $signature, $certs[$serial]
                 );
-            } catch (Throwable $exception) {}
+            } catch (\Exception $exception) {}
             if ($verified === false) {
                 throw new RequestException(sprintf(
                     Exception\WeChatPayException::EV3_RES_HEADER_SIGNATURE_DIGEST,

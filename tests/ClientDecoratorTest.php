@@ -51,7 +51,9 @@ class ClientDecoratorTest extends TestCase
         self::assertIsArray($map);
         self::assertNotEmpty($map);
         self::assertArrayHasKey(ClientDecoratorInterface::class, is_array($map) ? $map : []);
-        self::assertContainsEquals(ClientDecoratorInterface::class, is_array($map) ? $map : []);
+        if (method_exists($this, 'assertContainsEquals')) {
+            $this->assertContainsEquals(ClientDecoratorInterface::class, is_array($map) ? $map : []);
+        }
     }
 
     public function testClassUsesTraits(): void
@@ -127,7 +129,14 @@ class ClientDecoratorTest extends TestCase
     public function testConstructorExceptions(array $config, string $pattern): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches($pattern);
+        // for PHPUnit8+
+        if (method_exists($this, 'expectExceptionMessageMatches')) {
+            $this->expectExceptionMessageMatches($pattern);
+        }
+        // for PHPUnit7
+        elseif (method_exists($this, 'expectExceptionMessageRegExp')) {
+            $this->expectExceptionMessageRegExp($pattern);
+        }
         new ClientDecorator($config);
     }
 
@@ -359,7 +368,7 @@ class ClientDecoratorTest extends TestCase
      * @param string $mchSerial
      * @param string $platSerial
      * @param ResponseInterface $response
-     * @param class-string<\Psr\Http\Client\RequestExceptionInterface> $expectedGuzzleException
+     * @param class-string<\Exception> $expectedGuzzleException
      * @param string $method
      * @param string $uri
      */
@@ -391,7 +400,7 @@ class ClientDecoratorTest extends TestCase
      * @param string $mchSerial
      * @param string $platSerial
      * @param ResponseInterface $response
-     * @param class-string<\Psr\Http\Client\RequestExceptionInterface> $expectedGuzzleException
+     * @param class-string<\Exception> $expectedGuzzleException
      * @param string $method
      * @param string $uri
      */

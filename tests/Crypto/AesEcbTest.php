@@ -23,7 +23,9 @@ class AesEcbTest extends TestCase
         self::assertIsArray($map);
         self::assertNotEmpty($map);
         self::assertArrayHasKey(AesInterface::class, is_array($map) ? $map : []);
-        self::assertContainsEquals(AesInterface::class, is_array($map) ? $map : []);
+        if (method_exists($this, 'assertContainsEquals')) {
+            $this->assertContainsEquals(AesInterface::class, is_array($map) ? $map : []);
+        }
     }
 
     public function testClassConstants(): void

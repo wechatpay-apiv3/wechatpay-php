@@ -47,7 +47,14 @@ class FormatterTest extends TestCase
     {
         if ($size < 1) {
             $this->expectException(InvalidArgumentException::class);
-            $this->expectExceptionMessageMatches($pattern);
+            // for PHPUnit8+
+            if (method_exists($this, 'expectExceptionMessageMatches')) {
+                $this->expectExceptionMessageMatches($pattern);
+            }
+            // for PHPUnit7
+            elseif (method_exists($this, 'expectExceptionMessageRegExp')) {
+                $this->expectExceptionMessageRegExp($pattern);
+            }
         }
 
         $nonce = Formatter::nonce($size);

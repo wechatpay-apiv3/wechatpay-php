@@ -21,7 +21,9 @@ class AesGcmTest extends TestCase
         self::assertIsArray($map);
         self::assertNotEmpty($map);
         self::assertArrayHasKey(AesInterface::class, (array)$map);
-        self::assertContainsEquals(AesInterface::class, (array)$map);
+        if (method_exists($this, 'assertContainsEquals')) {
+            $this->assertContainsEquals(AesInterface::class, (array)$map);
+        }
     }
 
     public function testClassConstants(): void

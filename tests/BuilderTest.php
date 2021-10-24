@@ -24,7 +24,17 @@ class BuilderTest extends TestCase
 
     public function testConstractor(): void
     {
-        $this->expectError();
+        if (method_exists($this, 'expectError')) {
+            $this->expectError();
+        }
+        // for PHPUnit8+
+        if (method_exists($this, 'expectExceptionMessageMatches')) {
+            $this->expectExceptionMessageMatches('#^Call to private#');
+        }
+        // for PHPUnit7
+        elseif (method_exists($this, 'expectExceptionMessageRegExp')) {
+            $this->expectExceptionMessageRegExp('#^Call to private#');
+        }
         new Builder(); /** @phpstan-ignore-line */
     }
 
@@ -69,7 +79,9 @@ class BuilderTest extends TestCase
         self::assertNotEmpty($map);
 
         self::assertArrayHasKey(BuilderChainable::class, is_array($map) ? $map : []);
-        self::assertContainsEquals(BuilderChainable::class, is_array($map) ? $map : []);
+        if (method_exists($this, 'assertContainsEquals')) {
+            $this->assertContainsEquals(BuilderChainable::class, is_array($map) ? $map : []);
+        }
 
         self::assertInstanceOf(ArrayAccess::class, $instance);
         self::assertInstanceOf(BuilderChainable::class, $instance);
