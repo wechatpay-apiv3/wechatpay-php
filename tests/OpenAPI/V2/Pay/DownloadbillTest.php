@@ -49,8 +49,9 @@ class DownloadbillTest extends TestCase
             'handler'    => $this->guzzleMockStack(),
         ]);
 
-        $stack = clone $instance->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
         /** @var HandlerStack $stack */
+        $stack = $instance->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
+        $stack = clone $stack;
         $stack->remove('transform_response');
 
         $endpoint = $instance->chain('v2/pay/downloadbill');
@@ -103,7 +104,7 @@ class DownloadbillTest extends TestCase
             'handler' => $stack,
             'xml'     => $data,
         ]);
-        static::responseAssertion($res);
+        self::responseAssertion($res);
     }
 
     /**
@@ -163,7 +164,7 @@ class DownloadbillTest extends TestCase
             'handler' => $stack,
             'xml'     => $data,
         ])->then(static function(ResponseInterface $response) {
-            static::responseAssertion($response, true);
+            self::responseAssertion($response, true);
         })->wait();
     }
 }

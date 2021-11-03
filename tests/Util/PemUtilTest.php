@@ -29,14 +29,14 @@ class PemUtilTest extends TestCase
         'countryName'         => self::SUBJECT_C,
     ];
 
-    /** @var ?array{string,string,string,string,string} */
+    /** @var ?array{string,string,string,string,string,string} */
     private static $environment;
 
     public static function setUpBeforeClass(): void
     {
-        $serial     = rtrim((string)file_get_contents(sprintf(static::FIXTURES, 'serial', 'txt')));
-        $certFile   = sprintf(static::FIXTURES, 'sha256', 'crt');
-        $privFile   = sprintf(static::FIXTURES, 'pkcs8', 'key');
+        $serial     = rtrim((string)file_get_contents(sprintf(self::FIXTURES, 'serial', 'txt')));
+        $certFile   = sprintf(self::FIXTURES, 'sha256', 'crt');
+        $privFile   = sprintf(self::FIXTURES, 'pkcs8', 'key');
         $certString = (string)file_get_contents($certFile);
         $privString = (string)file_get_contents($privFile);
 
@@ -50,7 +50,7 @@ class PemUtilTest extends TestCase
 
     public function testLoadCertificate(): void
     {
-        [, $certFile] = self::$environment;
+        [, $certFile] = self::$environment ?? ['', ''];
         $cert = PemUtil::loadCertificate($certFile);
         if (8 === PHP_MAJOR_VERSION) {
             self::assertIsObject($cert);
@@ -58,7 +58,7 @@ class PemUtilTest extends TestCase
             self::assertIsResource($cert);
         }
 
-        /** @var resource|string|\OpenSSLCertificate|mixed $cert */
+        /** @var string|\OpenSSLCertificate|resource|mixed $cert */
         ['subject' => $subject, 'issuer' => $issuer] = openssl_x509_parse($cert, false) ?: [];
         self::assertEquals(self::$certSubject, $subject);
         self::assertEquals(self::$certSubject, $issuer);
@@ -66,7 +66,7 @@ class PemUtilTest extends TestCase
 
     public function testLoadCertificateFromString(): void
     {
-        [, , $certString] = self::$environment;
+        [, , $certString] = self::$environment ?? ['', '', ''];
         $cert = PemUtil::loadCertificateFromString($certString);
         if (8 === PHP_MAJOR_VERSION) {
             self::assertIsObject($cert);
@@ -74,7 +74,7 @@ class PemUtilTest extends TestCase
             self::assertIsResource($cert);
         }
 
-        /** @var resource|\OpenSSLCertificate|mixed $cert */
+        /** @var string|\OpenSSLCertificate|resource|mixed $cert */
         ['subject' => $subject, 'issuer' => $issuer] = openssl_x509_parse($cert, false) ?: [];
         self::assertEquals(self::$certSubject, $subject);
         self::assertEquals(self::$certSubject, $issuer);
@@ -82,7 +82,7 @@ class PemUtilTest extends TestCase
 
     public function testLoadPrivateKey(): void
     {
-        [, , , $privateKeyFile] = self::$environment;
+        [, , , $privateKeyFile] = self::$environment ?? ['', '', '', ''];
         $privateKey = PemUtil::loadPrivateKey($privateKeyFile);
         if (8 === PHP_MAJOR_VERSION) {
             self::assertIsObject($privateKey);
@@ -93,7 +93,7 @@ class PemUtilTest extends TestCase
 
     public function testLoadPrivateKeyFromString(): void
     {
-        [, , , , $privateKeyString] = self::$environment;
+        [, , , , $privateKeyString] = self::$environment ?? ['', '', '', '', ''];
         $privateKey = PemUtil::loadPrivateKeyFromString($privateKeyString);
         if (8 === PHP_MAJOR_VERSION) {
             self::assertIsObject($privateKey);
@@ -104,7 +104,7 @@ class PemUtilTest extends TestCase
 
     public function testParseCertificateSerialNo(): void
     {
-        [$serialNo, $certFile, $certString, , , $certFileProtocolString] = self::$environment;
+        [$serialNo, $certFile, $certString, , , $certFileProtocolString] = self::$environment  ?? ['', '', '', '', '', '', ''];
         $serialNoFromPemUtilFile = PemUtil::parseCertificateSerialNo(PemUtil::loadCertificate($certFile));
         $serialNoFromPemUtilString = PemUtil::parseCertificateSerialNo(PemUtil::loadCertificateFromString($certString));
         $serialNoFromCertString = PemUtil::parseCertificateSerialNo($certString);

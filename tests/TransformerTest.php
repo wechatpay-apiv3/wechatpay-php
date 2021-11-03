@@ -73,6 +73,7 @@ class TransformerTest extends TestCase
      */
     public function testToArray(string $xmlString, array $keys): void
     {
+        /** @var string[] $array */
         $array = Transformer::toArray($xmlString);
 
         self::assertIsArray($array);

@@ -1,8 +1,11 @@
 # 变更历史
 
-## 1.4.0 - 2021-10-22
+## [1.4.1](../../compare/v1.4.0...v1.4.1) - 2021-11-03
 
-[变更细节](../../compare/v1.3.2...v1.4.0)
+- 新增`phpstan/phpstan:^1.0`支持；
+- 优化代码，消除函数内部不安全的`Unsafe call to private|protected method|property ... through static::`调用隐患；
+
+## [1.4.0](../../compare/v1.3.2...v1.4.0) - 2021-10-24
 
 - 调整`Guzzle`最低版本支持至v6.5.0，相应降低PHP版本要求至7.1.2，相关见[#71519](http://bugs.php.net/71519);
 - 调整`PHPUnit`最低版本至v7.5.0||v8.5.16||v9.3.5，相关问题见[#4663](https://github.com/sebastianbergmann/phpunit/issues/4663);

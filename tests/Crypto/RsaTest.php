@@ -45,10 +45,10 @@ class RsaTest extends TestCase
      */
     private function getMockContents(string $type, string $suffix): string
     {
-        $file = sprintf(static::FIXTURES, $type, $suffix);
+        $file = sprintf(self::FIXTURES, $type, $suffix);
         $pkey = file_get_contents($file);
 
-        preg_match(static::EVELOPE, $pkey ?: '', $matches);
+        preg_match(self::EVELOPE, $pkey ?: '', $matches);
 
         return str_replace(["\r", "\n"], '', $matches['base64'] ?: '');
     }
@@ -75,6 +75,10 @@ class RsaTest extends TestCase
 
     public function testPkcs1ToSpki(): void
     {
+        /**
+         * @var string $spki
+         * @var string $pkcs1
+         */
         [, , [$spki], [$pkcs1]] = array_values($this->keyPhrasesDataProvider());
 
         self::assertStringStartsWith('public.spki://', $spki);
@@ -145,26 +149,26 @@ class RsaTest extends TestCase
             '`private.pkcs8://` string'               => ['private.pkcs8://' . $this->getMockContents('pkcs8', 'key'),          Rsa::KEY_TYPE_PRIVATE],
             '`public.spki://` string'                 => ['public.spki://' . $this->getMockContents('spki', 'pem'),             Rsa::KEY_TYPE_PUBLIC],
             '`public.pkcs1://` string'                => ['public.pkcs1://' . $this->getMockContents('pkcs1', 'pem'),           Rsa::KEY_TYPE_PUBLIC],
-            '`file://` PKCS#1 privateKey path string' => [$f = 'file://' . sprintf(static::FIXTURES, 'pkcs1', 'key'),           Rsa::KEY_TYPE_PRIVATE],
+            '`file://` PKCS#1 privateKey path string' => [$f = 'file://' . sprintf(self::FIXTURES, 'pkcs1', 'key'),             Rsa::KEY_TYPE_PRIVATE],
             'OpenSSLAsymmetricKey/resource(private)1' => [openssl_pkey_get_private($f),                                         Rsa::KEY_TYPE_PRIVATE],
             'PKCS#1 privateKey contents'              => [$f = (string)file_get_contents($f),                                   Rsa::KEY_TYPE_PRIVATE],
             'OpenSSLAsymmetricKey/resource(private)2' => [openssl_pkey_get_private($f),                                         Rsa::KEY_TYPE_PRIVATE],
-            '`file://` PKCS#8 privateKey path string' => [$f = 'file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'),           Rsa::KEY_TYPE_PRIVATE],
+            '`file://` PKCS#8 privateKey path string' => [$f = 'file://' . sprintf(self::FIXTURES, 'pkcs8', 'key'),             Rsa::KEY_TYPE_PRIVATE],
             'OpenSSLAsymmetricKey/resource(private)3' => [openssl_pkey_get_private($f),                                         Rsa::KEY_TYPE_PRIVATE],
             'PKCS#8 privateKey contents'              => [$f = (string)file_get_contents($f),                                   Rsa::KEY_TYPE_PRIVATE],
             'OpenSSLAsymmetricKey/resource(private)4' => [openssl_pkey_get_private($f),                                         Rsa::KEY_TYPE_PRIVATE],
-            '`file://` SPKI publicKey path string'    => [$f = 'file://' . sprintf(static::FIXTURES, 'spki', 'pem'),            Rsa::KEY_TYPE_PUBLIC],
+            '`file://` SPKI publicKey path string'    => [$f = 'file://' . sprintf(self::FIXTURES, 'spki', 'pem'),              Rsa::KEY_TYPE_PUBLIC],
             'OpenSSLAsymmetricKey/resource(public)1'  => [openssl_pkey_get_public($f),                                          Rsa::KEY_TYPE_PUBLIC],
             'SKPI publicKey contents'                 => [$f = (string)file_get_contents($f),                                   Rsa::KEY_TYPE_PUBLIC],
             'OpenSSLAsymmetricKey/resource(public)2'  => [openssl_pkey_get_public($f),                                          Rsa::KEY_TYPE_PUBLIC],
-            'pkcs1 publicKey contents'                => [(string)file_get_contents(sprintf(static::FIXTURES, 'pkcs1', 'pem')), Rsa::KEY_TYPE_PUBLIC],
-            '`file://` x509 certificate string'       => [$f = 'file://' . sprintf(static::FIXTURES, 'sha256', 'crt'),          Rsa::KEY_TYPE_PUBLIC],
+            'pkcs1 publicKey contents'                => [(string)file_get_contents(sprintf(self::FIXTURES, 'pkcs1', 'pem')),   Rsa::KEY_TYPE_PUBLIC],
+            '`file://` x509 certificate string'       => [$f = 'file://' . sprintf(self::FIXTURES, 'sha256', 'crt'),            Rsa::KEY_TYPE_PUBLIC],
             'x509 certificate contents string'        => [$f = (string)file_get_contents($f),                                   Rsa::KEY_TYPE_PUBLIC],
             'OpenSSLCertificate/resource'             => [openssl_x509_read($f),                                                Rsa::KEY_TYPE_PUBLIC],
             '`file://` PKCS#8 encrypted privateKey'   => [
                 [
-                    $f = 'file://' . sprintf(static::FIXTURES, 'encrypted.pkcs8', 'key'),
-                    $w = rtrim((string)file_get_contents(sprintf(static::FIXTURES, 'pwd', 'txt')))
+                    $f = 'file://' . sprintf(self::FIXTURES, 'encrypted.pkcs8', 'key'),
+                    $w = rtrim((string)file_get_contents(sprintf(self::FIXTURES, 'pwd', 'txt')))
                 ],
                 Rsa::KEY_TYPE_PRIVATE
             ],
@@ -193,6 +197,12 @@ class RsaTest extends TestCase
      */
     public function keysProvider(): array
     {
+        /**
+         * @var string $pub1
+         * @var string $pub2
+         * @var string $pri1
+         * @var string $pri2
+         */
         [
             [$pri1], [$pri2],
             [$pub1], [$pub2],

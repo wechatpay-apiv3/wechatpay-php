@@ -79,7 +79,7 @@ class MediaUtilTest extends TestCase
         self::assertIsString($json = $util->getMeta());
         self::assertJson($json);
 
-        ['filename' => $filename, 'sha256' => $digest] = json_decode($json, true);
+        ['filename' => $filename, 'sha256' => $digest] = (array)json_decode($json, true);
         self::assertEquals($expectedFilename, $filename);
         self::assertEquals($expectedSha256Digest, $digest);
 
@@ -106,6 +106,7 @@ class MediaUtilTest extends TestCase
         $json = $media->getMeta();
         self::assertJson($json);
 
+        /** @var array{'filename':string,'sha256':string} $array */
         $array = json_decode($json, true);
         self::assertIsArray($array);
         self::assertArrayHasKey('filename', $array);
@@ -126,6 +127,7 @@ class MediaUtilTest extends TestCase
         self::assertEquals($meta, (string)$media->getStream());
         self::assertEquals($json, (string)$media->getStream());
 
+        /** @var array{'filename':string,'sha256':string,'bank_type':string} $array */
         $array = json_decode((string)$media->getStream(), true);
         self::assertIsArray($array);
         self::assertArrayHasKey('filename', $array);

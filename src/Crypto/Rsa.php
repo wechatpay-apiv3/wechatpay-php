@@ -113,7 +113,7 @@ class Rsa
      */
     public static function fromPkcs8(string $thing)
     {
-        $pkey = openssl_pkey_get_private(static::parse(sprintf('private.pkcs8://%s', $thing)));
+        $pkey = openssl_pkey_get_private(self::parse(sprintf('private.pkcs8://%s', $thing)));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the PKCS#8 privateKey(%s).', $thing));
@@ -133,8 +133,8 @@ class Rsa
     public static function fromPkcs1(string $thing, string $type = self::KEY_TYPE_PRIVATE)
     {
         $pkey = ($isPublic = $type === static::KEY_TYPE_PUBLIC)
-            ? openssl_pkey_get_public(static::parse(sprintf('public.pkcs1://%s', $thing), $type))
-            : openssl_pkey_get_private(static::parse(sprintf('private.pkcs1://%s', $thing)));
+            ? openssl_pkey_get_public(self::parse(sprintf('public.pkcs1://%s', $thing), $type))
+            : openssl_pkey_get_private(self::parse(sprintf('private.pkcs1://%s', $thing)));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the PKCS#1 %s(%s).', $isPublic ? 'publicKey' : 'privateKey', $thing));
@@ -152,7 +152,7 @@ class Rsa
      */
     public static function fromSpki(string $thing)
     {
-        $pkey = openssl_pkey_get_public(static::parse(sprintf('public.spki://%s', $thing), static::KEY_TYPE_PUBLIC));
+        $pkey = openssl_pkey_get_public(self::parse(sprintf('public.spki://%s', $thing), static::KEY_TYPE_PUBLIC));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf('Cannot load the SPKI publicKey(%s).', $thing));
@@ -181,8 +181,8 @@ class Rsa
     public static function from($thing, string $type = self::KEY_TYPE_PRIVATE)
     {
         $pkey = ($isPublic = $type === static::KEY_TYPE_PUBLIC)
-            ? openssl_pkey_get_public(static::parse($thing, $type))
-            : openssl_pkey_get_private(static::parse($thing));
+            ? openssl_pkey_get_public(self::parse($thing, $type))
+            : openssl_pkey_get_private(self::parse($thing));
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf(
@@ -233,18 +233,19 @@ class Rsa
     {
         $src = $thing;
 
-        if (is_resource($src) || is_object($src) || is_array($src) || is_int(strpos($src, self::LOCAL_FILE_PROTOCOL))) {
+        if (is_resource($src) || is_object($src) || is_array($src) || (is_string($src) && is_int(strpos($src, self::LOCAL_FILE_PROTOCOL)))) {
             return $src;
         }
 
+        /** @var string $src */
         if (is_int(strpos($src, '://'))) {
             $protocol = parse_url($src, PHP_URL_SCHEME);
-            [$format, $kind, $offset] = static::RULES[$protocol] ?? [null, null, null];
+            [$format, $kind, $offset] = self::RULES[$protocol] ?? [null, null, null];
             if ($format && $kind && $offset) {
                 $src = substr($src, $offset);
                 if ('public.pkcs1' === $protocol) {
                     $src = static::pkcs1ToSpki($src);
-                    [$format, $kind] = static::RULES['public.spki'];
+                    [$format, $kind] = self::RULES['public.spki'];
                 }
                 return sprintf($format, $kind, wordwrap($src, 64, self::CHR_LF, true));
             }
@@ -259,7 +260,6 @@ class Rsa
                     return self::parse(sprintf('%s://%s', $protocol, str_replace([self::CHR_CR, self::CHR_LF], '', $base64)), $type);
                 }
             }
-            return $src;
         }
 
         return $src;
@@ -303,7 +303,7 @@ class Rsa
      */
     public static function encrypt(string $plaintext, $publicKey, int $padding = OPENSSL_PKCS1_OAEP_PADDING): string
     {
-        static::paddingModeLimitedCheck($padding);
+        self::paddingModeLimitedCheck($padding);
 
         if (!openssl_public_encrypt($plaintext, $encrypted, $publicKey, $padding)) {
             throw new UnexpectedValueException('Encrypting the input $plaintext failed, please checking your $publicKey whether or nor correct.');
@@ -363,7 +363,7 @@ class Rsa
      */
     public static function decrypt(string $ciphertext, $privateKey, int $padding = OPENSSL_PKCS1_OAEP_PADDING): string
     {
-        static::paddingModeLimitedCheck($padding);
+        self::paddingModeLimitedCheck($padding);
 
         if (!openssl_private_decrypt(base64_decode($ciphertext), $decrypted, $privateKey, $padding)) {
             throw new UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $privateKey whether or nor correct.');
