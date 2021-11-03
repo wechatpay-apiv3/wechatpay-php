@@ -40,9 +40,9 @@ class TransfersTest extends TestCase
             'handler'    => $this->guzzleMockStack(),
         ]);
 
-        // samples howto control the `HandlerStack`, only effect this request
-        $stack = clone $instance->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
         /** @var HandlerStack $stack */
+        $stack = $instance->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
+        $stack = clone $stack;
         $stack->remove('transform_response');
 
         $endpoint = $instance->chain('v2/mmpaymkttransfers/promotion/transfers');
@@ -94,7 +94,7 @@ class TransfersTest extends TestCase
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         $res = @$endpoint->post(['xml' => $data, 'handler' => $stack]);
-        static::responseAssertion($res);
+        self::responseAssertion($res);
 
         $this->mock->reset();
         $this->mock->append($respondor);
@@ -104,7 +104,7 @@ class TransfersTest extends TestCase
         } catch (RejectionException $e) {
             /** @var ResponseInterface $res */
             $res = $e->getReason();
-            static::responseAssertion($res);
+            self::responseAssertion($res);
         }
     }
 
@@ -137,7 +137,7 @@ class TransfersTest extends TestCase
         @$endpoint->postAsync([
             'xml' => $data, 'handler' => $stack
         ])->then(static function(ResponseInterface $res) {
-            static::responseAssertion($res);
+            self::responseAssertion($res);
         })->wait();
 
         $this->mock->reset();
@@ -146,7 +146,7 @@ class TransfersTest extends TestCase
         @$endpoint->postAsync([
             'xml' => $data
         ])->otherwise(static function($res) {
-            static::responseAssertion($res);
+            self::responseAssertion($res);
         })->wait();
     }
 }

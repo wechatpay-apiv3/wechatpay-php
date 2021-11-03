@@ -102,7 +102,7 @@ class Formatter
     /**
      * Joined this inputs by for `Line Feed`(LF) char.
      *
-     * @param string[] ...$pieces - The string(s) joined by line feed.
+     * @param string|float|int|bool $pieces - The scalar variable(s).
      *
      * @return string - The joined string.
      */

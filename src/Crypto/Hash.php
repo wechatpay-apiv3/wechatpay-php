@@ -23,10 +23,10 @@ const ALGO_DICTONARIES = [ALGO_HMAC_SHA256 => 'hmac', ALGO_MD5 => 'md5'];
 class Hash
 {
     /** @var string - hashing `MD5` algorithm */
-    const ALGO_MD5 = ALGO_MD5;
+    public const ALGO_MD5 = ALGO_MD5;
 
     /** @var string - hashing `HMAC-SHA256` algorithm */
-    const ALGO_HMAC_SHA256 = ALGO_HMAC_SHA256;
+    public const ALGO_HMAC_SHA256 = ALGO_HMAC_SHA256;
 
     /**
      * Calculate the input string with an optional secret `key` in MD5,

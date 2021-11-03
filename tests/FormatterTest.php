@@ -140,14 +140,14 @@ class FormatterTest extends TestCase
         self::assertIsString($value);
 
         self::assertStringStartsWith($method, $value);
-        self::assertStringEndsWith(static::LINE_FEED, $value);
-        self::assertLessThanOrEqual(substr_count($value, static::LINE_FEED), 5);
+        self::assertStringEndsWith(self::LINE_FEED, $value);
+        self::assertLessThanOrEqual(substr_count($value, self::LINE_FEED), 5);
 
-        $pattern = '#^' . $method . static::LINE_FEED
-            .  preg_quote($uri) . static::LINE_FEED
-            . '1[0-9]{9}' . static::LINE_FEED
-            . '[0-9A-Za-z]{32}' . static::LINE_FEED
-            . preg_quote($body) . static::LINE_FEED
+        $pattern = '#^' . $method . self::LINE_FEED
+            .  preg_quote($uri) . self::LINE_FEED
+            . '1[0-9]{9}' . self::LINE_FEED
+            . '[0-9A-Za-z]{32}' . self::LINE_FEED
+            . preg_quote($body) . self::LINE_FEED
             . '$#';
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
@@ -192,12 +192,12 @@ class FormatterTest extends TestCase
 
         self::assertIsString($value);
 
-        self::assertStringEndsWith(static::LINE_FEED, $value);
-        self::assertLessThanOrEqual(substr_count($value, static::LINE_FEED), 3);
+        self::assertStringEndsWith(self::LINE_FEED, $value);
+        self::assertLessThanOrEqual(substr_count($value, self::LINE_FEED), 3);
 
-        $pattern = '#^1[0-9]{9}' . static::LINE_FEED
-            . '[0-9A-Za-z]{32}' . static::LINE_FEED
-            . preg_quote($body) . static::LINE_FEED
+        $pattern = '#^1[0-9]{9}' . self::LINE_FEED
+            . '[0-9A-Za-z]{32}' . self::LINE_FEED
+            . preg_quote($body) . self::LINE_FEED
             . '$#';
 
         if (method_exists($this, 'assertMatchesRegularExpression')) {
@@ -215,7 +215,7 @@ class FormatterTest extends TestCase
         return [
             'one argument' => [1],
             'two arguments' => [1, '2'],
-            'more arguments' => [1, 2.0, '3', static::LINE_FEED, true, false, null, '4'],
+            'more arguments' => [1, 2.0, '3', self::LINE_FEED, true, false, null, '4'],
         ];
     }
 
@@ -229,9 +229,9 @@ class FormatterTest extends TestCase
 
         self::assertIsString($value);
 
-        self::assertStringEndsWith(static::LINE_FEED, $value);
+        self::assertStringEndsWith(self::LINE_FEED, $value);
 
-        self::assertLessThanOrEqual(substr_count($value, static::LINE_FEED), count($data));
+        self::assertLessThanOrEqual(substr_count($value, self::LINE_FEED), count($data));
     }
 
     public function testNoneArgumentPassedToJoinedByLineFeed(): void
@@ -240,7 +240,7 @@ class FormatterTest extends TestCase
 
         self::assertIsString($value);
 
-        self::assertStringNotContainsString(static::LINE_FEED, $value);
+        self::assertStringNotContainsString(self::LINE_FEED, $value);
 
         self::assertTrue(strlen($value) == 0);
     }

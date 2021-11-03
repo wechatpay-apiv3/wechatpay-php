@@ -87,7 +87,7 @@ class QuerycombinedorderTest extends TestCase
 
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         $res = @$endpoint->post(['xml' => $data]);
-        static::responseAssertion($res);
+        self::responseAssertion($res);
     }
 
     /**
@@ -120,7 +120,7 @@ class QuerycombinedorderTest extends TestCase
         @$endpoint->postAsync([
             'xml' => $data,
         ])->then(static function(ResponseInterface $res) {
-            static::responseAssertion($res);
+            self::responseAssertion($res);
         })->wait();
     }
 }

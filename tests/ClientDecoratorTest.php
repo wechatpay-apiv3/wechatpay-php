@@ -266,8 +266,8 @@ class ClientDecoratorTest extends TestCase
      */
     private function mockConfiguration(): array
     {
-        $privateKey = openssl_pkey_get_private('file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'));
-        $publicKey  = openssl_pkey_get_public('file://' . sprintf(static::FIXTURES, 'sha256', 'crt'));
+        $privateKey = openssl_pkey_get_private('file://' . sprintf(self::FIXTURES, 'pkcs8', 'key'));
+        $publicKey  = openssl_pkey_get_public('file://' . sprintf(self::FIXTURES, 'sha256', 'crt'));
 
         if (false === $privateKey || false === $publicKey) {
             throw new \Exception('Loading the pkey failed.');
@@ -443,7 +443,7 @@ class ClientDecoratorTest extends TestCase
         return array_reduce(array_map(static function($item) {
             [$key, $value] = explode('=', $item, 2);
             return [$key => trim($value, '"')];
-        }, explode(',', $credentials)), static function($carry, $item) {
+        }, explode(',', $credentials)), static function(array $carry, array $item) {
             return $carry + $item;
         }, ['type' => $type]);
     }
@@ -461,7 +461,7 @@ class ClientDecoratorTest extends TestCase
         [$authorization] = $request->getHeader('Authorization');
 
         static::assertIsString($authorization);
-        $rules = static::parseAuthorization($authorization);
+        $rules = self::parseAuthorization($authorization);
 
         static::assertIsArray($rules);
         static::assertNotEmpty($rules);
@@ -478,7 +478,7 @@ class ClientDecoratorTest extends TestCase
         ['mchid' => $mchId, 'nonce_str' => $nonceStr, 'timestamp' => $timestamp, 'serial_no' => $serialNo, 'signature' => $signature] = $rules;
         static::assertEquals($mchId, $mchid);
         static::assertEquals($serialNo, $mchSerial);
-        static::assertFalse(abs(Formatter::timestamp() - intval($timestamp)) > static::MAXIMUM_CLOCK_OFFSET);
+        static::assertFalse(abs(Formatter::timestamp() - intval($timestamp)) > self::MAXIMUM_CLOCK_OFFSET);
         static::assertTrue(Rsa::verify(Formatter::request(
             $request->getMethod(),
             $request->getRequestTarget(),
@@ -505,7 +505,7 @@ class ClientDecoratorTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,resource|mixed,string|resource|mixed,string,string,string,string,string,callable<ResponseInterface>}>
+     * @return array<string,array{string,resource|mixed,string|resource|mixed,string,string,string,string,string,callable}>
      */
     public function normalRequestsDataProvider(): array
     {
@@ -517,9 +517,9 @@ class ClientDecoratorTest extends TestCase
                 'PATCH', 'v3/pay/transcations',
                 $body = '',
                 static function(RequestInterface $request) use ($privateKey, $platSerial, $body, $mchid, $mchSerial, $publicKey): ResponseInterface {
-                    static::verification($request, $mchid, $mchSerial, $publicKey);
+                    self::verification($request, $mchid, $mchSerial, $publicKey);
 
-                    return static::pickResponse(204, $platSerial, $body, $privateKey);
+                    return self::pickResponse(204, $platSerial, $body, $privateKey);
                 },
             ],
             'HTTP 202 STATUS' => [
@@ -527,9 +527,9 @@ class ClientDecoratorTest extends TestCase
                 'PUT', 'v3/pay/transcations',
                 $body = '',
                 static function(RequestInterface $request) use ($privateKey, $platSerial, $body, $mchid, $mchSerial, $publicKey): ResponseInterface {
-                    static::verification($request, $mchid, $mchSerial, $publicKey);
+                    self::verification($request, $mchid, $mchSerial, $publicKey);
 
-                    return static::pickResponse(202, $platSerial, $body, $privateKey);
+                    return self::pickResponse(202, $platSerial, $body, $privateKey);
                 },
             ],
             'HTTP 200 STATUS' => [
@@ -537,9 +537,9 @@ class ClientDecoratorTest extends TestCase
                 'POST', 'v3/pay/transcations',
                 $body = (string)json_encode(['code_url' => 'weixin://wxpay/bizpayurl?pr=qnu8GBtzz'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
                 static function(RequestInterface $request) use ($privateKey, $platSerial, $body, $mchid, $mchSerial, $publicKey): ResponseInterface {
-                    static::verification($request, $mchid, $mchSerial, $publicKey);
+                    self::verification($request, $mchid, $mchSerial, $publicKey);
 
-                    return static::pickResponse(200, $platSerial, $body, $privateKey);
+                    return self::pickResponse(200, $platSerial, $body, $privateKey);
                 },
             ],
         ];

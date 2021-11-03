@@ -43,8 +43,8 @@ class BuilderTest extends TestCase
      */
     public function configurationDataProvider(): array
     {
-        $privateKey = openssl_pkey_get_private('file://' . sprintf(static::FIXTURES, 'pkcs8', 'key'));
-        $publicKey  = openssl_pkey_get_public('file://' . sprintf(static::FIXTURES, 'spki', 'pem'));
+        $privateKey = openssl_pkey_get_private('file://' . sprintf(self::FIXTURES, 'pkcs8', 'key'));
+        $publicKey  = openssl_pkey_get_public('file://' . sprintf(self::FIXTURES, 'spki', 'pem'));
 
         if (false === $privateKey || false === $publicKey) {
             throw new \Exception('Loading the pkey failed.');

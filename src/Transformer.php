@@ -153,6 +153,7 @@ class Transformer
             if (is_array($value) || (is_object($value) && $value instanceof Traversable)) {
                 static::walk($writer, (array) $value, $item);
             } else {
+                /** @var string $value */
                 static::content($writer, $value);
             }
             $writer->endElement();

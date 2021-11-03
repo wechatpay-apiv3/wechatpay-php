@@ -46,7 +46,7 @@ class AesGcm implements AesInterface
      */
     public static function encrypt(string $plaintext, string $key, string $iv = '', string $aad = ''): string
     {
-        static::preCondition();
+        self::preCondition();
 
         $ciphertext = openssl_encrypt($plaintext, static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $tag, $aad, static::BLOCK_SIZE);
 
@@ -69,7 +69,7 @@ class AesGcm implements AesInterface
      */
     public static function decrypt(string $ciphertext, string $key, string $iv = '', string $aad = ''): string
     {
-        static::preCondition();
+        self::preCondition();
 
         $ciphertext = base64_decode($ciphertext);
         $authTag = substr($ciphertext, intval(-static::BLOCK_SIZE));

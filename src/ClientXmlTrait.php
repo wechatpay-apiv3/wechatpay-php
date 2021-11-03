@@ -91,6 +91,7 @@ trait ClientXmlTrait
                 return $handler($request, $options)->then(static function(ResponseInterface $response) use ($secret) {
                     $result = Transformer::toArray(static::body($response));
 
+                    /** @var ?string $sign */
                     $sign = $result['sign'] ?? null;
                     $type = $sign && strlen($sign) === 64 ? Crypto\Hash::ALGO_HMAC_SHA256 : Crypto\Hash::ALGO_MD5;
                     /** @var string $calc - calculated digest string, it's naver `null` here because of \$type known. */

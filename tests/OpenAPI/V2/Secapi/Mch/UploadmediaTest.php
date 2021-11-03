@@ -49,9 +49,9 @@ class UploadmediaTest extends TestCase
             'handler'    => $this->guzzleMockStack(),
         ]);
 
-        // samples howto control the `HandlerStack`, only effect this request
-        $stack = clone $instance->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
         /** @var HandlerStack $stack */
+        $stack = $instance->getDriver()->select(ClientDecoratorInterface::XML_BASED)->getConfig('handler');
+        $stack = clone $stack;
         $stack->remove('transform_request');
 
         $endpoint = $instance->chain('v2/secapi/mch/uploadmedia');
@@ -111,7 +111,7 @@ class UploadmediaTest extends TestCase
             // 'ssl_key' => 'file:///path/to/apiclient_key.pem',
             // 'cert' => 'file:///path/to/apiclient_cert.pem',
         ]);
-        static::responseAssertion($res);
+        self::responseAssertion($res);
     }
 
     /**
@@ -148,7 +148,7 @@ class UploadmediaTest extends TestCase
             // 'ssl_key' => 'file:///path/to/apiclient_key.pem',
             // 'cert' => 'file:///path/to/apiclient_cert.pem',
         ])->then(static function(ResponseInterface $res) {
-            static::responseAssertion($res);
+            self::responseAssertion($res);
         })->wait();
     }
 }
