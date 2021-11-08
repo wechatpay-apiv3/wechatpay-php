@@ -1,6 +1,5 @@
 parameters:
-	checkExplicitMixed: false
-	level: max
+	level: 8
 	paths:
 		- src
 		- bin

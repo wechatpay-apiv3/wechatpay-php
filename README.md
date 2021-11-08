@@ -21,7 +21,7 @@ APIv3已内置 `请求签名` 和 `应答验签` 两个middleware中间件，创
 
 ## 项目状态
 
-当前版本为`1.4.1`测试版本。
+当前版本为`1.4.2`测试版本。
 请商户的专业技术人员在使用时注意系统和软件的正确性和兼容性，以及带来的风险。
 
 **版本说明:** `开发版`指: `类库API`随时会变；`测试版`指: 少量`类库API`可能会变；`稳定版`指: `类库API`稳定持续；版本遵循[语义化版本号](https://semver.org/lang/zh-CN/)规则。
@@ -63,7 +63,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.4.1"
+    "wechatpay/wechatpay": "^1.4.2"
 }
 ```
 
@@ -82,8 +82,9 @@ composer install
 3. 每个 `pathname` 所支持的 `HTTP METHOD`，同时支持`Async`语法糖，例如: `v3->pay->transactions->native->postAsync(['json' => []])`;
 4. 每个 `segment` 有中线(dash)分隔符的，可以使用驼峰`camelCase`风格书写，例如: `merchant-service`可写成 `merchantService`，或如 `{'merchant-service'}`;
 5. 每个 `segment` 中，若有`uri_template`动态参数<sup>[RFC6570](#note-rfc6570)</sup>，例如 `business_code/{business_code}` 推荐以`business_code->{'{business_code}'}`形式书写，其格式语义与`pathname`基本一致，阅读起来比较自然;
-6. SDK内置以 `v2` 特殊标识为 `APIv2` 的起始 `segmemt`，之后串接切分后的 `segments`，如源 `pay/micropay` 即串成 `v2->pay->micropay->post(['xml' => []])` 即以XML形式请求远端接口；
+6. SDK内置以 `v2` 特殊标识为 `APIv2` 的起始 `segment`，之后串接切分后的 `segments`，如源 `pay/micropay` 即串成 `v2->pay->micropay->post(['xml' => []])` 即以XML形式请求远端接口；
 7. 在IDE集成环境下，也可以按照内置的`chain($segment)`接口规范，直接以`pathname`作为变量`$segment`，来获取`OpenAPI`接入点的`endpoints`串接对象，驱动末尾执行方法(填入对应参数)，发起请求，例如 `chain('v3/pay/transactions/jsapi')->post(['json' => []])`；
+8. 在IDE环境下，可以选装 `iwechatpay/openapi` [开发辅助包](https://packagist.org/packages/iwechatpay/openapi)，源码见这里 [wechatpay-openapi](https://github.com/TheNorthMemory/wechatpay-openapi)；
 
 以下示例用法，以`异步(Async/PromiseA+)`或`同步(Sync)`结合此种编码模式展开。
 

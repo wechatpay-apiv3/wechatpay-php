@@ -13,10 +13,7 @@ use function array_keys;
 use function base64_decode;
 use function base64_encode;
 use function gettype;
-use function is_array;
 use function is_int;
-use function is_object;
-use function is_resource;
 use function is_string;
 use function ltrim;
 use function openssl_pkey_get_private;
@@ -42,9 +39,9 @@ use UnexpectedValueException;
  */
 class Rsa
 {
-    /** asymmetric public key type string */
+    /** @var string - Type string of the asymmetric key */
     public const KEY_TYPE_PUBLIC = 'public';
-    /** asymmetric private key type string */
+    /** @var string - Type string of the asymmetric key */
     public const KEY_TYPE_PRIVATE = 'private';
 
     private const LOCAL_FILE_PROTOCOL = 'file://';
@@ -113,13 +110,7 @@ class Rsa
      */
     public static function fromPkcs8(string $thing)
     {
-        $pkey = openssl_pkey_get_private(self::parse(sprintf('private.pkcs8://%s', $thing)));
-
-        if (false === $pkey) {
-            throw new UnexpectedValueException(sprintf('Cannot load the PKCS#8 privateKey(%s).', $thing));
-        }
-
-        return $pkey;
+        return static::from(sprintf('private.pkcs8://%s', $thing), static::KEY_TYPE_PRIVATE);
     }
 
     /**
@@ -132,15 +123,7 @@ class Rsa
      */
     public static function fromPkcs1(string $thing, string $type = self::KEY_TYPE_PRIVATE)
     {
-        $pkey = ($isPublic = $type === static::KEY_TYPE_PUBLIC)
-            ? openssl_pkey_get_public(self::parse(sprintf('public.pkcs1://%s', $thing), $type))
-            : openssl_pkey_get_private(self::parse(sprintf('private.pkcs1://%s', $thing)));
-
-        if (false === $pkey) {
-            throw new UnexpectedValueException(sprintf('Cannot load the PKCS#1 %s(%s).', $isPublic ? 'publicKey' : 'privateKey', $thing));
-        }
-
-        return $pkey;
+        return static::from(sprintf('%s://%s', $type === static::KEY_TYPE_PUBLIC ? 'public.pkcs1' : 'private.pkcs1', $thing), $type);
     }
 
     /**
@@ -152,13 +135,7 @@ class Rsa
      */
     public static function fromSpki(string $thing)
     {
-        $pkey = openssl_pkey_get_public(self::parse(sprintf('public.spki://%s', $thing), static::KEY_TYPE_PUBLIC));
-
-        if (false === $pkey) {
-            throw new UnexpectedValueException(sprintf('Cannot load the SPKI publicKey(%s).', $thing));
-        }
-
-        return $pkey;
+        return static::from(sprintf('public.spki://%s', $thing), static::KEY_TYPE_PUBLIC);
     }
 
     /**
@@ -186,9 +163,9 @@ class Rsa
 
         if (false === $pkey) {
             throw new UnexpectedValueException(sprintf(
-                'Cannot load %s from(%s).',
+                'Cannot load %s from(%s), please take care about the \$thing input.',
                 $isPublic ? 'publicKey' : 'privateKey',
-                is_string($thing) ? $thing : gettype($thing)
+                gettype($thing)
             ));
         }
 
@@ -227,18 +204,23 @@ class Rsa
      *
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array{string,string}|string|mixed $thing - The thing.
      * @param string $type - Either `self::KEY_TYPE_PUBLIC` or `self::KEY_TYPE_PRIVATE` string, default is `self::KEY_TYPE_PRIVATE`.
-     * @return \OpenSSLAsymmetricKey|resource|array{string,string}|string|mixed
+     * @return \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|array{string,string}|string|mixed
      */
     private static function parse($thing, string $type = self::KEY_TYPE_PRIVATE)
     {
         $src = $thing;
 
-        if (is_resource($src) || is_object($src) || is_array($src) || (is_string($src) && is_int(strpos($src, self::LOCAL_FILE_PROTOCOL)))) {
-            return $src;
+        if (is_string($src) && is_int(strpos($src, self::PKEY_PEM_NEEDLE))
+            && $type === static::KEY_TYPE_PUBLIC && preg_match(self::PKEY_PEM_FORMAT_PATTERN, $src, $matches)) {
+            [, $kind, $base64] = $matches;
+            $mapRules = (array)array_combine(array_column(self::RULES, 1/*column*/), array_keys(self::RULES));
+            $protocol = $mapRules[$kind] ?? '';
+            if ('public.pkcs1' === $protocol) {
+                $src = sprintf('%s://%s', $protocol, str_replace([self::CHR_CR, self::CHR_LF], '', $base64));
+            }
         }
 
-        /** @var string $src */
-        if (is_int(strpos($src, '://'))) {
+        if (is_string($src) && is_bool(strpos($src, self::LOCAL_FILE_PROTOCOL)) && is_int(strpos($src, '://'))) {
             $protocol = parse_url($src, PHP_URL_SCHEME);
             [$format, $kind, $offset] = self::RULES[$protocol] ?? [null, null, null];
             if ($format && $kind && $offset) {
@@ -248,17 +230,6 @@ class Rsa
                     [$format, $kind] = self::RULES['public.spki'];
                 }
                 return sprintf($format, $kind, wordwrap($src, 64, self::CHR_LF, true));
-            }
-        }
-
-        if (is_int(strpos($src, self::PKEY_PEM_NEEDLE))) {
-            if ($type === self::KEY_TYPE_PUBLIC && preg_match(self::PKEY_PEM_FORMAT_PATTERN, $src, $matches)) {
-                [, $kind, $base64] = $matches;
-                $mapRules = (array)array_combine(array_column(self::RULES, 1/*column*/), array_keys(self::RULES));
-                $protocol = $mapRules[$kind] ?? '';
-                if ('public.pkcs1' === $protocol) {
-                    return self::parse(sprintf('%s://%s', $protocol, str_replace([self::CHR_CR, self::CHR_LF], '', $base64)), $type);
-                }
             }
         }
 
@@ -272,9 +243,6 @@ class Rsa
      *
      * Decryption failures in the `RSA_PKCS1_PADDING` mode leak information which can potentially be used to mount a Bleichenbacher padding oracle attack.
      * This is an inherent weakness in the PKCS #1 v1.5 padding design. Prefer `RSA_PKCS1_OAEP_PADDING`.
-     *
-     * **`RSA_SSLV23_PADDING`** - PKCS #1 v1.5 padding with an SSL-specific modification that denotes that the server is SSL3 capable.
-     * **`RSA_NO_PADDING`** - Raw RSA encryption. *Insecure*
      *
      * @link https://www.openssl.org/docs/man1.1.1/man3/RSA_public_encrypt.html
      *
@@ -292,10 +260,10 @@ class Rsa
     /**
      * Encrypts text by the given `$publicKey` in the `$padding`(default is `OPENSSL_PKCS1_OAEP_PADDING`) mode.
      *
-     * Some of APIv2 were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
+     * Some of APIs were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
      *
      * @param string $plaintext - Cleartext to encode.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $publicKey - The public key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $publicKey - The public key.
      * @param int $padding - One of OPENSSL_PKCS1_PADDING, OPENSSL_PKCS1_OAEP_PADDING, default is `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @return string - The base64-encoded ciphertext.
@@ -317,7 +285,7 @@ class Rsa
      *
      * @param string $message - Content will be `openssl_verify`.
      * @param string $signature - The base64-encoded ciphertext.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $publicKey - The public key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $publicKey - The public key.
      *
      * @return boolean - True is passed, false is failed.
      * @throws UnexpectedValueException
@@ -335,7 +303,7 @@ class Rsa
      * Creates and returns a `base64_encode` string that uses `OPENSSL_ALGO_SHA256`.
      *
      * @param string $message - Content will be `openssl_sign`.
-     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|object|resource|string|mixed $privateKey - The private key.
+     * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $privateKey - The private key.
      *
      * @return string - The base64-encoded signature.
      * @throws UnexpectedValueException
@@ -352,7 +320,7 @@ class Rsa
     /**
      * Decrypts base64 encoded string with `$privateKey` in the `$padding`(default is `OPENSSL_PKCS1_OAEP_PADDING`) mode.
      *
-     * Some of APIv2 were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
+     * Some of APIs were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
      *
      * @param string $ciphertext - Was previously encrypted string using the corresponding public key.
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|array{string,string}|mixed $privateKey - The private key.

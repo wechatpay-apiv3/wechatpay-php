@@ -72,7 +72,7 @@ class AesGcm implements AesInterface
         self::preCondition();
 
         $ciphertext = base64_decode($ciphertext);
-        $authTag = substr($ciphertext, intval(-static::BLOCK_SIZE));
+        $authTag = substr($ciphertext, $tailLength = intval(-static::BLOCK_SIZE));
         $tagLength = strlen($authTag);
 
         /* Manually checking the length of the tag, because the `openssl_decrypt` was mentioned there, it's the caller's responsibility. */
@@ -80,7 +80,7 @@ class AesGcm implements AesInterface
             throw new RuntimeException('The inputs `$ciphertext` incomplete, the bytes length must be one of 16, 15, 14, 13, 12, 8 or 4.');
         }
 
-        $plaintext = openssl_decrypt(substr($ciphertext, 0, intval(-static::BLOCK_SIZE)), static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $authTag, $aad);
+        $plaintext = openssl_decrypt(substr($ciphertext, 0, $tailLength), static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $authTag, $aad);
 
         if (false === $plaintext) {
             throw new UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $key and $iv whether or nor correct.');

@@ -46,7 +46,7 @@ final class Builder
 
             /**
              * Compose the chainable `ClientDecorator` instance, most starter with the tree root point
-             * @param array<string|int> $input
+             * @param (string|int)[] $input
              * @param ?ClientDecoratorInterface $instance
              */
             public function __construct(array $input = [], ?ClientDecoratorInterface $instance = null) {
