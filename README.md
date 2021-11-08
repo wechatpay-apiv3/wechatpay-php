@@ -84,6 +84,7 @@ composer install
 5. 每个 `segment` 中，若有`uri_template`动态参数<sup>[RFC6570](#note-rfc6570)</sup>，例如 `business_code/{business_code}` 推荐以`business_code->{'{business_code}'}`形式书写，其格式语义与`pathname`基本一致，阅读起来比较自然;
 6. SDK内置以 `v2` 特殊标识为 `APIv2` 的起始 `segment`，之后串接切分后的 `segments`，如源 `pay/micropay` 即串成 `v2->pay->micropay->post(['xml' => []])` 即以XML形式请求远端接口；
 7. 在IDE集成环境下，也可以按照内置的`chain($segment)`接口规范，直接以`pathname`作为变量`$segment`，来获取`OpenAPI`接入点的`endpoints`串接对象，驱动末尾执行方法(填入对应参数)，发起请求，例如 `chain('v3/pay/transactions/jsapi')->post(['json' => []])`；
+8. 在IDE环境下，可以选装 `iwechatpay/openapi` [开发辅助包](https://packagist.org/packages/iwechatpay/openapi)，源码见这里 [wechatpay-openapi](https://github.com/TheNorthMemory/wechatpay-openapi)；
 
 以下示例用法，以`异步(Async/PromiseA+)`或`同步(Sync)`结合此种编码模式展开。
 
