@@ -15,13 +15,13 @@
 
 ### 功能介绍
 
-1. 微信支付 APIv2 和 APIv3 的 Guzzle HTTP 客户端，支持同步或异步发送请求，并自动进行请求签名和应答验签。
+1. 微信支付 APIv2 和 APIv3 的 Guzzle HTTP 客户端，支持同步或异步发送请求，并自动进行请求签名和应答验签
 
-1. [Method Chainning](https://en.wikipedia.org/wiki/Method_chaining) 实现的 URI Template.
+1. 链式实现的 URI Template
 
-1. [敏感信息加解密](#敏感信息加解密)。
+1. [敏感信息加解密](#敏感信息加解密)
 
-1. 回调通知验签和解密，详情可见 [回调通知](#回调通知)。
+1. 回调通知验签和解密，详情可见 [回调通知](#回调通知)
 
 ## 项目状态
 
@@ -34,7 +34,7 @@
 + Guzzle 7.0，PHP >= 7.2.5
 + Guzzle 6.5，PHP >= 7.1.2
 
-项目已支持 PHP 8。我们推荐使用 PHP 7.4+ 和 Guzzle 7。
+项目已支持 PHP 8。我们推荐使用目前处于 [Active Support](https://www.php.net/supported-versions.php) 阶段的 PHP 8.0 和 Guzzle 7。
 
 ## 安装
 
@@ -112,12 +112,12 @@ $instanceV3 = Builder::factory([
 
 ### 同步请求
 
-使用客户端实例发送 `get`、`put`、`post`、`patch` 或 `delete` 同步请求。以 [Native支付下单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_1.shtml) 为例。
+使用客户端提供的 `get`、`put`、`post`、`patch` 或 `delete` 方法发送同步请求。以 [Native支付下单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_1.shtml) 为例。
 
 ```php
 try {
     $resp = $instance
-    ->chain('/v3/pay/transaction/native')
+    ->chain('v3/pay/transaction/native')
     ->post(['json' => [
         'mchid'        => '1900006XXX',
         'out_trade_no' => 'native12177525012014070332333',
@@ -190,21 +190,35 @@ promise->wait();
 + 成功时使用 `then()` 处理得到的 `Psr\Http\Message\ResponseInterface`，并（可选地）将它传给下一个 `then()`
 + 失败时使用 `otherwise()` 处理异常
 
-### URI Template
+### 链式 URI Template
 
-## 更多例子
+[URI Template](https://www.rfc-editor.org/rfc/rfc6570.html) 是表达 URI 中变量的一种方式。微信支付 API 经常使用这种方式表示 URL Path 中的单号或者 ID。例如，[查询订单 API](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_2.shtml) 使用了变量 `{transaction_id}` 和 `{out_trade_no}`。
 
-### 查单
+```
+# 使用微信支付订单号查询订单
+/v3/pay/transactions/id/{transaction_id}
 
-[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_2.shtml)
+# 使用商户订单号查询订单
+/v3/pay/transactions/out-trade-no/{{out_trade_no}
+```
+
+[链式](https://en.wikipedia.org/wiki/Method_chaining) URI Template 能帮助你方便地组装 URL。链式连接的基本单元是 URI Path 中的 [segments](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)，单元之间以 `->` 连接，连接的规则如下：
+
++ 普通 segment 直接书写。例如 `v3->pay->transaction->native`
++ 请求的 `HTTP METHOD` 作为链式最后的执行方法。例如 `v3->pay->transactions->native->post(['json' => []])`
++ Path 变量可使用 `{'{variable_name}'}` 方式书写。例如 `v3->pay->transaction->id->{'{transaction_id}'}`
++ Path 变量的值，以变量同名参数传入执行方法
++ Query 参数，以名为 `query` 的参数传入执行方法
+
+以查询订单为 `GET` 例子。
 
 ```php
 $res = $instance
 ->v3->pay->transactions->id->{'{transaction_id}'}
 ->getAsync([
-    // 查询参数结构
+    // 
     'query' => ['mchid' => '1230000109'],
-    // uri_template 字面量参数
+    // 变量名 => 变量值
     'transaction_id' => '1217752501201407033233368018',
 ])
 ->then(static function($response) {
@@ -225,17 +239,15 @@ $res = $instance
 ->wait();
 ```
 
-### 关单
-
-[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml)
+以 [关单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml) 为 `POST` 例子。
 
 ```php
 $res = $instance
 ->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
 ->postAsync([
-    // 请求参数结构
+    // 请求消息
     'json' => ['mchid' => '1230000109'],
-    // uri_template 字面量参数
+    // 变量的值
     'out_trade_no' => '1217752501201407033233368018',
 ])
 ->then(static function($response) {
@@ -255,6 +267,8 @@ $res = $instance
 })
 ->wait();
 ```
+
+## 更多例子
 
 ### 视频文件上传
 
