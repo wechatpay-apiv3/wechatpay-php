@@ -179,7 +179,7 @@ $promise = $instance
         echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
-})
+});
 // 同步等待
 promise->wait();
 
@@ -187,85 +187,58 @@ promise->wait();
 
 `xxxAsync` 返回的是 [Guzzle Promises](https://github.com/guzzle/promises)。你可以做两件事：
 
-+ 成功时使用 `then()` 处理得到的 `Psr\Http\Message\ResponseInterface`，并（可选地）将它传给下一个 `then()`
++ 成功时使用 `then()` 处理得到的 `Psr\Http\Message\ResponseInterface`，（可选地）将它传给下一个 `then()`
 + 失败时使用 `otherwise()` 处理异常
 
-### 链式 URI Template
+## 链式 URI Template
 
-[URI Template](https://www.rfc-editor.org/rfc/rfc6570.html) 是表达 URI 中变量的一种方式。微信支付 API 经常使用这种方式表示 URL Path 中的单号或者 ID。例如，[查询订单 API](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_2.shtml) 使用了变量 `{transaction_id}` 和 `{out_trade_no}`。
+[URI Template](https://www.rfc-editor.org/rfc/rfc6570.html) 是表达 URI 中变量的一种方式。微信支付 API 使用这种方式表示 URL Path 中的单号或者 ID。
 
 ```
 # 使用微信支付订单号查询订单
-/v3/pay/transactions/id/{transaction_id}
+GET /v3/pay/transactions/id/{transaction_id}
 
 # 使用商户订单号查询订单
-/v3/pay/transactions/out-trade-no/{{out_trade_no}
+GET /v3/pay/transactions/out-trade-no/{{out_trade_no}
 ```
 
-[链式](https://en.wikipedia.org/wiki/Method_chaining) URI Template 能帮助你方便地组装 URL。链式连接的基本单元是 URI Path 中的 [segments](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)，单元之间以 `->` 连接，连接的规则如下：
+使用 [链式](https://en.wikipedia.org/wiki/Method_chaining) URI Template，你能像书写代码一样流畅地书写 URL，轻松的输入路径和传递 URL 参数，更能享受 [IDE提示](https://github.com/TheNorthMemory/wechatpay-openapi)，避免。
+
+链式串联的基本单元是 URI Path 中的 [segments](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)，`segments` 之间以 `->` 连接。连接的规则如下：
 
 + 普通 segment 直接书写。例如 `v3->pay->transaction->native`
-+ 请求的 `HTTP METHOD` 作为链式最后的执行方法。例如 `v3->pay->transactions->native->post(['json' => []])`
-+ Path 变量可使用 `{'{variable_name}'}` 方式书写。例如 `v3->pay->transaction->id->{'{transaction_id}'}`
-+ Path 变量的值，以变量同名参数传入执行方法
++ 包含连字号(-)的 segment
+  + 使用驼峰 camelCase 风格书写。例如 `merchant-service` 可写成 `merchantService`
+  + 使用 `{foo-bar}` 方式书写。例如 `{'merchant-service'}`
++ Path 变量使用 `{'{variable_name}'}` 方式书写。例如 `v3->pay->transaction->id->{'{transaction_id}'}`
++ 请求的 `HTTP METHOD` 作为链式最后的执行方法。例如 `v3->pay->transactions->native->post([ ... ])`
++ Path 变量的值，以同名参数传入执行方法
 + Query 参数，以名为 `query` 的参数传入执行方法
 
 以查询订单为 `GET` 例子。
 
 ```php
-$res = $instance
+$promise = $instance
 ->v3->pay->transactions->id->{'{transaction_id}'}
 ->getAsync([
     // 
     'query' => ['mchid' => '1230000109'],
     // 变量名 => 变量值
     'transaction_id' => '1217752501201407033233368018',
-])
-->then(static function($response) {
-    // 正常逻辑回调处理
-    echo $response->getBody(), PHP_EOL;
-    return $response;
-})
-->otherwise(static function($e) {
-    // 异常错误处理
-    echo $e->getMessage(), PHP_EOL;
-    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
-        $r = $e->getResponse();
-        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
-    }
-    echo $e->getTraceAsString(), PHP_EOL;
-})
-->wait();
+]);
 ```
 
 以 [关单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml) 为 `POST` 例子。
 
 ```php
-$res = $instance
+$promise = $instance
 ->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
 ->postAsync([
     // 请求消息
     'json' => ['mchid' => '1230000109'],
-    // 变量的值
+    // 变量名 => 变量值
     'out_trade_no' => '1217752501201407033233368018',
-])
-->then(static function($response) {
-    // 正常逻辑回调处理
-    echo $response->getBody(), PHP_EOL;
-    return $response;
-})
-->otherwise(static function($e) {
-    // 异常错误处理
-    echo $e->getMessage(), PHP_EOL;
-    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
-        $r = $e->getResponse();
-        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
-    }
-    echo $e->getTraceAsString(), PHP_EOL;
-})
-->wait();
+]);
 ```
 
 ## 更多例子
