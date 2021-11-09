@@ -202,7 +202,7 @@ GET /v3/pay/transactions/id/{transaction_id}
 GET /v3/pay/transactions/out-trade-no/{{out_trade_no}
 ```
 
-使用 [链式](https://en.wikipedia.org/wiki/Method_chaining) URI Template，你能像书写代码一样流畅地书写 URL，轻松的输入路径和传递 URL 参数，更能享受 [IDE提示](https://github.com/TheNorthMemory/wechatpay-openapi)，避免。
+使用 [链式](https://en.wikipedia.org/wiki/Method_chaining) URI Template，你能像书写代码一样流畅地书写 URL，轻松地输入路径并传递 URL 参数。配置接口描述包后还能开启 [IDE提示](https://github.com/TheNorthMemory/wechatpay-openapi)。
 
 链式串联的基本单元是 URI Path 中的 [segments](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)，`segments` 之间以 `->` 连接。连接的规则如下：
 
