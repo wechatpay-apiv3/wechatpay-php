@@ -105,7 +105,7 @@ $instanceV3 = Builder::factory([
 + **商户 API 证书**，是用来证实商户身份的。证书中包含商户号、证书序列号、证书有效期等信息，由证书授权机构（Certificate Authority ，简称 CA）签发，以防证书被伪造或篡改。如何获取请见 [商户 API 证书](https://wechatpay-api.gitbook.io/wechatpay-api-v3/ren-zheng/zheng-shu#shang-hu-api-zheng-shu) 。
 + **商户 API 私钥**。商户申请商户 API 证书时，会生成商户私钥，并保存在本地证书文件夹的文件 apiclient_key.pem 中。
 
-> :warning: 不要把私钥文件暴露在公共场合，如上传到 Github，写在客户端代码等。
+> :warning: 不要把私钥文件暴露在公共场合，如上传到 Github，写在 App 代码中等。
 
 + **微信支付平台证书**。微信支付平台证书是指：由微信支付负责申请，包含微信支付平台标识、公钥信息的证书。商户使用微信支付平台证书中的公钥验证应答签名。微信支付平台证书可由下载器 `./bin/CertificateDownloader.php` 下载，或使用 [获取平台证书列表](https://wechatpay-api.gitbook.io/wechatpay-api-v3/ren-zheng/zheng-shu#ping-tai-zheng-shu) 接口下载。
 + **证书序列号**。每个证书都有一个由 CA 颁发的唯一编号，即证书序列号。扩展阅读 [如何查看证书序列号](https://wechatpay-api.gitbook.io/wechatpay-api-v3/chang-jian-wen-ti/zheng-shu-xiang-guan#ru-he-cha-kan-zheng-shu-xu-lie-hao) 。
@@ -209,7 +209,7 @@ GET /v3/pay/transactions/out-trade-no/{{out_trade_no}
 + 普通 segment 直接书写。例如 `v3->pay->transaction->native`
 + 包含连字号(-)的 segment
   + 使用驼峰 camelCase 风格书写。例如 `merchant-service` 可写成 `merchantService`
-  + 使用 `{foo-bar}` 方式书写。例如 `{'merchant-service'}`
+  + 使用 `{'foo-bar'}` 方式书写。例如 `{'merchant-service'}`
 + Path 变量使用 `{'{variable_name}'}` 方式书写。例如 `v3->pay->transaction->id->{'{transaction_id}'}`
 + 请求的 `HTTP METHOD` 作为链式最后的执行方法。例如 `v3->pay->transactions->native->post([ ... ])`
 + Path 变量的值，以同名参数传入执行方法
@@ -309,10 +309,14 @@ $resp = $instance
 
 ## 敏感信息加/解密
 
-[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter11_1_1.shtml)
+为了保证通信过程中敏感信息字段（如用户的住址、银行卡号、手机号码等）的机密性，
+
++ 微信支付要求加密上送的敏感信息
++ 微信支付会加密下行的敏感信息
+
+下面以 [特约商户进件](https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter11_1_1.shtml) 为例，演示如何进行 [敏感信息加解密](https://wechatpay-api.gitbook.io/wechatpay-api-v3/qian-ming-zhi-nan-1/min-gan-xin-xi-jia-mi)。
 
 ```php
-// 参考上上述说明，引入 `WeChatPay\Crypto\Rsa`
 use WeChatPay\Crypto\Rsa;
 // 做一个匿名方法，供后续方便使用，$platformCertificateInstance 见初始化章节
 $encryptor = static function(string $msg) use ($platformCertificateInstance): string {
@@ -350,6 +354,31 @@ try {
     }
     echo $e->getTraceAsString(), PHP_EOL;
 }
+```
+
+## 签名
+
+你可以使用 `Rsa::sign()` 计算调起支付时所需参数签名。以 [JSAPI支付](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_4.shtml) 为例。
+
+```php
+use WeChatPay\Formatter;
+use WeChatPay\Crypto\Rsa;
+
+$merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';
+$merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath);
+
+$params = [
+    'appId'     => 'wx8888888888888888',
+    'timeStamp' => (string)Formatter::timestamp(),
+    'nonceStr'  => Formatter::nonce(),
+    'package'   => 'prepay_id=wx201410272009395522657a690389285100',
+];
+$params += ['paySign' => Rsa::sign(
+    Formatter::joinedByLineFeed(...array_values($params)),
+    $merchantPrivateKeyInstance
+), 'signType' => 'RSA'];
+
+echo json_encode($params);
 ```
 
 ## 回调通知
