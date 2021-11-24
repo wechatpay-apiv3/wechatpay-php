@@ -190,6 +190,45 @@ promise->wait();
 + 成功时使用 `then()` 处理得到的 `Psr\Http\Message\ResponseInterface`，（可选地）将它传给下一个 `then()`
 + 失败时使用 `otherwise()` 处理异常
 
+最后使用 `wait` 等待请求执行完成。
+
+### 同步还是异步
+
+对于大部分开发者，我们建议使用同步的模式，因为它更加易于理解。
+
+如果你是具有异步编程基础的开发者，在某些连续调用 API 的场景，例如账单下载，将多个操作使用 `then()` 流式串联起来会是一种优雅的实现方式。
+
+```php
+$instance
+    ->v3->bill->tradebill
+    ->getAsync([
+        'query' => [
+            'bill_date' => $billDate,
+            'bill_type' => 'ALL',
+            'tar_type'  => 'GZIP',
+        ],
+    ])
+    ->then(static function(ResponseInterface $response) use ($instance, $billDate) {
+        $handler = clone $instance->getDriver()->select()->getConfig('handler');
+        $handler->remove('verifier');
+        
+        $target = (array) json_decode($response->getBody()->getContents(), true);
+
+        $downloadUrl  = new Uri($target['download_url'] ?? '');
+        $baseUri   = $previous->composeComponents($downloadUrl->getScheme(), $downloadUrl->getAuthority(), '/', '', '');
+        $savedTo = Utils::tryFopen('./bills/all.' . $billDate . '.csv.gz', 'w+');
+        $stream  = Utils::streamFor($savedTo);
+
+        return $instance->chain(ltrim($downloadUrl->getPath(), '/'))->getAsync([
+            'sink'     => $stream,
+            'handler'  => $handler,
+            'query'    => $downloadUrl->getQuery(),
+            'base_uri' => $baseUri,
+        ]);
+    })
+    ->wait();
+```
+
 ## 链式 URI Template
 
 [URI Template](https://www.rfc-editor.org/rfc/rfc6570.html) 是表达 URI 中变量的一种方式。微信支付 API 使用这种方式表示 URL Path 中的单号或者 ID。
@@ -241,6 +280,8 @@ $promise = $instance
 ]);
 ```
 
+如果你不喜欢链式调用，你可以使用其他的 PHP URI template 库，然后像之前示例那样使用 `chain('/v3/resources/id')` 直接访问对应的资源。
+
 ## 更多例子
 
 ### 视频文件上传
@@ -253,26 +294,13 @@ use WeChatPay\Util\MediaUtil;
 // 实例化一个媒体文件流，注意文件后缀名需符合接口要求
 $media = new MediaUtil('/your/file/path/video.mp4');
 
-try {
-    $resp = $instance['v3/merchant/media/video_upload']
-    ->post([
-        'body'    => $media->getStream(),
-        'headers' => [
-            'content-type' => $media->getContentType(),
-        ]
-    ]);
-    echo $resp->getStatusCode(), PHP_EOL;
-    echo $resp->getBody(), PHP_EOL;
-} catch (\Exception $e) {
-    // 异常错误处理
-    echo $e->getMessage(), PHP_EOL;
-    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
-        $r = $e->getResponse();
-        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
-    }
-    echo $e->getTraceAsString(), PHP_EOL;
-}
+$resp = $instance['v3/merchant/media/video_upload']
+->post([
+    'body'    => $media->getStream(),
+    'headers' => [
+        'content-type' => $media->getContentType(),
+    ]
+]);
 ```
 
 ### 营销图片上传
@@ -284,27 +312,12 @@ use WeChatPay\Util\MediaUtil;
 $media = new MediaUtil('/your/file/path/image.jpg');
 $resp = $instance
 ->v3->marketing->favor->media->imageUpload
-->postAsync([
+->post([
     'body'    => $media->getStream(),
     'headers' => [
         'Content-Type' => $media->getContentType(),
     ]
-])
-->then(static function($response) {
-    echo $response->getBody(), PHP_EOL;
-    return $response;
-})
-->otherwise(static function($e) {
-    // 异常错误处理
-    echo $e->getMessage(), PHP_EOL;
-    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
-        $r = $e->getResponse();
-        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
-    }
-    echo $e->getTraceAsString(), PHP_EOL;
-})
-->wait();
+]);
 ```
 
 ## 敏感信息加/解密
@@ -323,37 +336,24 @@ $encryptor = static function(string $msg) use ($platformCertificateInstance): st
     return Rsa::encrypt($msg, $platformCertificateInstance);
 };
 
-try {
-    $resp = $instance
-    ->chain('v3/applyment4sub/applyment/')
-    ->post([
-        'json' => [
-            'business_code' => 'APL_98761234',
-            'contact_info'  => [
-                'contact_name'      => $encryptor('value of `contact_name`'),
-                'contact_id_number' => $encryptor('value of `contact_id_number'),
-                'mobile_phone'      => $encryptor('value of `mobile_phone`'),
-                'contact_email'     => $encryptor('value of `contact_email`'),
-            ],
-            //...
+$resp = $instance
+->chain('v3/applyment4sub/applyment/')
+->post([
+    'json' => [
+        'business_code' => 'APL_98761234',
+        'contact_info'  => [
+            'contact_name'      => $encryptor('value of `contact_name`'),
+            'contact_id_number' => $encryptor('value of `contact_id_number'),
+            'mobile_phone'      => $encryptor('value of `mobile_phone`'),
+            'contact_email'     => $encryptor('value of `contact_email`'),
         ],
-        'headers' => [
-            // $platformCertificateSerial 见初始化章节
-            'Wechatpay-Serial' => $platformCertificateSerial,
-        ],
-    ]);
-    echo $resp->getStatusCode(), PHP_EOL;
-    echo $resp->getBody(), PHP_EOL;
-} catch (\Exception $e) {
-    // 异常错误处理
-    echo $e->getMessage(), PHP_EOL;
-    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
-        $r = $e->getResponse();
-        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
-    }
-    echo $e->getTraceAsString(), PHP_EOL;
-}
+        //...
+    ],
+    'headers' => [
+        // $platformCertificateSerial 见初始化章节
+        'Wechatpay-Serial' => $platformCertificateSerial,
+    ],
+]);
 ```
 
 ## 签名
