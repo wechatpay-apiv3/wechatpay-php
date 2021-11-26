@@ -190,43 +190,42 @@ promise->wait();
 + 成功时使用 `then()` 处理得到的 `Psr\Http\Message\ResponseInterface`，（可选地）将它传给下一个 `then()`
 + 失败时使用 `otherwise()` 处理异常
 
-最后使用 `wait` 等待请求执行完成。
+最后使用 `wait()` 等待请求执行完成。
 
 ### 同步还是异步
 
 对于大部分开发者，我们建议使用同步的模式，因为它更加易于理解。
 
-如果你是具有异步编程基础的开发者，在某些连续调用 API 的场景，例如账单下载，将多个操作使用 `then()` 流式串联起来会是一种优雅的实现方式。
+如果你是具有异步编程基础的开发者，在某些连续调用 API 的场景，例如账单下载，将多个操作通过 `then()` 流式串联起来会是一种优雅的实现方式。
 
 ```php
-$instance
-    ->v3->bill->tradebill
-    ->getAsync([
-        'query' => [
-            'bill_date' => $billDate,
-            'bill_type' => 'ALL',
-            'tar_type'  => 'GZIP',
-        ],
-    ])
-    ->then(static function(ResponseInterface $response) use ($instance, $billDate) {
-        $handler = clone $instance->getDriver()->select()->getConfig('handler');
-        $handler->remove('verifier');
-        
-        $target = (array) json_decode($response->getBody()->getContents(), true);
+$promise = $instance
+->v3->bill->tradebill
+->getAsync([
+    'query' => [
+        'bill_date' => $billDate,
+        'bill_type' => 'ALL',
+        'tar_type'  => 'GZIP',
+    ],
+])
+->then(static function(ResponseInterface $response) use ($instance, $billDate) {
+    $handler = clone $instance->getDriver()->select()->getConfig('handler');
+    $handler->remove('verifier');
 
-        $downloadUrl  = new Uri($target['download_url'] ?? '');
-        $baseUri   = $previous->composeComponents($downloadUrl->getScheme(), $downloadUrl->getAuthority(), '/', '', '');
-        $savedTo = Utils::tryFopen('./bills/all.' . $billDate . '.csv.gz', 'w+');
-        $stream  = Utils::streamFor($savedTo);
+    $target = (array) json_decode($response->getBody()->getContents(), true);
 
-        return $instance->chain(ltrim($downloadUrl->getPath(), '/'))->getAsync([
-            'sink'     => $stream,
-            'handler'  => $handler,
-            'query'    => $downloadUrl->getQuery(),
-            'base_uri' => $baseUri,
-        ]);
-    })
-    ->wait();
+    $downloadUrl  = new Uri($target['download_url'] ?? '');
+    $baseUri   = $previous->composeComponents($downloadUrl->getScheme(), $downloadUrl->getAuthority(), '/', '', '');
+    $savedTo = Utils::tryFopen('./bills/all.' . $billDate . '.csv.gz', 'w+');
+    $stream  = Utils::streamFor($savedTo);
+
+    return $instance->chain(ltrim($downloadUrl->getPath(), '/'))->getAsync([
+        'sink'     => $stream,
+        'handler'  => $handler,
+        'query'    => $downloadUrl->getQuery(),
+        'base_uri' => $baseUri,
+    ]);
+});
 ```
 
 ## 链式 URI Template
@@ -245,7 +244,7 @@ GET /v3/pay/transactions/out-trade-no/{{out_trade_no}
 
 链式串联的基本单元是 URI Path 中的 [segments](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)，`segments` 之间以 `->` 连接。连接的规则如下：
 
-+ 普通 segment 直接书写。例如 `v3->pay->transaction->native`
++ 普通 segment 直接书写，或者使用 `chain()` 。例如 `v3->pay->transactions->native`，或者 `chain('v3/pay/transactions/native')`
 + 包含连字号(-)的 segment
   + 使用驼峰 camelCase 风格书写。例如 `merchant-service` 可写成 `merchantService`
   + 使用 `{'foo-bar'}` 方式书写。例如 `{'merchant-service'}`
@@ -280,8 +279,6 @@ $promise = $instance
 ]);
 ```
 
-如果你不喜欢链式调用，你可以使用其他的 PHP URI template 库，然后像之前示例那样使用 `chain('/v3/resources/id')` 直接访问对应的资源。
-
 ## 更多例子
 
 ### 视频文件上传
@@ -294,7 +291,8 @@ use WeChatPay\Util\MediaUtil;
 // 实例化一个媒体文件流，注意文件后缀名需符合接口要求
 $media = new MediaUtil('/your/file/path/video.mp4');
 
-$resp = $instance['v3/merchant/media/video_upload']
+$resp = $instance-
+>chain('v3/merchant/media/video_upload')
 ->post([
     'body'    => $media->getStream(),
     'headers' => [
@@ -545,6 +543,16 @@ AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_da
 
 建议升级至swoole 4.6+，swoole在 4.6.0 中增加了native-curl([swoole/swoole-src#3863](https://github.com/swoole/swoole-src/pull/3863))支持，我们测试能正常使用了。
 更详细的信息，请参考[#36](https://github.com/wechatpay-apiv3/wechatpay-guzzle-middleware/issues/36)。
+
+### 如何加载公/私钥和证书
+
+v1.2 提供了统一的加载函数 `RSA::from()`。
+
+- `Rsa::from($thing, $type)` 支持从文件/字符串加载公/私钥和证书，使用方法可参考 [RsaTest.php](https://github.com/wechatpay-apiv3/wechatpay-php/blob/main/tests/Crypto/RsaTest.php)
+- `Rsa::fromPkcs1`是个语法糖，支持加载 `PKCS#1` 格式的公/私钥，入参是 `base64` 字符串
+- `Rsa::fromPkcs8`是个语法糖，支持加载 `PKCS#8` 格式的私钥，入参是 `base64` 字符串
+- `Rsa::fromSpki`是个语法糖，支持加载 `SPKI` 格式的公钥，入参是 `base64` 字符串
+- `Rsa::pkcs1ToSpki`是个 `RSA公钥` 格式转换函数，入参是 `base64` 字符串
 
 ## 联系我们
 
