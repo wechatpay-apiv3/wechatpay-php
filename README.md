@@ -27,6 +27,12 @@
 
 当前版本为 `1.4.2` 测试版本。项目版本遵循 [语义化版本号](https://semver.org/lang/zh-CN/)。如果你使用的版本 `<=v1.3.2`，升级前请参考 [升级指南](UPGRADING.md)。
 
+为了向广大开发者提供更好的使用体验，微信支付诚挚邀请您将**使用微信支付 API v3 SDK**中的感受反馈给我们。本问卷可能会占用您不超过2分钟的时间，感谢您的支持。
+
+问卷系统使用的腾讯问卷，您可以点击[这里](https://wj.qq.com/s2/8779987/8dae/)，或者扫描以下二维码参与调查。
+
+[![PHP SDK Questionnaire](https://user-images.githubusercontent.com/1812516/126434257-834ef6ab-e66b-4aa2-9104-8e37d7a14b93.png)](https://wj.qq.com/s2/8779987/8dae/)
+
 ## 环境要求
 
 项目支持的环境如下：
@@ -65,6 +71,8 @@ composer install
 ```
 
 ## 开始
+
+以下部分是 [微信支付 API v3](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay-1.shtml) 的指引。如果你是 API v2 的使用者，请看 [README_APIv2](README_APIv2.md)。
 
 ### 初始化
 
