@@ -204,37 +204,7 @@ promise->wait();
 
 对于大部分开发者，我们建议使用同步的模式，因为它更加易于理解。
 
-如果你是具有异步编程基础的开发者，在某些连续调用 API 的场景，例如账单下载，将多个操作通过 `then()` 流式串联起来会是一种优雅的实现方式。
-
-```php
-$promise = $instance
-->v3->bill->tradebill
-->getAsync([
-    'query' => [
-        'bill_date' => $billDate,
-        'bill_type' => 'ALL',
-        'tar_type'  => 'GZIP',
-    ],
-])
-->then(static function(ResponseInterface $response) use ($instance, $billDate) {
-    $handler = clone $instance->getDriver()->select()->getConfig('handler');
-    $handler->remove('verifier');
-
-    $target = (array) json_decode($response->getBody()->getContents(), true);
-
-    $downloadUrl  = new Uri($target['download_url'] ?? '');
-    $baseUri   = $previous->composeComponents($downloadUrl->getScheme(), $downloadUrl->getAuthority(), '/', '', '');
-    $savedTo = Utils::tryFopen('./bills/all.' . $billDate . '.csv.gz', 'w+');
-    $stream  = Utils::streamFor($savedTo);
-
-    return $instance->chain(ltrim($downloadUrl->getPath(), '/'))->getAsync([
-        'sink'     => $stream,
-        'handler'  => $handler,
-        'query'    => $downloadUrl->getQuery(),
-        'base_uri' => $baseUri,
-    ]);
-});
-```
+如果你是具有异步编程基础的开发者，在某些连续调用 API 的场景，将多个操作通过 `then()` 流式串联起来会是一种优雅的实现方式。例如， [以函数链的形式流式下载交易帐单](https://developers.weixin.qq.com/community/pay/article/doc/000ec4521086b85fb81d6472a51013)。
 
 ## 链式 URI Template
 
