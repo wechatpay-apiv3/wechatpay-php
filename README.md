@@ -98,7 +98,7 @@ $platformPublicKeyInstance = Rsa::from($platformCertificateFilePath, Rsa::KEY_TY
 $platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateFilePath);
 
 // 构造一个 APIv3 客户端实例
-$instanceV3 = Builder::factory([
+$instance = Builder::factory([
     'mchid'      => $merchantId,
     'serial'     => $merchantCertificateSerial,
     'privateKey' => $merchantPrivateKeyInstance,
