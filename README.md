@@ -562,6 +562,10 @@ v1.2 提供了统一的加载函数 `RSA::from()`。
 - `Rsa::fromSpki`是个语法糖，支持加载 `SPKI` 格式的公钥，入参是 `base64` 字符串
 - `Rsa::pkcs1ToSpki`是个 `RSA公钥` 格式转换函数，入参是 `base64` 字符串
 
+### 如何计算商家券发券 API 的签名
+
+使用 `Hash::sign()`计算 APIv2 的签名，示例请参考 APIv2 文档的 [数据签名](README_APIv2.md#数据签名)。
+
 ## 联系我们
 
 如果你发现了**BUG**或者有任何疑问、建议，请通过issue进行反馈。
