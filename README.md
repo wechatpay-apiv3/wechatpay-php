@@ -215,18 +215,22 @@ promise->wait();
 GET /v3/pay/transactions/id/{transaction_id}
 
 # 使用商户订单号查询订单
-GET /v3/pay/transactions/out-trade-no/{{out_trade_no}
+GET /v3/pay/transactions/out-trade-no/{out_trade_no}
 ```
 
 使用 [链式](https://en.wikipedia.org/wiki/Method_chaining) URI Template，你能像书写代码一样流畅地书写 URL，轻松地输入路径并传递 URL 参数。配置接口描述包后还能开启 [IDE提示](https://github.com/TheNorthMemory/wechatpay-openapi)。
 
 链式串联的基本单元是 URI Path 中的 [segments](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)，`segments` 之间以 `->` 连接。连接的规则如下：
 
-+ 普通 segment 直接书写，或者使用 `chain()` 。例如 `v3->pay->transactions->native`，或者 `chain('v3/pay/transactions/native')`
++ 普通 segment 
+  + 直接书写。例如 `v3->pay->transactions->native`
+  + 使用 `chain()`。例如 `chain('v3/pay/transactions/native')`
 + 包含连字号(-)的 segment
   + 使用驼峰 camelCase 风格书写。例如 `merchant-service` 可写成 `merchantService`
   + 使用 `{'foo-bar'}` 方式书写。例如 `{'merchant-service'}`
-+ Path 变量使用 `{'{variable_name}'}` 方式书写。例如 `v3->pay->transaction->id->{'{transaction_id}'}`
++ Path 变量
+  + **推荐使用**使用 `_variable_name_` 方式书写，支持 IDE 提示。例如 `v3->pay->transactions->id->_transaction_id_`。
+  + 使用 `{'{variable_name}'}` 方式书写。例如 `v3->pay->transactions->id->{'{transaction_id}'}`
 + 请求的 `HTTP METHOD` 作为链式最后的执行方法。例如 `v3->pay->transactions->native->post([ ... ])`
 + Path 变量的值，以同名参数传入执行方法
 + Query 参数，以名为 `query` 的参数传入执行方法
@@ -235,7 +239,7 @@ GET /v3/pay/transactions/out-trade-no/{{out_trade_no}
 
 ```php
 $promise = $instance
-->v3->pay->transactions->id->{'{transaction_id}'}
+->v3->pay->transactions->id->_transaction_id_
 ->getAsync([
     // 
     'query' => ['mchid' => '1230000109'],
@@ -248,7 +252,7 @@ $promise = $instance
 
 ```php
 $promise = $instance
-->v3->pay->transactions->outTradeNo->{'{out_trade_no}'}->close
+->v3->pay->transactions->outTradeNo->_out_trade_no_->close
 ->postAsync([
     // 请求消息
     'json' => ['mchid' => '1230000109'],
