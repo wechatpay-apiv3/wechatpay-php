@@ -322,10 +322,10 @@ $resp = $instance
     'json' => [
         'business_code' => 'APL_98761234',
         'contact_info'  => [
-            'contact_name'      => $encryptor('value of `contact_name`'),
-            'contact_id_number' => $encryptor('value of `contact_id_number'),
-            'mobile_phone'      => $encryptor('value of `mobile_phone`'),
-            'contact_email'     => $encryptor('value of `contact_email`'),
+            'contact_name'      => $encryptor('张三'),
+            'contact_id_number' => $encryptor('110102YYMMDD888X'),
+            'mobile_phone'      => $encryptor('13000000000'),
+            'contact_email'     => $encryptor('abc123@example.com'),
         ],
         //...
     ],
