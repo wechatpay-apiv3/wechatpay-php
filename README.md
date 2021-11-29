@@ -706,7 +706,7 @@ $busiFavor += ['sign' => Hash::sign(
     $apiv2Key
 )];
 
-echo json_encode($params);
+echo json_encode($busiFavor);
 ```
 
 ### 商家券-H5发券APIv2密钥签名
