@@ -311,9 +311,9 @@ $resp = $instance
 
 ```php
 use WeChatPay\Crypto\Rsa;
-// 做一个匿名方法，供后续方便使用，$platformCertificateInstance 见初始化章节
-$encryptor = static function(string $msg) use ($platformCertificateInstance): string {
-    return Rsa::encrypt($msg, $platformCertificateInstance);
+// 做一个匿名方法，供后续方便使用，$platformPublicKeyInstance 见初始化章节
+$encryptor = static function(string $msg) use ($platformPublicKeyInstance): string {
+    return Rsa::encrypt($msg, $platformPublicKeyInstance);
 };
 
 $resp = $instance
