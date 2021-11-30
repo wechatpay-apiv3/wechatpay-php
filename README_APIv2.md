@@ -306,3 +306,49 @@ $params += ['sign' => Hash::sign(
 
 echo json_encode($params);
 ```
+
+## v2回调通知
+
+回调通知受限于开发者/商户所使用的`WebServer`有很大差异，这里只给出开发指导步骤，供参考实现。
+
+1. 从请求头`Headers`获取`Request-ID`，商户侧`Web`解决方案可能有差异，请求头的`Request-ID`可能大小写不敏感，请根据自身应用来定；
+2. 获取请求`body`体的`XML`纯文本；
+3. 调用`SDK`内置方法，根据[签名算法](https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=4_3)做本地数据签名计算，然后与通知文本的`sign`做`Hash::equals`对比验签；
+4. 消息体需要解密的，调用`SDK`内置方法解密；
+5. 如遇到问题，请拿`Request-ID`点击[这里](https://support.pay.weixin.qq.com/online-service?utm_source=github&utm_medium=wechatpay-php&utm_content=apiv2)，联系官方在线技术支持；
+
+样例代码如下：
+
+```php
+use WeChatPay\Transformer;
+use WeChatPay\Crypto\Hash;
+use WeChatPay\Crypto\AesEcb;
+use WeChatPay\Formatter;
+
+$inBody = '';// 请根据实际情况获取，例如: file_get_contents('php://input');
+
+$apiv2Key = '';// 在商户平台上设置的APIv2密钥
+
+$inBodyArray = Transformer::toArray($inBody);
+
+// 部分通知体无`sign_type`，部分`sign_type`默认为`MD5`，部分`sign_type`默认为`HMAC-SHA256`
+// 部分通知无`sign`字典
+// 请根据官方开发文档确定
+['sign_type' => $signType, 'sign' => $sign] = $inBodyArray;
+
+$calculated = Hash::sign(
+    $signType ?? Hash::ALGO_MD5,// 如没获取到`sign_type`，假定默认为`MD5`
+    Formatter::queryStringLike(Formatter::ksort($inBodyArray)),
+    $apiv2Key
+);
+
+$signatureStatus = Hash::equals($calculated, $sign);
+
+if ($signatureStatus) {
+    // 如需要解密的
+    ['req_info' => $reqInfo] = $inBodyArray;
+    $inBodyReqInfoXml = AesEcb::decrypt($reqInfo, Hash::md5($apiv2Key));
+    $inBodyReqInfoArray = Transformer::toArray($inBodyReqInfoXml);
+    // print_r($inBodyReqInfoArray);// 打印解密后的结果
+}
+```

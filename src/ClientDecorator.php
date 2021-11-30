@@ -133,9 +133,9 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
-        [$protocol, $pathname] = static::prepare($uri);
+        [$protocol, $pathname] = self::prepare(UriTemplate::expand($uri, $options));
 
-        return $this->select($protocol)->request($method, UriTemplate::expand($pathname, $options), $options);
+        return $this->select($protocol)->request($method, $pathname, $options);
     }
 
     /**
@@ -143,8 +143,8 @@ final class ClientDecorator implements ClientDecoratorInterface
      */
     public function requestAsync(string $method, string $uri, array $options = []): PromiseInterface
     {
-        [$protocol, $pathname] = static::prepare($uri);
+        [$protocol, $pathname] = self::prepare(UriTemplate::expand($uri, $options));
 
-        return $this->select($protocol)->requestAsync($method, UriTemplate::expand($pathname, $options), $options);
+        return $this->select($protocol)->requestAsync($method, $pathname, $options);
     }
 }
