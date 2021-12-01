@@ -65,9 +65,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
 
-      - run: composer config platform.php 8.0.999
-        if: matrix.php-version > 8.0
-
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
