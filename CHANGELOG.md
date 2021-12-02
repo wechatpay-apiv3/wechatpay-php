@@ -1,14 +1,15 @@
 # 变更历史
 
-## [1.4.2](../../compare/v1.4.1...v1.4.2) - 2021-11-08
+## [1.4.2](../../compare/v1.4.1...v1.4.2) - 2021-11-30
 
 - 优化`Rsa::parse`代码逻辑，去除`is_resource`/`is_object`检测;
 - 调整`Rsa::from[Pkcs8|Pkcs1|Spki]`加载语法糖实现，以`Rsa::from`为统一入口；
+- 优化`ClientDecorator::request[Async]`处理逻辑，优先替换`URI Template`变量，可支持短链模式调用接口；
 
 ## [1.4.1](../../compare/v1.4.0...v1.4.1) - 2021-11-03
 
 - 新增`phpstan/phpstan:^1.0`支持；
-- 优化代码，消除函数内部不安全的`Unsafe call to private|protected method|property ... through static::`调用隐患；
+- 优化代码，消除函数内部不安全的`Unsafe call to private method|property ... through static::`调用隐患；
 
 ## [1.4.0](../../compare/v1.3.2...v1.4.0) - 2021-10-24
 

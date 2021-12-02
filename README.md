@@ -235,7 +235,7 @@ GET /v3/pay/transactions/out-trade-no/{out_trade_no}
 + Path 变量的值，以同名参数传入执行方法
 + Query 参数，以名为 `query` 的参数传入执行方法
 
-以查询订单为 `GET` 例子。
+以[查询订单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_2.shtml) `GET` 方法为例：
 
 ```php
 $promise = $instance
@@ -248,7 +248,7 @@ $promise = $instance
 ]);
 ```
 
-以 [关单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml) 为 `POST` 例子。
+以 [关单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml) `POST` 方法为例：
 
 ```php
 $promise = $instance
@@ -530,7 +530,7 @@ AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_da
 
 v1.2 提供了统一的加载函数 `RSA::from()`。
 
-- `Rsa::from($thing, $type)` 支持从文件/字符串加载公/私钥和证书，使用方法可参考 [RsaTest.php](https://github.com/wechatpay-apiv3/wechatpay-php/blob/main/tests/Crypto/RsaTest.php)
+- `Rsa::from($thing, $type)` 支持从文件/字符串加载公/私钥和证书，使用方法可参考 [RsaTest.php](tests/Crypto/RsaTest.php)
 - `Rsa::fromPkcs1`是个语法糖，支持加载 `PKCS#1` 格式的公/私钥，入参是 `base64` 字符串
 - `Rsa::fromPkcs8`是个语法糖，支持加载 `PKCS#8` 格式的私钥，入参是 `base64` 字符串
 - `Rsa::fromSpki`是个语法糖，支持加载 `SPKI` 格式的公钥，入参是 `base64` 字符串
