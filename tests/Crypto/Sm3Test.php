@@ -6,6 +6,7 @@ use function array_combine;
 use function array_map;
 use function file_get_contents;
 use function preg_match_all;
+use function rtrim;
 use function str_repeat;
 use function strlen;
 
@@ -53,7 +54,7 @@ class Sm3Test extends TestCase
 
         return array_combine(
             $matches['file'],
-            array_map(static function(string $file, string $digest): array { return [$file, $digest]; }, $matches['file'], $matches['digest'])
+            array_map(static function(string $file, string $digest): array { return [$file, rtrim($digest)]; }, $matches['file'], $matches['digest'])
         ) ?: [];
     }
 
