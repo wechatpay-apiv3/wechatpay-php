@@ -25,7 +25,7 @@
 
 ## 项目状态
 
-当前版本为 `1.4.2` 测试版本。项目版本遵循 [语义化版本号](https://semver.org/lang/zh-CN/)。如果你使用的版本 `<=v1.3.2`，升级前请参考 [升级指南](UPGRADING.md)。
+当前版本为 `1.5.0` 测试版本。项目版本遵循 [语义化版本号](https://semver.org/lang/zh-CN/)。如果你使用的版本 `<=v1.3.2`，升级前请参考 [升级指南](UPGRADING.md)。
 
 为了向广大开发者提供更好的使用体验，微信支付诚挚邀请您将**使用微信支付 API v3 SDK**中的感受反馈给我们。本问卷可能会占用您不超过2分钟的时间，感谢您的支持。
 
@@ -60,7 +60,7 @@ composer require wechatpay/wechatpay
 
 ```json
 "require": {
-    "wechatpay/wechatpay": "^1.4.2"
+    "wechatpay/wechatpay": "^1.5.0"
 }
 ```
 
@@ -125,7 +125,7 @@ $instance = Builder::factory([
 ```php
 try {
     $resp = $instance
-    ->chain('v3/pay/transaction/native')
+    ->chain('v3/pay/transactions/native')
     ->post(['json' => [
         'mchid'        => '1900006XXX',
         'out_trade_no' => 'native12177525012014070332333',
@@ -193,7 +193,7 @@ promise->wait();
 
 ```
 
-`xxxAsync` 返回的是 [Guzzle Promises](https://github.com/guzzle/promises)。你可以做两件事：
+`【get|post|put|patch|delete]Async` 返回的是 [Guzzle Promises](https://github.com/guzzle/promises)。你可以做两件事：
 
 + 成功时使用 `then()` 处理得到的 `Psr\Http\Message\ResponseInterface`，（可选地）将它传给下一个 `then()`
 + 失败时使用 `otherwise()` 处理异常
@@ -222,7 +222,7 @@ GET /v3/pay/transactions/out-trade-no/{out_trade_no}
 
 链式串联的基本单元是 URI Path 中的 [segments](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)，`segments` 之间以 `->` 连接。连接的规则如下：
 
-+ 普通 segment 
++ 普通 segment
   + 直接书写。例如 `v3->pay->transactions->native`
   + 使用 `chain()`。例如 `chain('v3/pay/transactions/native')`
 + 包含连字号(-)的 segment
@@ -241,14 +241,14 @@ GET /v3/pay/transactions/out-trade-no/{out_trade_no}
 $promise = $instance
 ->v3->pay->transactions->id->_transaction_id_
 ->getAsync([
-    // 
+    // 请求查询参数
     'query' => ['mchid' => '1230000109'],
     // 变量名 => 变量值
     'transaction_id' => '1217752501201407033233368018',
 ]);
 ```
 
-以 [关单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml) `POST` 方法为例：
+以[关闭订单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml) `POST` 方法为例：
 
 ```php
 $promise = $instance
@@ -528,13 +528,22 @@ AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_da
 
 ### 如何加载公/私钥和证书
 
-v1.2 提供了统一的加载函数 `RSA::from()`。
+`v1.2`提供了统一的加载函数 `Rsa::from($thing, $type)`。
 
-- `Rsa::from($thing, $type)` 支持从文件/字符串加载公/私钥和证书，使用方法可参考 [RsaTest.php](tests/Crypto/RsaTest.php)
+- `Rsa::from` 支持从文件/字符串加载公/私钥和证书，使用方法可参考 [RsaTest.php](tests/Crypto/RsaTest.php)
 - `Rsa::fromPkcs1`是个语法糖，支持加载 `PKCS#1` 格式的公/私钥，入参是 `base64` 字符串
 - `Rsa::fromPkcs8`是个语法糖，支持加载 `PKCS#8` 格式的私钥，入参是 `base64` 字符串
 - `Rsa::fromSpki`是个语法糖，支持加载 `SPKI` 格式的公钥，入参是 `base64` 字符串
 - `Rsa::pkcs1ToSpki`是个 `RSA公钥` 格式转换函数，入参是 `base64` 字符串
+
+### 为什么我自己拼装的URL，比如`Path`上含`openid`参数值，请求时被替换成小写了？
+
+类库自`v1.0`起就是`URI`大小写敏感的，所以自己组装的`URI`默认情况下就会被替换成小写，相关问题见[#56](https://github.com/wechatpay-apiv3/wechatpay-php/issues/56), [#69](https://github.com/wechatpay-apiv3/wechatpay-php/issues/69)。`URI.pathname`上若有变量需要传递时，需要以 [URI Template](https://www.rfc-editor.org/rfc/rfc6570.html) 的模版变量方式书写，比如：
+
+- `->v3->marketing->favor->users->_openid_->coupons->post(['openid' => 'AbcdEF12345'])`，推荐写法
+- `->v3->marketing->favor->users->{'{openid}'}->coupons->post(['openid' => 'AbcdEF12345'])`
+- `->chain('{+myurl}'->post(['myurl' => 'v3/marketing/favor/users/AbcdEF12345/coupons'])`
+- `->{'{+myurl}'}->post(['myurl' => 'v3/marketing/favor/users/AbcdEF12345/coupons'])`
 
 ### 如何计算商家券发券 API 的签名
 

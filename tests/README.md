@@ -88,26 +88,38 @@ Certificate:
          44:21:f3:84:b2:e1:e0:10:02:83:7e:20:29:f3:5c:92:19:2b:
          0d:64:59:0a:d7:76:ef:35:5a:66:bc:82:bf:db:5c:9c:c3:51:
          d4:5e:b7:bb
+touch ./tests/fixtures/mock.sm3.txt
+ls ./tests/fixtures/*.csv ./tests/fixtures/*.xml ./tests/fixtures/*.png | xargs openssl dgst -sm3 | tee ./tests/fixtures/mock.sm3.txt
+SM3(./tests/fixtures/bill.ALL.csv)= 33155754458989bcf6bbd7e22818a6655bcb0d44a01dcd6e647b4fdd941cbe74
+SM3(./tests/fixtures/fragment_injection.sample.xml)= e307b5ba5ae4cf8439acf279de979b97e2591300311f205ae3fbb5afe3c28e57
+SM3(./tests/fixtures/getpublickey.response.sample.xml)= e57759f9c82f65842ce7f95ae98a7fde71cbd7b80fe583a9de66b2e1eba3ccef
+SM3(./tests/fixtures/invalid.bad_entity.sample.xml)= 8858458c4b309a355abc2cdaf3034f5071c580316e72a30d30a33a0977a298c4
+SM3(./tests/fixtures/invalid.xxe_injection.sample.xml)= 47ca76e6901177aaf5277e9c9a91ffdb0c1690ff9506afe295a1c03230dfedd6
+SM3(./tests/fixtures/logo.png)= 1642420aa6800d2ccd7332aabab77ccc783063ed606731de516985cc9a878ded
+SM3(./tests/fixtures/paysuccess.notification.sample.xml)= d9ac7076e95772e683336e9ab83aa3a558ae9e8217f2f20723643b1f37017b69
+SM3(./tests/fixtures/refund.notification.req_info.sample.xml)= bbcae07605a5fa444270c772ee367e4ae5f4263e084807e60d784a0df9446f78
+SM3(./tests/fixtures/sendredpack.sample.xml)= 85745c208f2a2e75f881299a709c4dba58c0204e3d91c344f5a3040a3a3ed556
+SM3(./tests/fixtures/unifiedorder.sample.xml)= 3cf3e54eb1fe7b74aeb1584dbbf8df5ac59a22dea470620a6f005e265827d084
 vendor/bin/phpunit
-PHPUnit 9.5.9 by Sebastian Bergmann and contributors.
+PHPUnit 9.5.10 by Sebastian Bergmann and contributors.
 
-...............................................................  63 / 528 ( 11%)
-............................................................... 126 / 528 ( 23%)
-............................................................... 189 / 528 ( 35%)
-............................................................... 252 / 528 ( 47%)
-............................................................... 315 / 528 ( 59%)
-............................................................... 378 / 528 ( 71%)
-............................................................... 441 / 528 ( 83%)
-............................................................... 504 / 528 ( 95%)
-........................                                        528 / 528 (100%)
+...............................................................  63 / 540 ( 11%)
+............................................................... 126 / 540 ( 23%)
+............................................................... 189 / 540 ( 35%)
+............................................................... 252 / 540 ( 46%)
+............................................................... 315 / 540 ( 58%)
+............................................................... 378 / 540 ( 70%)
+............................................................... 441 / 540 ( 81%)
+............................................................... 504 / 540 ( 93%)
+....................................                            540 / 540 (100%)
 
-Time: 00:01.101, Memory: 12.00 MB
+Time: 00:00.750, Memory: 12.00 MB
 
-OK (528 tests, 2494 assertions)
+OK (540 tests, 2543 assertions)
 rm -rf ./tests/fixtures/mock.*
 ```
 
-如果希望静态测试，或者无`make`环境，希望手动进行测试，则可以提供以下8个文件(文件名需相同)，来代替测试用例准备工作。
+如果希望静态测试，或者无`make`环境，希望手动进行测试，则可以提供以下9个文件(文件名需相同)，来代替测试用例准备工作。
 
 ```
 tests/fixtures
@@ -118,6 +130,7 @@ tests/fixtures
 ├── mock.pwd.txt
 ├── mock.serial.txt
 ├── mock.sha256.crt
+├── mock.sm3.txt
 ├── mock.spki.pem
 ```
 
@@ -132,6 +145,7 @@ tests/fixtures
 |mock.pwd.txt|RSA私钥`PKCS#8`加密格式的密码|
 |mock.serial.txt|X509`证书序列号`，16进制格式|
 |mock.sha256.crt|`X509证书`，sha256签名格式|
+|mock.sm3.txt|国密`SM3`摘要值，`SM3(file)= digest`格式|
 |mock.spki.pem|RSA公钥`SPKI`格式|
 
 手动执行 `vendor/bin/phpunit` 即可运行已覆盖的测试用例。

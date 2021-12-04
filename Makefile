@@ -1,4 +1,4 @@
-all: stats keygen x509crt test clean
+all: stats keygen x509crt sm3dgst test clean
 
 keygen:
 	openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out ./tests/fixtures/mock.pkcs8.key
@@ -17,6 +17,10 @@ x509crt:
 	openssl x509 -req -sha256 -days 1 -set_serial "0x$${serial}" \
 		-signkey $${fixtures}mock.pkcs8.key -clrext -out $${fixtures}mock.sha256.crt \
 	&& openssl x509 -in $${fixtures}mock.sha256.crt -noout -text
+
+sm3dgst:
+	touch ./tests/fixtures/mock.sm3.txt
+	ls ./tests/fixtures/*.csv ./tests/fixtures/*.xml ./tests/fixtures/*.png | xargs openssl dgst -sm3 | tee ./tests/fixtures/mock.sm3.txt
 
 stats:
 	vendor/bin/phpstan analyse --no-progress --memory-limit 200M

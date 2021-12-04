@@ -1,5 +1,9 @@
 # 升级指南
 
+## 从 1.4 升级至 1.5
+
+纯PHP语言实现的国密`SM3`算法类，释放出`Sm3::digest`, `Sm3::file`两个开放函数，以支持电子发票上传接口所需的摘要值计算能力。本次升级为新增功能，向下兼容，升级无影响。
+
 ## 从 1.3 升级至 1.4
 
 v1.4版，对`Guzzle6`提供了**有限**兼容支持，最低可兼容至**v6.5.0**，原因是测试依赖的前向兼容`GuzzleHttp\Handler\MockHandler::reset()`方法，在这个版本上才可用，相关见 [Guzzle#2143](https://github.com/guzzle/guzzle/pull/2143)；
