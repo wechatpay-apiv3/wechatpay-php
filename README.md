@@ -193,7 +193,7 @@ promise->wait();
 
 ```
 
-`【get|post|put|patch|delete]Async` 返回的是 [Guzzle Promises](https://github.com/guzzle/promises)。你可以做两件事：
+`[get|post|put|patch|delete]Async` 返回的是 [Guzzle Promises](https://github.com/guzzle/promises)。你可以做两件事：
 
 + 成功时使用 `then()` 处理得到的 `Psr\Http\Message\ResponseInterface`，（可选地）将它传给下一个 `then()`
 + 失败时使用 `otherwise()` 处理异常
