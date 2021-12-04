@@ -73,6 +73,7 @@ jobs:
       - run: |
           make keygen
           make x509crt
+          make sm3dgst
 
       - run: vendor/bin/phpunit
 
