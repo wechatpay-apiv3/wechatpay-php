@@ -101,6 +101,7 @@ SM3(./tests/fixtures/refund.notification.req_info.sample.xml)= bbcae07605a5fa444
 SM3(./tests/fixtures/sendredpack.sample.xml)= 85745c208f2a2e75f881299a709c4dba58c0204e3d91c344f5a3040a3a3ed556
 SM3(./tests/fixtures/unifiedorder.sample.xml)= 3cf3e54eb1fe7b74aeb1584dbbf8df5ac59a22dea470620a6f005e265827d084
 vendor/bin/phpunit
+PHPUnit 9.5.10 by Sebastian Bergmann and contributors.
 ............................................................... 126 / 542 ( 23%)
 ............................................................... 189 / 542 ( 34%)
 ............................................................... 252 / 542 ( 46%)

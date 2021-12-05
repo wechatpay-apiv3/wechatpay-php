@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 class Sm3Test extends TestCase
 {
     private const FIXTURES = __DIR__ . '/../fixtures/mock.%s.txt';
-    private const OPENSSL_OUTPUTS_PATTERN = '|SM3\((?<file>[^\)]+)\)=\s(?<digest>[a-z0-9]+)|';
+    private const OPENSSL_OUTPUTS_PATTERN = '|SM3\((?<file>[^\)]+)\)=\s(?<digest>[a-f0-9]{64})|';
 
     /**
      * @return array<string,array{string,string}>
