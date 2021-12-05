@@ -5,8 +5,9 @@ namespace WeChatPay\Tests\Crypto;
 use function array_combine;
 use function array_map;
 use function file_get_contents;
+use function file_put_contents;
 use function preg_match_all;
-use function rtrim;
+use function sprintf;
 use function str_repeat;
 use function strlen;
 
@@ -15,8 +16,8 @@ use PHPUnit\Framework\TestCase;
 
 class Sm3Test extends TestCase
 {
-    private const FIXTURES = __DIR__ . '/../fixtures/mock.sm3.txt';
-    private const OPENSSL_OUTPUTS_PATTERN = '|SM3\((?<file>[^\)]+)\)=\s(?<digest>.+)\r?\n?|';
+    private const FIXTURES = __DIR__ . '/../fixtures/mock.%s.txt';
+    private const OPENSSL_OUTPUTS_PATTERN = '|SM3\((?<file>[^\)]+)\)=\s(?<digest>[a-z0-9]+)|';
 
     /**
      * @return array<string,array{string,string}>
@@ -49,12 +50,18 @@ class Sm3Test extends TestCase
      */
     public function fileDataProvider(): array
     {
-        $load = (string) file_get_contents(self::FIXTURES);
+        $load = (string) file_get_contents(sprintf(self::FIXTURES, 'sm3'));
         preg_match_all(self::OPENSSL_OUTPUTS_PATTERN, $load, $matches);
 
-        return array_combine(
+        $samples = [];
+        foreach ($this->digestDataProvider() as $id => [$content, $digest]) {
+            file_put_contents($file = sprintf(self::FIXTURES, $content), $content);
+            $samples[$id] = [$file, $digest];
+        }
+
+        return $samples + array_combine(
             $matches['file'],
-            array_map(static function(string $file, string $digest): array { return [$file, rtrim($digest)]; }, $matches['file'], $matches['digest'])
+            array_map(static function(string $file, string $digest): array { return [$file, $digest]; }, $matches['file'], $matches['digest'])
         ) ?: [];
     }
 

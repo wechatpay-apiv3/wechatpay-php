@@ -291,7 +291,7 @@ class Sm3
     private static function compress(int $a, int $b, int $c, int $d, int $e, int $f, int $g, int $h, int $tj, int $wi, int $wj, int $ff, int $gg): array
     {
         $a12 = self::rotate($a, 12);
-        $ss1 = self::rotate((($a12 + $e + $tj) & SM3_UNSIGNED_NO), 7);
+        $ss1 = self::rotate(($a12 + $e + $tj) & SM3_UNSIGNED_NO, 7);
         $ss2 = $ss1 ^ $a12;
         $tt1 = ($ff + $d + $ss2 + $wj) & SM3_UNSIGNED_NO;
         $tt2 = ($gg + $h + $ss1 + $wi) & SM3_UNSIGNED_NO;
