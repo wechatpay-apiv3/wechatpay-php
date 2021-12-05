@@ -59,10 +59,10 @@ class Sm3Test extends TestCase
             $samples[$id] = [$file, $digest];
         }
 
-        return $samples + array_combine(
+        return $samples + (array_combine(
             $matches['file'],
             array_map(static function(string $file, string $digest): array { return [$file, $digest]; }, $matches['file'], $matches['digest'])
-        ) ?: [];
+        ) ?: []);
     }
 
     /**
