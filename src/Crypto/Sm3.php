@@ -202,7 +202,7 @@ class Sm3
         $len = self::mod($bit);
 
         return self::bin(sprintf(
-            '%s%s%s', $len % 2 ? '' : '0', 2 ** ($len % 4), str_repeat('0', (int)($len / 4))
+            '%s%s%s', $len % 2 ? '' : '0', 1 << ($len % 4), str_repeat('0', (int)($len / 4))
         )) . pack('J', $bit);
     }
 
