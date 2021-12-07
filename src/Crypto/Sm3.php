@@ -15,13 +15,21 @@ use function strlen;
 use function substr;
 use function unpack;
 
+use const PHP_INT_MAX;
+
+use RuntimeException;
 use UnexpectedValueException;
 
 const SM3_CBLOCK = 64;
 const SM3_LBLOCK = SM3_CBLOCK / 4;
 const SM3_BBLOCK = SM3_CBLOCK * 8;
 const SM3_448MOD512 = SM3_BBLOCK - SM3_CBLOCK;
-const SM3_UNSIGNED_NO = 0xffffffff;
+
+/** @var int 本类库能够处理的块(`BLOCK`)的最大值, 32位系统(`255M`), 64位系统(`9223372036854775807/8`) */
+const SM3_PBLOCAK_MAX = PHP_INT_MAX / 8;
+
+/** @var int 无符号32位整型最大值 */
+const SM3_UINT32_MAX = 0xffffffff;
 
 /** @var string 4.1 初始值 */
 const SM3_INIT_VECTOR = '7380166f4914b2b9172442d7da8a0600a96f30bc163138aae38dee4db0fb0e4e';
@@ -79,7 +87,7 @@ class Sm3
      */
     private static function rotate(int $a, int $k): int
     {
-        return (($a << $k) & SM3_UNSIGNED_NO) | ($a >> (32 - $k));
+        return (($a << $k) & SM3_UINT32_MAX) | ($a >> (32 - $k));
     }
 
     /**
@@ -291,10 +299,10 @@ class Sm3
     private static function compress(int $a, int $b, int $c, int $d, int $e, int $f, int $g, int $h, int $tj, int $wi, int $wj, int $ff, int $gg): array
     {
         $a12 = self::rotate($a, 12);
-        $ss1 = self::rotate(($a12 + $e + $tj) & SM3_UNSIGNED_NO, 7);
+        $ss1 = self::rotate(($a12 + $e + $tj) & SM3_UINT32_MAX, 7);
         $ss2 = $ss1 ^ $a12;
-        $tt1 = ($ff + $d + $ss2 + $wj) & SM3_UNSIGNED_NO;
-        $tt2 = ($gg + $h + $ss1 + $wi) & SM3_UNSIGNED_NO;
+        $tt1 = ($ff + $d + $ss2 + $wj) & SM3_UINT32_MAX;
+        $tt2 = ($gg + $h + $ss1 + $wi) & SM3_UINT32_MAX;
         $d   = $c;
         $c   = self::rotate($b, 9);
         $b   = $a;
@@ -314,7 +322,12 @@ class Sm3
      */
     public static function digest(string $thing): string
     {
-        return self::calc(self::bin(SM3_INIT_VECTOR), $thing . self::pad(strlen($thing)));
+        $len = strlen($thing);
+        if ($len > SM3_PBLOCAK_MAX) {
+            throw new RuntimeException('Cannot guarantee the \$thing is proceed correctly.');
+        }
+
+        return self::calc(self::bin(SM3_INIT_VECTOR), $thing . self::pad($len));
     }
 
     /**
@@ -341,8 +354,16 @@ class Sm3
             /** @var string $str */
             $str  = fread($fd, SM3_CBLOCK);
             $len += strlen($str);
+            if ($len > SM3_PBLOCAK_MAX) {
+                $imprecision = 'The precision is reachable, cannot process anymore.';
+                break;
+            }
         } while (!feof($fd));
         fclose($fd);
+
+        if (isset($imprecision)) {
+            throw new RuntimeException($imprecision);
+        }
 
         return self::calc($iv, $str . self::pad($len));
     }
