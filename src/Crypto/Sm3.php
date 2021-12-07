@@ -70,7 +70,7 @@ class Sm3
      * @param string $word - 字/The `32bit` string
      * @return int[] - 无符号32位比特值(大端)/The unsigned `32bit` long in big endian byte order
      */
-    private static function numbers(string $word): array
+    private static function uInt32BE(string $word): array
     {
         $bits = unpack('N*', $word);
         if (false === $bits) {
@@ -239,13 +239,13 @@ class Sm3
     private static function CF(string $iv, string $thing): string
     {
         /** 5.3.2.b */
-        $word = self::numbers($thing);
+        $word = self::uInt32BE($thing);
         for ($i = 16; $i < 68; $i++) {
             $word[$i] = self::expand($word[$i - 16], $word[$i - 9], $word[$i - 3], $word[$i - 13], $word[$i - 6]);
         }
 
         /** 5.3.2.c */
-        [$a, $b, $c, $d, $e, $f, $g, $h] = self::numbers($iv);
+        [$a, $b, $c, $d, $e, $f, $g, $h] = self::uInt32BE($iv);
         for ($j = 0; $j < 64; $j++) {
             [$a, $b, $c, $d, $e, $f, $g, $h] = self::compress(
                 $a, $b, $c, $d, $e, $f, $g, $h,
