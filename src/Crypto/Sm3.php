@@ -91,7 +91,7 @@ class Sm3
     }
 
     /**
-     * 4.2 常量(函数)
+     * 4.2 常量`T`(函数)，随`j`的变化取不同的值
      *
      * @param int $j
      */
@@ -101,7 +101,7 @@ class Sm3
     }
 
     /**
-     * 4.3 布尔函数`FF`
+     * 4.3 布尔函数`FF`，随`j`的变化取不同的表达式
      *
      * @param int $j
      * @param int $x
@@ -114,7 +114,7 @@ class Sm3
     }
 
     /**
-     * 4.3 布尔函数`GG`
+     * 4.3 布尔函数`GG`，随`j`的变化取不同的表达式
      *
      * @param int $j
      * @param int $x
@@ -127,7 +127,7 @@ class Sm3
     }
 
     /**
-     * 4.3 低位布尔函数`FF0`
+     * 4.3 低权布尔函数`FF0`
      *
      * @param int $x
      * @param int $y
@@ -139,7 +139,7 @@ class Sm3
     }
 
     /**
-     * 4.3 高位布尔函数`FF1`
+     * 4.3 高权布尔函数`FF1`
      *
      * @param int $x
      * @param int $y
@@ -151,7 +151,7 @@ class Sm3
     }
 
     /**
-     * 4.3 低位布尔函数`GG0`
+     * 4.3 低权布尔函数`GG0`
      *
      * @param int $x
      * @param int $y
@@ -163,7 +163,7 @@ class Sm3
     }
 
     /**
-     * 4.3 高位布尔函数`GG1`
+     * 4.3 高权布尔函数`GG1`
      *
      * @param int $x
      * @param int $y
@@ -175,7 +175,7 @@ class Sm3
     }
 
     /**
-     * 4.4 置换函数`P0`
+     * 4.4 压缩函数中的置换函数`P0`
      *
      * @param int $x
      */
@@ -185,7 +185,7 @@ class Sm3
     }
 
     /**
-     * 4.4 置换函数`P1`
+     * 4.4 消息扩展中的置换函数`P1`
      *
      * @param int $x
      */
@@ -206,7 +206,7 @@ class Sm3
      */
     private static function pad(int $length): string
     {
-        $bit = $length * 8;
+        $bit = $length << 3;
         $len = self::mod($bit);
 
         return self::bin(sprintf(
