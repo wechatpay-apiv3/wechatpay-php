@@ -21,12 +21,12 @@ use RuntimeException;
 use UnexpectedValueException;
 
 const SM3_CBLOCK = 64;
-const SM3_LBLOCK = SM3_CBLOCK / 4;
-const SM3_BBLOCK = SM3_CBLOCK * 8;
+const SM3_LBLOCK = SM3_CBLOCK >> 2;
+const SM3_BBLOCK = SM3_CBLOCK << 3;
 const SM3_448MOD512 = SM3_BBLOCK - SM3_CBLOCK;
 
 /** @var int 本类库能够处理的块(`BLOCK`)的最大值, 32位系统(`255M`), 64位系统(`9223372036854775807/8`) */
-const SM3_PBLOCK_MAX = (PHP_INT_MAX >> 3) - 2 * SM3_CBLOCK;
+const SM3_PBLOCK_MAX = (PHP_INT_MAX >> 3) - (2 << 6);
 
 /** @var int 无符号32位整型最大值 */
 const SM3_UINT32_MAX = 0xffffffff;
@@ -210,7 +210,7 @@ class Sm3
         $len = self::mod($bit);
 
         return self::bin(sprintf(
-            '%s%s%s', $len % 2 ? '' : '0', 1 << ($len % 4), str_repeat('0', (int)($len / 4))
+            '%s%s%s', $len % 2 ? '' : '0', 1 << ($len % 4), str_repeat('0', $len >> 2)
         )) . pack('J', $bit);
     }
 
@@ -222,9 +222,9 @@ class Sm3
      */
     private static function calc(string $iv, string $word): string
     {
-        $max = strlen($word) / SM3_CBLOCK;
+        $max = strlen($word) >> 6;
         for ($i = 0; $i < $max; $i++) {
-            $iv = self::CF($iv, substr($word, $i * SM3_CBLOCK, SM3_CBLOCK));
+            $iv = self::CF($iv, substr($word, $i << 6, SM3_CBLOCK));
         }
 
         return bin2hex($iv);
