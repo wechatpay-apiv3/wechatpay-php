@@ -26,7 +26,7 @@ const SM3_BBLOCK = SM3_CBLOCK * 8;
 const SM3_448MOD512 = SM3_BBLOCK - SM3_CBLOCK;
 
 /** @var int 本类库能够处理的块(`BLOCK`)的最大值, 32位系统(`255M`), 64位系统(`9223372036854775807/8`) */
-const SM3_PBLOCAK_MAX = PHP_INT_MAX / 8;
+const SM3_PBLOCK_MAX = (PHP_INT_MAX >> 3) - 2 * SM3_CBLOCK;
 
 /** @var int 无符号32位整型最大值 */
 const SM3_UINT32_MAX = 0xffffffff;
@@ -323,7 +323,7 @@ class Sm3
     public static function digest(string $thing): string
     {
         $len = strlen($thing);
-        if ($len > SM3_PBLOCAK_MAX) {
+        if ($len > SM3_PBLOCK_MAX || $len < 0) {
             throw new RuntimeException('Cannot guarantee the \$thing is proceed correctly.');
         }
 
@@ -354,7 +354,7 @@ class Sm3
             /** @var string $str */
             $str  = fread($fd, SM3_CBLOCK);
             $len += strlen($str);
-            if ($len > SM3_PBLOCAK_MAX) {
+            if ($len > SM3_PBLOCK_MAX) {
                 $imprecision = 'The precision is reachable, cannot process anymore.';
                 break;
             }
