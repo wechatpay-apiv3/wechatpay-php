@@ -318,12 +318,15 @@ class Sm3
     /**
      * 5.4 杂凑值(字符)
      *
+     * **警告：** 如果给定的字符串超大，可能会撑爆内存，推荐使用 `::file($path)` 流式处理。
+     *
      * @param string $thing - 字符消息/The bytes string
      */
     public static function digest(string $thing): string
     {
         $len = strlen($thing);
-        if ($len > SM3_PBLOCK_MAX || $len < 0) {
+        // While the \$len was already overhead of the signed `PHP_INT_MAX`, here shall be a problem.
+        if ($len > SM3_PBLOCK_MAX) {
             throw new RuntimeException('Cannot guarantee the \$thing is proceed correctly.');
         }
 
