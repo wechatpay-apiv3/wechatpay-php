@@ -31,8 +31,8 @@ const SM3_PBLOCK_MAX = (PHP_INT_MAX >> 3) - (2 << 6);
 /** @var int 无符号32位整型最大值 */
 const SM3_UINT32_MAX = 0xffffffff;
 
-/** @var string 4.1 初始值 */
-const SM3_INIT_VECTOR = '7380166f4914b2b9172442d7da8a0600a96f30bc163138aae38dee4db0fb0e4e';
+/** @var int[] 4.1 初始值 */
+const SM3_INIT_VECTOR = [0x7380166f, 0x4914b2b9, 0x172442d7, 0xda8a0600, 0xa96f30bc, 0x163138aa, 0xe38dee4d, 0xb0fb0e4e];
 
 /** @var int[] 4.2 常量 */
 const SM3_CONSTRAINTS = [0x79cc4519, 0x7a879d8a];
@@ -217,26 +217,27 @@ class Sm3
     /**
      * 5.3.1 迭代过程
      *
-     * @param string $iv - 向量值/The vector string
+     * @param int[] $iv - 向量值/The vector string
      * @param string $word - 字/The `32bit` string
      */
-    private static function calc(string $iv, string $word): string
+    private static function calc(array $iv, string $word): string
     {
-        $max = strlen($word) >> 6;
-        for ($i = 0; $i < $max; $i++) {
-            $iv = self::CF($iv, substr($word, $i << 6, SM3_CBLOCK));
+        $max = strlen($word);
+        for ($i = 0; $i < $max; $i += SM3_CBLOCK) {
+            $iv = self::CF($iv, substr($word, $i, SM3_CBLOCK));
         }
 
-        return bin2hex($iv);
+        return bin2hex(pack('N*', ...$iv));
     }
 
     /**
      * 5.3.2 消息扩展
      *
-     * @param string $iv - 向量值/The vector string
+     * @param int[] $iv - 向量值/The vector string
      * @param string $thing - 待迭代压缩比特串/The `32bit` string
+     * @return int[]
      */
-    private static function CF(string $iv, string $thing): string
+    private static function CF(array $iv, string $thing): array
     {
         /** 5.3.2.b */
         $word = self::uInt32BE($thing);
@@ -245,7 +246,7 @@ class Sm3
         }
 
         /** 5.3.2.c */
-        [$a, $b, $c, $d, $e, $f, $g, $h] = self::uInt32BE($iv);
+        [$A, $B, $C, $D, $E, $F, $G, $H] = [$a, $b, $c, $d, $e, $f, $g, $h] = $iv;
         for ($j = 0; $j < 64; $j++) {
             [$a, $b, $c, $d, $e, $f, $g, $h] = self::compress(
                 $a, $b, $c, $d, $e, $f, $g, $h,
@@ -257,7 +258,7 @@ class Sm3
             );
         }
 
-        return sprintf('%s', pack('N*', $a, $b, $c, $d, $e, $f, $g, $h) ^ $iv);
+        return [$a ^ $A, $b ^ $B, $c ^ $C, $d ^ $D, $e ^ $E, $f ^ $F, $g ^ $G, $h ^ $H];
     }
 
     /**
@@ -330,7 +331,7 @@ class Sm3
             throw new RuntimeException('Cannot guarantee the \$thing is proceed correctly.');
         }
 
-        return self::calc(self::bin(SM3_INIT_VECTOR), $thing . self::pad($len));
+        return self::calc(SM3_INIT_VECTOR, $thing . self::pad($len));
     }
 
     /**
@@ -351,7 +352,7 @@ class Sm3
             throw new UnexpectedValueException('Cannot `fread` the file \$path string.');
         }
 
-        $iv = self::bin(SM3_INIT_VECTOR);
+        $iv = SM3_INIT_VECTOR;
         if (($len = strlen($str)) === SM3_CBLOCK) do {
             $iv   = self::CF($iv, $str);
             /** @var string $str */
