@@ -17,7 +17,6 @@ use function unpack;
 
 use const PHP_INT_MAX;
 
-use RuntimeException;
 use UnexpectedValueException;
 
 const SM3_CBLOCK = 64;
@@ -328,7 +327,7 @@ class Sm3
         $len = strlen($thing);
         // While the \$len was already overhead of the signed `PHP_INT_MAX`, here shall be a problem.
         if ($len > SM3_PBLOCK_MAX) {
-            throw new RuntimeException('Cannot guarantee the \$thing is proceed correctly.');
+            throw new UnexpectedValueException('Cannot guarantee the \$thing is proceed correctly.');
         }
 
         return self::calc(SM3_INIT_VECTOR, $thing . self::pad($len));
@@ -346,27 +345,29 @@ class Sm3
             throw new UnexpectedValueException('Cannot `fopen` the file \$path string.');
         }
 
-        $str = fread($fd, SM3_CBLOCK);
-        if (false === $str) {
-            fclose($fd);
-            throw new UnexpectedValueException('Cannot `fread` the file \$path string.');
-        }
-
-        $iv = SM3_INIT_VECTOR;
-        if (($len = strlen($str)) === SM3_CBLOCK) do {
-            $iv   = self::CF($iv, $str);
-            /** @var string $str */
-            $str  = fread($fd, SM3_CBLOCK);
-            $len += strlen($str);
-            if ($len > SM3_PBLOCK_MAX) {
-                $imprecision = 'The precision is reachable, cannot process anymore.';
+        $iv  = SM3_INIT_VECTOR;
+        $len = 0;
+        do {
+            $str = fread($fd, SM3_CBLOCK);
+            if (false === $str) {
+                $message = 'Cannot `fread` the file \$path string.';
                 break;
             }
+            $len += $one = strlen($str);
+            if ($len > SM3_PBLOCK_MAX) {
+                $message = 'The precision is reachable, cannot process any more.';
+                break;
+            }
+            if ($one < SM3_CBLOCK) {
+                // While the \$one >= `SM3_448MOD512/8`, the \$str shall be padded in two `SM3_CBLOCK` length.
+                break;
+            }
+            $iv = self::CF($iv, $str);
         } while (!feof($fd));
         fclose($fd);
 
-        if (isset($imprecision)) {
-            throw new RuntimeException($imprecision);
+        if (isset($message)) {
+            throw new UnexpectedValueException($message);
         }
 
         return self::calc($iv, $str . self::pad($len));
