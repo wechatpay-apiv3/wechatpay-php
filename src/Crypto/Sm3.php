@@ -33,8 +33,17 @@ const SM3_UINT32_MAX = 0xffffffff;
 /** @var int[] 4.1 初始值 */
 const SM3_INIT_VECTOR = [0x7380166f, 0x4914b2b9, 0x172442d7, 0xda8a0600, 0xa96f30bc, 0x163138aa, 0xe38dee4d, 0xb0fb0e4e];
 
-/** @var int[] 4.2 常量 */
-const SM3_CONSTRAINTS = [0x79cc4519, 0x7a879d8a];
+/** @var int[] 4.2 常量(64轮循环左移后的定值) */
+const SM3_CONSTRAINTS = [/* based on the `0x79cc4519` and `0x7a879d8a` */
+    0x79cc4519, 0xf3988a32, 0xe7311465, 0xce6228cb, 0x9cc45197, 0x3988a32f, 0x7311465e, 0xe6228cbc,
+    0xcc451979, 0x988a32f3, 0x311465e7, 0x6228cbce, 0xc451979c, 0x88a32f39, 0x11465e73, 0x228cbce6,
+    0x9d8a7a87, 0x3b14f50f, 0x7629ea1e, 0xec53d43c, 0xd8a7a879, 0xb14f50f3, 0x629ea1e7, 0xc53d43ce,
+    0x8a7a879d, 0x14f50f3b, 0x29ea1e76, 0x53d43cec, 0xa7a879d8, 0x4f50f3b1, 0x9ea1e762, 0x3d43cec5,
+    0x7a879d8a, 0xf50f3b14, 0xea1e7629, 0xd43cec53, 0xa879d8a7, 0x50f3b14f, 0xa1e7629e, 0x43cec53d,
+    0x879d8a7a, 0x0f3b14f5, 0x1e7629ea, 0x3cec53d4, 0x79d8a7a8, 0xf3b14f50, 0xe7629ea1, 0xcec53d43,
+    0x9d8a7a87, 0x3b14f50f, 0x7629ea1e, 0xec53d43c, 0xd8a7a879, 0xb14f50f3, 0x629ea1e7, 0xc53d43ce,
+    0x8a7a879d, 0x14f50f3b, 0x29ea1e76, 0x53d43cec, 0xa7a879d8, 0x4f50f3b1, 0x9ea1e762, 0x3d43cec5,
+];
 
 /**
  * SM3密码杂凑算法/SM3 Cryptographic Hash Algorithm(`GM/T 0004-2012`)
@@ -90,16 +99,6 @@ class Sm3
     }
 
     /**
-     * 4.2 常量`T`(函数)，随`j`的变化取不同的值
-     *
-     * @param int $j
-     */
-    private static function T(int $j): int
-    {
-        return SM3_CONSTRAINTS[$j < SM3_LBLOCK ? 0 : 1];
-    }
-
-    /**
      * 4.3 布尔函数`FF`，随`j`的变化取不同的表达式
      *
      * @param int $j
@@ -109,7 +108,7 @@ class Sm3
      */
     private static function FF(int $j, int $x, int $y, int $z): int
     {
-        return $j < SM3_LBLOCK ? self::FF0($x, $y, $z) : self::FF1($x, $y, $z);
+        return $j < SM3_LBLOCK ? $x ^ $y ^ $z : ($x & $y) | (($x | $y) & $z);
     }
 
     /**
@@ -122,55 +121,7 @@ class Sm3
      */
     private static function GG(int $j, int $x, int $y, int $z): int
     {
-        return $j < SM3_LBLOCK ? self::GG0($x, $y, $z) : self::GG1($x, $y, $z);
-    }
-
-    /**
-     * 4.3 低权布尔函数`FF0`
-     *
-     * @param int $x
-     * @param int $y
-     * @param int $z
-     */
-    private static function FF0(int $x, int $y, int $z): int
-    {
-        return $x ^ $y ^ $z;
-    }
-
-    /**
-     * 4.3 高权布尔函数`FF1`
-     *
-     * @param int $x
-     * @param int $y
-     * @param int $z
-     */
-    private static function FF1(int $x, int $y, int $z): int
-    {
-        return ($x & $y) | ($x & $z) | ($y & $z);
-    }
-
-    /**
-     * 4.3 低权布尔函数`GG0`
-     *
-     * @param int $x
-     * @param int $y
-     * @param int $z
-     */
-    private static function GG0(int $x, int $y, int $z): int
-    {
-        return $x ^ $y ^ $z;
-    }
-
-    /**
-     * 4.3 高权布尔函数`GG1`
-     *
-     * @param int $x
-     * @param int $y
-     * @param int $z
-     */
-    private static function GG1(int $x, int $y, int $z): int
-    {
-        return ($x & $y) | (~$x & $z);
+        return $j < SM3_LBLOCK ? $x ^ $y ^ $z : $z ^ $x & ($y ^ $z);
     }
 
     /**
@@ -249,7 +200,7 @@ class Sm3
         for ($j = 0; $j < 64; $j++) {
             [$a, $b, $c, $d, $e, $f, $g, $h] = self::compress(
                 $a, $b, $c, $d, $e, $f, $g, $h,
-                self::rotate(self::T($j), $j % 32),
+                SM3_CONSTRAINTS[$j],
                 $word[$j],
                 $word[$j] ^ $word[$j + 4],
                 self::FF($j, $a, $b, $c),
