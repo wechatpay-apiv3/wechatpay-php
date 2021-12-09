@@ -246,7 +246,7 @@ class Sm3
         }
 
         /** 5.3.2.c */
-        [$A, $B, $C, $D, $E, $F, $G, $H] = [$a, $b, $c, $d, $e, $f, $g, $h] = $iv;
+        [$a, $b, $c, $d, $e, $f, $g, $h] = $iv;
         for ($j = 0; $j < 64; $j++) {
             [$a, $b, $c, $d, $e, $f, $g, $h] = self::compress(
                 $a, $b, $c, $d, $e, $f, $g, $h,
@@ -258,7 +258,7 @@ class Sm3
             );
         }
 
-        return [$a ^ $A, $b ^ $B, $c ^ $C, $d ^ $D, $e ^ $E, $f ^ $F, $g ^ $G, $h ^ $H];
+        return [$a ^ $iv[0], $b ^ $iv[1], $c ^ $iv[2], $d ^ $iv[3], $e ^ $iv[4], $f ^ $iv[5], $g ^ $iv[6], $h ^ $iv[7]];
     }
 
     /**
