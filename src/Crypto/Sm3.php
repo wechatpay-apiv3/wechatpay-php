@@ -9,6 +9,10 @@ use function feof;
 use function fopen;
 use function fread;
 use function hex2bin;
+use function in_array;
+use function openssl_digest;
+use function openssl_error_string;
+use function openssl_get_md_methods;
 use function pack;
 use function sprintf;
 use function strlen;
@@ -275,6 +279,10 @@ class Sm3
      */
     public static function digest(string $thing): string
     {
+        if (self::nativeOpenSSLSupport()) {
+            return self::nativeOpenSSLDigest($thing);
+        }
+
         $len = strlen($thing);
         // While the \$len was already overhead of the signed `PHP_INT_MAX`, here shall be a problem.
         if ($len > SM3_PBLOCK_MAX) {
@@ -322,5 +330,31 @@ class Sm3
         }
 
         return self::calc($iv, $str . self::pad($len));
+    }
+
+    /**
+     * 检测当前PHP绑定的`ex-openssl`扩展是否支持`SM3`算法
+     */
+    private static function nativeOpenSSLSupport(): bool
+    {
+        return in_array('sm3', openssl_get_md_methods());
+    }
+
+    /**
+     * 使用当前PHP绑定的`ex-openssl`扩展所支持`SM3`算法进行摘要
+     *
+     * @param string $data - 字符消息/The bytes string
+     * @param boolean $binary - 二进制输出
+     */
+    private static function nativeOpenSSLDigest(string $data, bool $binary = false): string
+    {
+        if (false === ($result = openssl_digest($data, 'sm3', $binary))) {
+            if (false === ($message = openssl_error_string())) {
+                $message = 'Cannot digest the \$data by the `openssl_digest` function';
+            }
+            throw new UnexpectedValueException($message);
+        }
+
+        return $result;
     }
 }
