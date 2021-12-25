@@ -127,7 +127,7 @@ v1.1 版本对内部中间件实现做了微调，对`APIv3的异常`做了部�
 
 异步模型，建议始终判断当前异常是否实例于`\GuzzleHttp\Exception\RequestException`，判断方法见[README](README.md)示例代码。
 
-## 从 0.2 迁移至 1.0
+## 从 wechatpay-guzzle-middleware 0.2 迁移至 1.0
 
 如 [变更历史](CHANGELOG.md) 所述，本类库自1.0不兼容`wechatpay/wechatpay-guzzle-middleware:~0.2`，原因如下：
 
