@@ -227,8 +227,8 @@ GET /v3/pay/transactions/out-trade-no/{out_trade_no}
 + 包含连字号(-)的 segment
   + 使用驼峰 camelCase 风格书写。例如 `merchant-service` 可写成 `merchantService`
   + 使用 `{'foo-bar'}` 方式书写。例如 `{'merchant-service'}`
-+ Path 变量
-  + **推荐使用**使用 `_variable_name_` 方式书写，支持 IDE 提示。例如 `v3->pay->transactions->id->_transaction_id_`。
++ Path 变量。URL 中的 Path 变量应使用这种写法，避免自行组装或者使用 `chain()`，导致大小写处理错误
+  + **推荐使用** `_variable_name_` 方式书写，支持 IDE 提示。例如 `v3->pay->transactions->id->_transaction_id_`。
   + 使用 `{'{variable_name}'}` 方式书写。例如 `v3->pay->transactions->id->{'{transaction_id}'}`
 + 请求的 `HTTP METHOD` 作为链式最后的执行方法。例如 `v3->pay->transactions->native->post([ ... ])`
 + Path 变量的值，以同名参数传入执行方法
