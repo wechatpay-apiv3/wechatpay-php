@@ -58,7 +58,7 @@ composer require wechatpay/wechatpay
 
 + **商户 API 证书**，是用来证实商户身份的。证书中包含商户号、证书序列号、证书有效期等信息，由证书授权机构（Certificate Authority ，简称 CA）签发，以防证书被伪造或篡改。详情见 [什么是商户API证书？如何获取商户API证书？](https://kf.qq.com/faq/161222NneAJf161222U7fARv.html) 。
 
-+ **商户 API 私钥**。你申请商户 API 证书时，会生成商户私钥，并保存在本地证书文件夹的文件 apiclient_key.pem 中。为了证明 API 请求是由你发送的，你应使用 商户 API 私钥对请求进行签名。
++ **商户 API 私钥**。你申请商户 API 证书时，会生成商户私钥，并保存在本地证书文件夹的文件 apiclient_key.pem 中。为了证明 API 请求是由你发送的，你应使用商户 API 私钥对请求进行签名。
 
 > :warning: 不要把私钥文件暴露在公共场合，如上传到 Github，写在 App 代码中等。
 
@@ -516,7 +516,9 @@ $instance->v3->certificates->getAsync()->then(static function($res) { return $re
 composer exec CertificateDownloader.php -- -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
 ```
 
-微信支付平台证书下载后，会用获得的`平台证书`对返回的消息进行验签。下载器同时开启了 `Guzzle` 的 `debug => true` 参数，方便查询请求/响应消息的基础调试信息。
+微信支付平台证书下载后，下载器会用获得的`平台证书`对返回的消息进行验签。下载器同时开启了 `Guzzle` 的 `debug => true` 参数，方便查询请求/响应消息的基础调试信息。
+
+ℹ️ [什么是APIv3密钥？如何设置？](https://kf.qq.com/faq/180830E36vyQ180830AZFZvu.html)
 
 ### 证书和回调解密需要的AesGcm解密在哪里？
 
