@@ -15,13 +15,13 @@
 
 ### 功能介绍
 
-1. 微信支付 APIv2 和 APIv3 的 Guzzle HTTP 客户端，支持同步或异步发送请求，并自动进行请求签名和应答验签
+1. 微信支付 APIv2 和 APIv3 的 Guzzle HTTP 客户端，支持 [同步](#同步请求) 或[异步](#异步请求) 发送请求，并自动进行请求签名和应答验签
 
-1. 链式实现的 URI Template
+1. [链式实现的 URI Template](#链式-uri-template)
 
 1. [敏感信息加解密](#敏感信息加解密)
 
-1. 回调通知验签和解密，详情可见 [回调通知](#回调通知)
+1. [回调通知](#回调通知)的验签和解密
 
 ## 项目状态
 
@@ -58,17 +58,17 @@ composer require wechatpay/wechatpay
 
 + **商户 API 证书**，是用来证实商户身份的。证书中包含商户号、证书序列号、证书有效期等信息，由证书授权机构（Certificate Authority ，简称 CA）签发，以防证书被伪造或篡改。详情见 [什么是商户API证书？如何获取商户API证书？](https://kf.qq.com/faq/161222NneAJf161222U7fARv.html) 。
 
-+ **商户 API 私钥**。商户申请商户 API 证书时，会生成商户私钥，并保存在本地证书文件夹的文件 apiclient_key.pem 中。
++ **商户 API 私钥**。你申请商户 API 证书时，会生成商户私钥，并保存在本地证书文件夹的文件 apiclient_key.pem 中。为了证明 API 请求是由你发送的，你应使用 商户 API 私钥对请求进行签名。
 
 > :warning: 不要把私钥文件暴露在公共场合，如上传到 Github，写在 App 代码中等。
 
-+ **微信支付平台证书**。微信支付平台证书是指：由微信支付负责申请，包含微信支付平台标识、公钥信息的证书。商户使用微信支付平台证书中的公钥验证应答签名。
++ **微信支付平台证书**。微信支付平台证书是指：由微信支付负责申请，包含微信支付平台标识、公钥信息的证书。你需使用微信支付平台证书中的公钥验证 API 应答和回调通知的签名。
+
+> ℹ️ 你需要先手工 [下载平台证书](#如何下载平台证书) 才能使用 SDK 发起请求。
 
 + **证书序列号**。每个证书都有一个由 CA 颁发的唯一编号，即证书序列号。
 
-### 示例代码：微信支付平台证书下载
-
-> ℹ️ 你需要先手工 [下载平台证书](#如何下载平台证书) 才能使用 SDK 发起请求。
+### 示例程序：微信支付平台证书下载
 
 ```php
 <?php
@@ -109,17 +109,10 @@ $instance = Builder::factory([
 ]);
 
 // 发送请求
-$instance->chain('v3/certificates')->getAsync(
-    ['debug' => true]
-)->otherwise(static function($exception) {
-    self::prompt($exception->getMessage());
-    if ($exception instanceof RequestException && $exception->hasResponse()) {
-        /** @var ResponseInterface $response */
-        $response = $exception->getResponse();
-        self::prompt((string) $response->getBody(), '', '');
-    }
-    self::prompt($exception->getTraceAsString());
-})->wait();
+$resp = $instance->chain('v3/certificates')->get(
+    ['debug' => true] // 调试模式，https://docs.guzzlephp.org/en/stable/request-options.html#debug
+);
+echo $resp->getBody(), PHP_EOL;
 ```
 
 ## 文档
