@@ -15,13 +15,13 @@
 
 ### 功能介绍
 
-1. 微信支付 APIv2 和 APIv3 的 Guzzle HTTP 客户端，支持同步或异步发送请求，并自动进行请求签名和应答验签
+1. 微信支付 APIv2 和 APIv3 的 Guzzle HTTP 客户端，支持 [同步](#同步请求) 或[异步](#异步请求) 发送请求，并自动进行请求签名和应答验签
 
-1. 链式实现的 URI Template
+1. [链式实现的 URI Template](#链式-uri-template)
 
 1. [敏感信息加解密](#敏感信息加解密)
 
-1. 回调通知验签和解密，详情可见 [回调通知](#回调通知)
+1. [回调通知](#回调通知)的验签和解密
 
 ## 项目状态
 
@@ -44,57 +44,58 @@
 
 ## 安装
 
-推荐使用PHP包管理工具`composer`引入SDK到项目中：
-
-### 方式一
-
-在项目目录中，通过composer命令行添加：
+推荐使用 PHP 包管理工具 [Composer](https://getcomposer.org/) 安装 SDK：
 
 ```shell
 composer require wechatpay/wechatpay
 ```
 
-### 方式二
-
-在项目的`composer.json`中加入以下配置：
-
-```json
-"require": {
-    "wechatpay/wechatpay": "^1.4.2"
-}
-```
-
-添加配置后，执行安装
-
-```shell
-composer install
-```
-
 ## 开始
 
-以下部分是 [微信支付 API v3](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay-1.shtml) 的指引。如果你是 API v2 的使用者，请看 [README_APIv2](README_APIv2.md)。
+ℹ️ 以下是 [微信支付 API v3](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay-1.shtml) 的指引。如果你是 API v2 的使用者，请看 [README_APIv2](README_APIv2.md)。
 
-### 初始化
+### 概念
 
-首先，通过 `WeChatPay\Builder::factory` 构建一个客户端实例。
++ **商户 API 证书**，是用来证实商户身份的。证书中包含商户号、证书序列号、证书有效期等信息，由证书授权机构（Certificate Authority ，简称 CA）签发，以防证书被伪造或篡改。详情见 [什么是商户API证书？如何获取商户API证书？](https://kf.qq.com/faq/161222NneAJf161222U7fARv.html) 。
+
++ **商户 API 私钥**。你申请商户 API 证书时，会生成商户私钥，并保存在本地证书文件夹的文件 apiclient_key.pem 中。为了证明 API 请求是由你发送的，你应使用商户 API 私钥对请求进行签名。
+
+> :warning: 不要把私钥文件暴露在公共场合，如上传到 Github，写在 App 代码中等。
+
++ **微信支付平台证书**。微信支付平台证书是指：由微信支付负责申请，包含微信支付平台标识、公钥信息的证书。你需使用微信支付平台证书中的公钥验证 API 应答和回调通知的签名。
+
+> ℹ️ 你需要先手工 [下载平台证书](#如何下载平台证书) 才能使用 SDK 发起请求。
+
++ **证书序列号**。每个证书都有一个由 CA 颁发的唯一编号，即证书序列号。
+
+### 示例程序：微信支付平台证书下载
 
 ```php
+<?php
+
+require_once('vendor/autoload.php');
+
 use WeChatPay\Builder;
 use WeChatPay\Crypto\Rsa;
 use WeChatPay\Util\PemUtil;
 
+// 设置参数
+
 // 商户号
 $merchantId = '190000****';
-// 从本地文件中加载商户API私钥，商户API私钥会用来生成请求的签名
+
+// 从本地文件中加载「商户API私钥」，「商户API私钥」会用来生成请求的签名
 $merchantPrivateKeyFilePath = 'file:///path/to/merchant/apiclient_key.pem';
 $merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath, Rsa::KEY_TYPE_PRIVATE);
-// 商户API证书序列号
+
+// 「商户API证书」的「证书序列号」
 $merchantCertificateSerial = '3775B6A45ACD588826D15E583A95F5DD********';
 
-// 从本地文件中加载微信支付平台证书，用来验证微信支付应答的签名
+// 从本地文件中加载「微信支付平台证书」，用来验证微信支付应答的签名
 $platformCertificateFilePath = 'file:///path/to/wechatpay/cert.pem';
 $platformPublicKeyInstance = Rsa::from($platformCertificateFilePath, Rsa::KEY_TYPE_PUBLIC);
-// 获取微信支付平台证书序列号
+
+// 从「微信支付平台证书」中获取「证书序列号」
 $platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateFilePath);
 
 // 构造一个 APIv3 客户端实例
@@ -106,17 +107,15 @@ $instance = Builder::factory([
         $platformCertificateSerial => $platformPublicKeyInstance,
     ],
 ]);
+
+// 发送请求
+$resp = $instance->chain('v3/certificates')->get(
+    ['debug' => true] // 调试模式，https://docs.guzzlephp.org/en/stable/request-options.html#debug
+);
+echo $resp->getBody(), PHP_EOL;
 ```
 
-#### 名词解释
-
-+ **商户 API 证书**，是用来证实商户身份的。证书中包含商户号、证书序列号、证书有效期等信息，由证书授权机构（Certificate Authority ，简称 CA）签发，以防证书被伪造或篡改。如何获取请见 [商户 API 证书](https://wechatpay-api.gitbook.io/wechatpay-api-v3/ren-zheng/zheng-shu#shang-hu-api-zheng-shu) 。
-+ **商户 API 私钥**。商户申请商户 API 证书时，会生成商户私钥，并保存在本地证书文件夹的文件 apiclient_key.pem 中。
-
-> :warning: 不要把私钥文件暴露在公共场合，如上传到 Github，写在 App 代码中等。
-
-+ **微信支付平台证书**。微信支付平台证书是指：由微信支付负责申请，包含微信支付平台标识、公钥信息的证书。商户使用微信支付平台证书中的公钥验证应答签名。微信支付平台证书可由下载器 `./bin/CertificateDownloader.php` 下载，或使用 [获取平台证书列表](https://wechatpay-api.gitbook.io/wechatpay-api-v3/ren-zheng/zheng-shu#ping-tai-zheng-shu) 接口下载。
-+ **证书序列号**。每个证书都有一个由 CA 颁发的唯一编号，即证书序列号。扩展阅读 [如何查看证书序列号](https://wechatpay-api.gitbook.io/wechatpay-api-v3/chang-jian-wen-ti/zheng-shu-xiang-guan#ru-he-cha-kan-zheng-shu-xu-lie-hao) 。
+## 文档
 
 ### 同步请求
 
@@ -125,7 +124,7 @@ $instance = Builder::factory([
 ```php
 try {
     $resp = $instance
-    ->chain('v3/pay/transaction/native')
+    ->chain('v3/pay/transactions/native')
     ->post(['json' => [
         'mchid'        => '1900006XXX',
         'out_trade_no' => 'native12177525012014070332333',
@@ -193,7 +192,7 @@ promise->wait();
 
 ```
 
-`xxxAsync` 返回的是 [Guzzle Promises](https://github.com/guzzle/promises)。你可以做两件事：
+`[get|post|put|patch|delete]Async` 返回的是 [Guzzle Promises](https://github.com/guzzle/promises)。你可以做两件事：
 
 + 成功时使用 `then()` 处理得到的 `Psr\Http\Message\ResponseInterface`，（可选地）将它传给下一个 `then()`
 + 失败时使用 `otherwise()` 处理异常
@@ -222,14 +221,14 @@ GET /v3/pay/transactions/out-trade-no/{out_trade_no}
 
 链式串联的基本单元是 URI Path 中的 [segments](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.3)，`segments` 之间以 `->` 连接。连接的规则如下：
 
-+ 普通 segment 
++ 普通 segment
   + 直接书写。例如 `v3->pay->transactions->native`
   + 使用 `chain()`。例如 `chain('v3/pay/transactions/native')`
 + 包含连字号(-)的 segment
   + 使用驼峰 camelCase 风格书写。例如 `merchant-service` 可写成 `merchantService`
   + 使用 `{'foo-bar'}` 方式书写。例如 `{'merchant-service'}`
-+ Path 变量
-  + **推荐使用**使用 `_variable_name_` 方式书写，支持 IDE 提示。例如 `v3->pay->transactions->id->_transaction_id_`。
++ Path 变量。URL 中的 Path 变量应使用这种写法，避免自行组装或者使用 `chain()`，导致大小写处理错误
+  + **推荐使用** `_variable_name_` 方式书写，支持 IDE 提示。例如 `v3->pay->transactions->id->_transaction_id_`。
   + 使用 `{'{variable_name}'}` 方式书写。例如 `v3->pay->transactions->id->{'{transaction_id}'}`
 + 请求的 `HTTP METHOD` 作为链式最后的执行方法。例如 `v3->pay->transactions->native->post([ ... ])`
 + Path 变量的值，以同名参数传入执行方法
@@ -241,14 +240,14 @@ GET /v3/pay/transactions/out-trade-no/{out_trade_no}
 $promise = $instance
 ->v3->pay->transactions->id->_transaction_id_
 ->getAsync([
-    // 
+    // Query 参数
     'query' => ['mchid' => '1230000109'],
     // 变量名 => 变量值
     'transaction_id' => '1217752501201407033233368018',
 ]);
 ```
 
-以 [关单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml) `POST` 方法为例：
+以 [关闭订单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml) `POST` 方法为例：
 
 ```php
 $promise = $instance
@@ -511,7 +510,15 @@ $instance->v3->certificates->getAsync()->then(static function($res) { return $re
 
 ### 如何下载平台证书？
 
-使用内置的[平台证书下载器](bin/README.md) `./bin/CertificateDownloader.php` ，验签逻辑与有`平台证书`请求其他接口一致，即在请求完成后，立即用获得的`平台证书`对返回的消息进行验签，下载器同时开启了 `Guzzle` 的 `debug => true` 参数，方便查询请求/响应消息的基础调试信息。
+使用内置的[微信支付平台证书下载器](bin/README.md)。
+
+```bash
+composer exec CertificateDownloader.php -- -k ${apiV3key} -m ${mchId} -f ${mchPrivateKeyFilePath} -s ${mchSerialNo} -o ${outputFilePath}
+```
+
+微信支付平台证书下载后，下载器会用获得的`平台证书`对返回的消息进行验签。下载器同时开启了 `Guzzle` 的 `debug => true` 参数，方便查询请求/响应消息的基础调试信息。
+
+ℹ️ [什么是APIv3密钥？如何设置？](https://kf.qq.com/faq/180830E36vyQ180830AZFZvu.html)
 
 ### 证书和回调解密需要的AesGcm解密在哪里？
 
@@ -528,7 +535,7 @@ AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_da
 
 ### 如何加载公/私钥和证书
 
-v1.2 提供了统一的加载函数 `RSA::from()`。
+`v1.2`提供了统一的加载函数 `Rsa::from($thing, $type)`。
 
 - `Rsa::from($thing, $type)` 支持从文件/字符串加载公/私钥和证书，使用方法可参考 [RsaTest.php](tests/Crypto/RsaTest.php)
 - `Rsa::fromPkcs1`是个语法糖，支持加载 `PKCS#1` 格式的公/私钥，入参是 `base64` 字符串
@@ -539,6 +546,17 @@ v1.2 提供了统一的加载函数 `RSA::from()`。
 ### 如何计算商家券发券 API 的签名
 
 使用 `Hash::sign()`计算 APIv2 的签名，示例请参考 APIv2 文档的 [数据签名](README_APIv2.md#数据签名)。
+
+### 为什么 URL 上的变量 OpenID，请求时被替换成小写了？
+
+本 SDK 把 URL 中的大写视为包含连字号的 segment。请求时， `camelCase` 会替换为 `camel-case`。相关 issue 可参考 [#56](https://github.com/wechatpay-apiv3/wechatpay-php/issues/56)、 [#69](https://github.com/wechatpay-apiv3/wechatpay-php/issues/69)。
+
+为了避免大小写错乱，URL 中存在变量时的正确做法是：使用 [链式 URI Template](#%E9%93%BE%E5%BC%8F-uri-template) 的 Path 变量。比如：
+
+- **推荐写法** `->v3->marketing->favor->users->_openid_->coupons->post(['openid' => 'AbcdEF12345'])`
+- `->v3->marketing->favor->users->{'{openid}'}->coupons->post(['openid' => 'AbcdEF12345'])`
+- `->chain('{+myurl}'->post(['myurl' => 'v3/marketing/favor/users/AbcdEF12345/coupons'])`
+- `->{'{+myurl}'}->post(['myurl' => 'v3/marketing/favor/users/AbcdEF12345/coupons'])`
 
 ## 联系我们
 
