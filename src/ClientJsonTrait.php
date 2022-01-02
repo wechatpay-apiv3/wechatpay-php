@@ -5,7 +5,6 @@ namespace WeChatPay;
 use function abs;
 use function intval;
 use function is_string;
-use function is_numeric;
 use function is_resource;
 use function is_object;
 use function is_array;
@@ -169,7 +168,7 @@ trait ClientJsonTrait
     public static function jsonBased(array $config = []): Client
     {
         if (!(
-           isset($config['mchid']) && (is_string($config['mchid']) || is_numeric($config['mchid']))
+           isset($config['mchid']) && is_string($config['mchid'])
         )) { throw new Exception\InvalidArgumentException(Exception\ERR_INIT_MCHID_IS_MANDATORY); }
 
         if (!(
