@@ -555,7 +555,7 @@ AesGcm::decrypt($cert->ciphertext, $apiv3Key, $cert->nonce, $cert->associated_da
 
 - **推荐写法** `->v3->marketing->favor->users->_openid_->coupons->post(['openid' => 'AbcdEF12345'])`
 - `->v3->marketing->favor->users->{'{openid}'}->coupons->post(['openid' => 'AbcdEF12345'])`
-- `->chain('{+myurl}'->post(['myurl' => 'v3/marketing/favor/users/AbcdEF12345/coupons'])`
+- `->chain('{+myurl}')->post(['myurl' => 'v3/marketing/favor/users/AbcdEF12345/coupons'])`
 - `->{'{+myurl}'}->post(['myurl' => 'v3/marketing/favor/users/AbcdEF12345/coupons'])`
 
 ## 联系我们
