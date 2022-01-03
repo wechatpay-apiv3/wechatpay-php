@@ -215,7 +215,7 @@ class ClientDecoratorTest extends TestCase
          * @var string $contentType
          */
         ['Accept' => $accept, 'Content-Type' => $contentType] = $headers;
-        self::assertEquals('application/json, text/plain, application/x-gzip', $accept);
+        self::assertStringStartsWith('application/json, text/plain, application/x-gzip', $accept);
         self::assertEquals('application/json; charset=utf-8', $contentType);
 
         $stackDebugInfo = strval($stack);
