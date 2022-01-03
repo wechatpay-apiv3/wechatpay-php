@@ -42,7 +42,7 @@ trait ClientJsonTrait
     protected static $defaults = [
         'base_uri' => 'https://api.mch.weixin.qq.com/',
         'headers' => [
-            'Accept' => 'application/json, text/plain, application/x-gzip',
+            'Accept' => 'application/json, text/plain, application/x-gzip, application/pdf, image/*;q=0.5, image/png',
             'Content-Type' => 'application/json; charset=utf-8',
         ],
     ];
