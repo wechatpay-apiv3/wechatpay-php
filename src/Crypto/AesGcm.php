@@ -10,7 +10,6 @@ use function base64_decode;
 use function substr;
 use function strlen;
 use function openssl_decrypt;
-use function intval;
 
 use const OPENSSL_RAW_DATA;
 
@@ -72,7 +71,7 @@ class AesGcm implements AesInterface
         self::preCondition();
 
         $ciphertext = base64_decode($ciphertext);
-        $authTag = substr($ciphertext, $tailLength = intval(-static::BLOCK_SIZE));
+        $authTag = substr($ciphertext, $tailLength = 0 - static::BLOCK_SIZE);
         $tagLength = strlen($authTag);
 
         /* Manually checking the length of the tag, because the `openssl_decrypt` was mentioned there, it's the caller's responsibility. */

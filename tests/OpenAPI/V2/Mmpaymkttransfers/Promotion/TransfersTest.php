@@ -3,7 +3,6 @@
 namespace WeChatPay\Tests\OpenAPI\V2\Mmpaymkttransfers\Promotion;
 
 use WeChatPay\Builder;
-use WeChatPay\Formatter;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;

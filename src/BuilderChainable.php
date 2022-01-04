@@ -20,9 +20,9 @@ interface BuilderChainable
     /**
      * Chainable the given `$segment` with the `ClientDecoratorInterface` instance
      *
-     * @param string|int $segment - The sgement or `URI`
+     * @param string $segment - The sgement or `URI`
      */
-    public function chain($segment): BuilderChainable;
+    public function chain(string $segment): BuilderChainable;
 
     /**
      * Create and send an HTTP GET request.
