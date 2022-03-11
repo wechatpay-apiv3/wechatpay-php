@@ -11,6 +11,7 @@ use WeChatPay\Crypto\Rsa;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\LazyOpenStream;
 use Psr\Http\Message\ResponseInterface;
@@ -36,9 +37,10 @@ class DownloadTest extends TestCase
 
     /**
      * @param array<string,mixed> $config
+     * @param string $assertMethod
      * @return array{\WeChatPay\BuilderChainable,HandlerStack}
      */
-    private function newInstance(array $config): array
+    private function newInstance(array $config, string $assertMethod): array
     {
         $instance = Builder::factory($config + ['handler' => $this->guzzleMockStack(),]);
 
@@ -47,14 +49,18 @@ class DownloadTest extends TestCase
         $stack = clone $stack;
         $stack->remove('verifier');
 
-        $stack->push(Middleware::tap(/* before */static function (RequestInterface $request) {
-            // Note here: because the `$target` is used onto the `signature`, **IT IS NOT SAME TO** the original URI.
-            // And **NO IDEA** about the platform HOW TO VERIFY the `media_slot_url` while there contains the double pct-encoded characters.
+        $stack->push(Middleware::tap(/* before */static function (RequestInterface $request) use ($assertMethod) {
+            self::assertTrue($request->hasHeader('Authorization'));
+            self::assertStringStartsWith('WECHATPAY2-SHA256-RSA2048', $request->getHeaderLine('Authorization'));
+
             $target = $request->getRequestTarget();
-            self::assertNotEquals('/v3/merchant-service/images/' . self::MEDIA_ID, $target);
-        }, /* after */static function (RequestInterface $request) {
+            self::{$assertMethod}('/v3/merchant-service/images/' . self::MEDIA_ID, $target);
+        }, /* after */static function (RequestInterface $request) use ($assertMethod) {
+            self::assertTrue($request->hasHeader('Authorization'));
+            self::assertStringStartsWith('WECHATPAY2-SHA256-RSA2048', $request->getHeaderLine('Authorization'));
+
             $target = $request->getRequestTarget();
-            self::assertNotEquals('/v3/merchant-service/images/' . self::MEDIA_ID, $target);
+            self::{$assertMethod}('/v3/merchant-service/images/' . self::MEDIA_ID, $target);
         }));
 
         return [$instance, $stack];
@@ -88,7 +94,11 @@ class DownloadTest extends TestCase
      */
     public function testGet(array $config, string $slot, ResponseInterface $respondor): void
     {
-        [$endpoint, $stack] = $this->newInstance($config);
+        // Note here: using the `UriTemplate` may be caused that, **IT IS NOT SAME TO** the original URI,
+        // because the `$slot` is used onto the `signature` algorithm.
+        // More @see https://github.com/guzzle/uri-template/issues/18
+        // And **NO IDEA** about the platform HOW TO VERIFY the `$slot` while there contains the double pct-encoded characters.
+        [$endpoint, $stack] = $this->newInstance($config, 'assertNotEquals');
 
         $this->mock->reset();
         $this->mock->append($respondor);
@@ -124,7 +134,11 @@ class DownloadTest extends TestCase
      */
     public function testGetAsync(array $config, string $slot, ResponseInterface $respondor): void
     {
-        [$endpoint, $stack] = $this->newInstance($config);
+        // Note here: using the `UriTemplate` may be caused that, **IT IS NOT SAME TO** the original URI,
+        // because the `$slot` is used onto the `signature` algorithm.
+        // More @see https://github.com/guzzle/uri-template/issues/18
+        // And **NO IDEA** about the platform HOW TO VERIFY the `media_slot_url` while there contains the double pct-encoded characters.
+        [$endpoint, $stack] = $this->newInstance($config, 'assertNotEquals');
 
         $this->mock->reset();
         $this->mock->append($respondor);
@@ -143,5 +157,60 @@ class DownloadTest extends TestCase
         ])->then(static function (ResponseInterface $response) {
             self::responseAssertion($response);
         })->wait();
+    }
+
+    /**
+     * @dataProvider mockDataProvider
+     * @param array<string,mixed> $config
+     * @param string $slot
+     * @param ResponseInterface $respondor
+     */
+    public function testUseStandardGuzzleHttpClient(array $config, string $slot, ResponseInterface $respondor): void
+    {
+        [$endpoint, $stack] = $this->newInstance($config, 'assertEquals');
+
+        $relativeUrl = 'v3/merchant-service/images/' . $slot;
+        $fullUri = 'https://api.mch.weixin.qq.com/' . $relativeUrl;
+
+        $apiv3Client = $endpoint->getDriver()->select();
+        self::assertInstanceOf(ClientInterface::class, $apiv3Client);
+
+        $this->mock->reset();
+
+        $this->mock->append($respondor);
+        $response = $apiv3Client->request('GET', $relativeUrl, ['handler' => $stack]);
+        self::responseAssertion($response);
+
+        $this->mock->append($respondor);
+        $response = $apiv3Client->request('GET', $fullUri, ['handler' => $stack]);
+        self::responseAssertion($response);
+
+        $this->mock->append($respondor);
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no signature `get` method */
+        $response = $apiv3Client->get($relativeUrl, ['handler' => $stack]);
+        self::responseAssertion($response);
+
+        $this->mock->append($respondor);
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no signature `get` method */
+        $response = $apiv3Client->get($fullUri, ['handler' => $stack]);
+        self::responseAssertion($response);
+
+        $asyncAssertion = static function (ResponseInterface $response) {
+            self::responseAssertion($response);
+        };
+
+        $this->mock->append($respondor);
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no signature `getAsync` method */
+        $response = $apiv3Client->getAsync($fullUri, ['handler' => $stack])->then($asyncAssertion)->wait();
+
+        $this->mock->append($respondor);
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no signature `getAsync` method */
+        $response = $apiv3Client->getAsync($relativeUrl, ['handler' => $stack])->then($asyncAssertion)->wait();
+
+        $this->mock->append($respondor);
+        $response = $apiv3Client->requestAsync('GET', $relativeUrl, ['handler' => $stack])->then($asyncAssertion)->wait();
+
+        $this->mock->append($respondor);
+        $response = $apiv3Client->requestAsync('GET', $fullUri, ['handler' => $stack])->then($asyncAssertion)->wait();
     }
 }
