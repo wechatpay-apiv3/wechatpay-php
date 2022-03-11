@@ -47,7 +47,7 @@ class MediaUtilTest extends TestCase
                     self::FOPEN_MODE_BINARYREAD
                 ),
                 'transparent.gif',
-                hash(self::ALGO_SHA256, base64_decode($data)) ?: '',
+                hash(self::ALGO_SHA256, base64_decode($data)) ?: '', /** @phpstan-ignore-line compatible for PHP7 */
             ],
             'data://text/csv;base64 string' => [//RFC2397
                 'active_user_batch_tasks_001.csv',
@@ -59,7 +59,7 @@ class MediaUtilTest extends TestCase
                     self::FOPEN_MODE_BINARYREAD
                 ),
                 'active_user_batch_tasks_001.csv',
-                hash(self::ALGO_SHA256, $data) ?: '',
+                hash(self::ALGO_SHA256, $data) ?: '', /** @phpstan-ignore-line compatible for PHP7 */
             ],
         ];
     }
