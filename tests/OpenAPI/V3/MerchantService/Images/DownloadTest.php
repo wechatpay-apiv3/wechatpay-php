@@ -137,7 +137,7 @@ class DownloadTest extends TestCase
         // Note here: using the `UriTemplate` may be caused that, **IT IS NOT SAME TO** the original URI,
         // because the `$slot` is used onto the `signature` algorithm.
         // More @see https://github.com/guzzle/uri-template/issues/18
-        // And **NO IDEA** about the platform HOW TO VERIFY the `media_slot_url` while there contains the double pct-encoded characters.
+        // And **NO IDEA** about the platform HOW TO VERIFY the `$slot` while there contains the double pct-encoded characters.
         [$endpoint, $stack] = $this->newInstance($config, 'assertNotEquals');
 
         $this->mock->reset();
@@ -186,12 +186,12 @@ class DownloadTest extends TestCase
         self::responseAssertion($response);
 
         $this->mock->append($respondor);
-        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no signature `get` method */
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `get` method signature */
         $response = $apiv3Client->get($relativeUrl, ['handler' => $stack]);
         self::responseAssertion($response);
 
         $this->mock->append($respondor);
-        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no signature `get` method */
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `get` method signature */
         $response = $apiv3Client->get($fullUri, ['handler' => $stack]);
         self::responseAssertion($response);
 
@@ -200,11 +200,11 @@ class DownloadTest extends TestCase
         };
 
         $this->mock->append($respondor);
-        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no signature `getAsync` method */
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `getAsync` method signature */
         $response = $apiv3Client->getAsync($fullUri, ['handler' => $stack])->then($asyncAssertion)->wait();
 
         $this->mock->append($respondor);
-        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no signature `getAsync` method */
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `getAsync` method signature */
         $response = $apiv3Client->getAsync($relativeUrl, ['handler' => $stack])->then($asyncAssertion)->wait();
 
         $this->mock->append($respondor);
