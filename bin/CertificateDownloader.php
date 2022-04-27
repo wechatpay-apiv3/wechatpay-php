@@ -78,7 +78,7 @@ class CertificateDownloader
     {
         static $certs = ['any' => null];
 
-        $outputDir = $opts['output'] ?? \sys_get_temp_dir();
+        $output = $opts['output'] ?? \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
         $apiv3Key = (string) $opts['key'];
 
         $instance = Builder::factory([
@@ -93,7 +93,7 @@ class CertificateDownloader
         $stack = $instance->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
         // The response middle stacks were executed one by one on `FILO` order.
         $stack->after('verifier', Middleware::mapResponse(self::certsInjector($apiv3Key, $certs)), 'injector');
-        $stack->before('verifier', Middleware::mapResponse(self::certsRecorder((string) $outputDir, $certs)), 'recorder');
+        $stack->before('verifier', Middleware::mapResponse(self::certsRecorder((string) $output, $certs)), 'recorder');
 
         $instance->chain('v3/certificates')->getAsync(
             ['debug' => true]
@@ -111,34 +111,33 @@ class CertificateDownloader
     /**
      * After `verifier` executed, wrote the platform certificate(s) onto disk.
      *
-     * @param string $outputDir
+     * @param string $output
      * @param array<string,?string> $certs
      *
      * @return callable(ResponseInterface)
      */
-    private static function certsRecorder(string $outputDir, array &$certs): callable {
-        return static function(ResponseInterface $response) use ($outputDir, &$certs): ResponseInterface {
+    private static function certsRecorder(string $output, array &$certs): callable {
+        return static function(ResponseInterface $response) use ($output, &$certs): ResponseInterface {
             $body = (string) $response->getBody();
             /** @var object{data:array<object{effective_time:string,expire_time:string:serial_no:string}>} $json */
             $json = \json_decode($body);
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
-            \array_walk($data, static function($row, $index, $certs) use ($outputDir) {
+            \array_walk($data, static function($row, $index, $certs) use ($output) {
                 $serialNo = $row->serial_no;
-                $outpath = $outputDir . \DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
 
                 self::prompt(
                     'Certificate #' . $index . ' {',
                     '    Serial Number: ' . self::highlight($serialNo),
                     '    Not Before: ' . (new \DateTime($row->effective_time))->format(\DateTime::W3C),
                     '    Not After: ' . (new \DateTime($row->expire_time))->format(\DateTime::W3C),
-                    '    Saved to: ' . self::highlight($outpath),
+                    '    Saved to: ' . self::highlight($output),
                     '    You may confirm the above infos again even if this library already did(by Crypto\Rsa::verify):',
-                    '      ' . self::highlight(\sprintf('openssl x509 -in %s -noout -serial -dates', $outpath)),
+                    '      ' . self::highlight(\sprintf('openssl x509 -in %s -noout -serial -dates', $output)),
                     '    Content: ', '', $certs[$serialNo] ?? '', '',
                     '}'
                 );
 
-                \file_put_contents($outpath, $certs[$serialNo]);
+                \file_put_contents($output, $certs[$serialNo]);
             }, $certs);
 
             return $response;
