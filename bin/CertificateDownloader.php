@@ -78,7 +78,7 @@ class CertificateDownloader
     {
         static $certs = ['any' => null];
 
-        $output = $opts['output'] ?? \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
+        $output = $opts['output'] ?? '';
         $apiv3Key = (string) $opts['key'];
 
         $instance = Builder::factory([
@@ -111,7 +111,7 @@ class CertificateDownloader
     /**
      * After `verifier` executed, wrote the platform certificate(s) onto disk.
      *
-     * @param string $output
+     * @param string $outputDir
      * @param array<string,?string> $certs
      *
      * @return callable(ResponseInterface)
@@ -124,6 +124,12 @@ class CertificateDownloader
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
             \array_walk($data, static function($row, $index, $certs) use ($output) {
                 $serialNo = $row->serial_no;
+
+                $output = $output ?: sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
+
+                if(is_dir($output)){
+                    $output .= \DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
+                }
 
                 self::prompt(
                     'Certificate #' . $index . ' {',
