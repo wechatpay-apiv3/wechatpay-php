@@ -2,6 +2,7 @@ name: bug or feature requests
 description: File a bug or feature requests
 body:
 - type: textarea
+  id: input-runtime
   attributes:
     label: 运行环境
     render: markdown
@@ -16,8 +17,8 @@ body:
         - wechatpay-php:
   validations:
     required: false
-
 - type: textarea
+  id: input-problem-description
   attributes:
     label: 描述你的问题现象
     description: |
@@ -35,7 +36,6 @@ body:
       4. 错误日志如下....
   validations:
     required: false
-
 - type: markdown
   attributes:
     value: |
