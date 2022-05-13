@@ -64,6 +64,7 @@ $res = $instance
       'desc'             => '理赔',
       'spbill_create_ip' => '192.168.0.1',
     ],
+    'need_vefify' => false //该接口没有返回sign字段，不需要验证返回签名
     'security' => true, //请求需要双向证书
     'debug' => true //开启调试模式
 ])

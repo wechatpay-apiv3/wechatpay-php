@@ -88,7 +88,10 @@ trait ClientXmlTrait
     {
         return static function (callable $handler) use ($secret): callable {
             return static function (RequestInterface $request, array $options = []) use ($secret, $handler): PromiseInterface {
-                return $handler($request, $options)->then(static function(ResponseInterface $response) use ($secret) {
+                $needVerify = (isset($options['sign_verify']) && $options['sign_verify'] == false) ? false : true;
+                return $handler($request, $options)->then(static function(ResponseInterface $response) use ($secret,$needVerify) {
+                    if(!$needVerify)
+                        return $response;
                     $result = Transformer::toArray(static::body($response));
 
                     /** @var ?string $sign */
@@ -122,7 +125,7 @@ trait ClientXmlTrait
         /** @var HandlerStack $stack */
         $stack = isset($config['handler']) && ($config['handler'] instanceof HandlerStack) ? (clone $config['handler']) : HandlerStack::create();
         $stack->before('prepare_body', static::transformRequest($config['mchid'] ?? null, $config['secret'] ?? '', $config['merchant'] ?? []), 'transform_request');
-        $stack->before('http_errors', static::transformResponse($config['secret'] ?? ''), 'transform_response');
+        $stack->before('http_errors', static::transformResponse($config['secret'] ?? '')    , 'transform_response');
         $config['handler'] = $stack;
 
         unset($config['mchid'], $config['serial'], $config['privateKey'], $config['certs'], $config['secret'], $config['merchant']);
