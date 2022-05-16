@@ -88,7 +88,7 @@ trait ClientXmlTrait
     {
         return static function (callable $handler) use ($secret): callable {
             return static function (RequestInterface $request, array $options = []) use ($secret, $handler): PromiseInterface {
-                $needVerify = (isset($options['sign_verify']) && $options['sign_verify'] == false) ? false : true;
+                $needVerify = (isset($options['wxpay_sign_verify']) && $options['wxpay_sign_verify'] == false) ? false : true;
                 return $handler($request, $options)->then(static function(ResponseInterface $response) use ($secret,$needVerify) {
                     if(!$needVerify)
                         return $response;
@@ -128,7 +128,7 @@ trait ClientXmlTrait
         $stack->before('http_errors', static::transformResponse($config['secret'] ?? '')    , 'transform_response');
         $config['handler'] = $stack;
 
-        unset($config['mchid'], $config['serial'], $config['privateKey'], $config['certs'], $config['secret'], $config['merchant']);
+        unset($config['mchid'], $config['serial'], $config['privateKey'], $config['certs'], $config['secret'], $config['merchant'],$config['wxpay_sign_verify']);
 
         return new Client(static::withDefaults(['headers' => static::$headers], $config));
     }
