@@ -5,6 +5,7 @@ namespace WeChatPay;
 use function strlen;
 use function trigger_error;
 use function sprintf;
+use function in_array;
 
 use const E_USER_DEPRECATED;
 
@@ -28,6 +29,38 @@ trait ClientXmlTrait
     protected static $headers = [
         'Accept' => 'text/xml, text/plain, application/x-gzip',
         'Content-Type' => 'text/xml; charset=utf-8',
+    ];
+
+    /**
+     * @var string[] - Special URLs whose were designed that none signature respond.
+     */
+    protected static $noneSignatureRespond = [
+        '/mchrisk/querymchrisk',
+        '/mchrisk/setmchriskcallback',
+        '/mchrisk/syncmchriskresult',
+        '/mmpaymkttransfers/gethbinfo',
+        '/mmpaymkttransfers/gettransferinfo',
+        '/mmpaymkttransfers/pay_bank',
+        '/mmpaymkttransfers/promotion/paywwsptrans2pocket',
+        '/mmpaymkttransfers/promotion/querywwsptrans2pocket',
+        '/mmpaymkttransfers/promotion/transfers',
+        '/mmpaymkttransfers/query_bank',
+        '/mmpaymkttransfers/sendgroupredpack',
+        '/mmpaymkttransfers/sendminiprogramhb',
+        '/mmpaymkttransfers/sendredpack',
+        '/papay/entrustweb',
+        '/papay/h5entrustweb',
+        '/papay/partner/entrustweb',
+        '/papay/partner/h5entrustweb',
+        '/pay/downloadbill',
+        '/pay/downloadfundflow',
+        '/payitil/report',
+        '/risk/getpublickey',
+        '/risk/getviolation',
+        '/sandboxnew/pay/downloadbill',
+        '/sandboxnew/pay/getsignkey',
+        '/secapi/mch/submchmanage',
+        '/xdc/apiv2getsignkey/sign/getsignkey',
     ];
 
     abstract protected static function body(MessageInterface $message): string;
@@ -88,6 +121,10 @@ trait ClientXmlTrait
     {
         return static function (callable $handler) use ($secret): callable {
             return static function (RequestInterface $request, array $options = []) use ($secret, $handler): PromiseInterface {
+                if (in_array($request->getRequestTarget(), static::$noneSignatureRespond)) {
+                    return $handler($request, $options);
+                }
+
                 return $handler($request, $options)->then(static function(ResponseInterface $response) use ($secret) {
                     $result = Transformer::toArray(static::body($response));
 

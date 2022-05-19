@@ -105,6 +105,13 @@ class DownloadbillTest extends TestCase
             'xml'     => $data,
         ]);
         self::responseAssertion($res);
+
+        $this->mock->reset();
+        $this->mock->append($respondor);
+
+        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
+        $res = @$endpoint->post(['xml' => $data]);
+        self::responseAssertion($res);
     }
 
     /**
@@ -155,6 +162,16 @@ class DownloadbillTest extends TestCase
     public function testPostAsync(string $mchid, array $data, ResponseInterface $respondor): void
     {
         [$endpoint, $stack] = $this->prepareEnvironment($mchid);
+
+        $this->mock->reset();
+        $this->mock->append($respondor);
+
+        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
+        @$endpoint->postAsync([
+            'xml' => $data,
+        ])->then(static function(ResponseInterface $response) {
+            self::responseAssertion($response);
+        })->wait();
 
         $this->mock->reset();
         $this->mock->append($respondor);
