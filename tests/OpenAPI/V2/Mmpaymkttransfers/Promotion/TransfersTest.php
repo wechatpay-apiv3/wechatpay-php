@@ -7,7 +7,6 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
-use GuzzleHttp\Promise\RejectionException;
 use PHPUnit\Framework\TestCase;
 use WeChatPay\Transformer;
 use WeChatPay\ClientDecoratorInterface;
@@ -97,14 +96,9 @@ class TransfersTest extends TestCase
 
         $this->mock->reset();
         $this->mock->append($respondor);
-        try {
-            // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-            @$endpoint->post(['xml' => $data]);
-        } catch (RejectionException $e) {
-            /** @var ResponseInterface $res */
-            $res = $e->getReason();
-            self::responseAssertion($res);
-        }
+        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
+        $res = @$endpoint->post(['xml' => $data]);
+        self::responseAssertion($res);
     }
 
     /**
@@ -144,7 +138,7 @@ class TransfersTest extends TestCase
         // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
         @$endpoint->postAsync([
             'xml' => $data
-        ])->otherwise(static function($res) {
+        ])->then(static function(ResponseInterface $res) {
             self::responseAssertion($res);
         })->wait();
     }
