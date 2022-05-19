@@ -1,5 +1,11 @@
 # 变更历史
 
+## [1.4.4](../../compare/v1.4.3...v1.4.4) - 2022-05-19
+
+- 新增`APIv3`[客诉图片下载](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter10_2_18.shtml)测试用例，示例说明如何避免[double-pctencoded](https://github.com/guzzle/uri-template/issues/18)问题;
+- PHP内置函数`hash`方法在`PHP8`变更了返回值逻辑，代之为抛送`ValueError`异常，优化`MediaUtilTest`测试用例，以兼容`PHP7`;
+- 新增`APIv2`请求/响应白名单`URL`及调整验签逻辑，对于白名单内的请求，已知无`sign`返回，应用侧自动忽略验签；
+
 ## [1.4.3](../../compare/v1.4.2...v1.4.3) - 2022-01-04
 
 - 优化，严格限定初始化时`mchid`为字符串;
