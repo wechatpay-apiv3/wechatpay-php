@@ -103,6 +103,12 @@ class DownloadTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
         $this->mock->append($respondor);
+        $this->mock->append($respondor);
+
+        $response = $endpoint->chain('v3/merchant-service/images/{media_slot_url}')->get([
+            'media_slot_url' => $slot,
+        ]);
+        self::responseAssertion($response);
 
         $response = $endpoint->chain('v3/merchant-service/images/{media_slot_url}')->get([
             'handler' => $stack,
@@ -143,6 +149,13 @@ class DownloadTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
         $this->mock->append($respondor);
+        $this->mock->append($respondor);
+
+        $endpoint->chain('v3/merchant-service/images/{media_slot_url}')->getAsync([
+            'media_slot_url' => $slot,
+        ])->then(static function (ResponseInterface $response) {
+            self::responseAssertion($response);
+        })->wait();
 
         $endpoint->chain('v3/merchant-service/images/{media_slot_url}')->getAsync([
             'handler' => $stack,
@@ -178,7 +191,15 @@ class DownloadTest extends TestCase
         $this->mock->reset();
 
         $this->mock->append($respondor);
+        $response = $apiv3Client->request('GET', $relativeUrl);
+        self::responseAssertion($response);
+
+        $this->mock->append($respondor);
         $response = $apiv3Client->request('GET', $relativeUrl, ['handler' => $stack]);
+        self::responseAssertion($response);
+
+        $this->mock->append($respondor);
+        $response = $apiv3Client->request('GET', $fullUri);
         self::responseAssertion($response);
 
         $this->mock->append($respondor);
@@ -187,7 +208,17 @@ class DownloadTest extends TestCase
 
         $this->mock->append($respondor);
         /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `get` method signature */
+        $response = $apiv3Client->get($relativeUrl);
+        self::responseAssertion($response);
+
+        $this->mock->append($respondor);
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `get` method signature */
         $response = $apiv3Client->get($relativeUrl, ['handler' => $stack]);
+        self::responseAssertion($response);
+
+        $this->mock->append($respondor);
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `get` method signature */
+        $response = $apiv3Client->get($fullUri);
         self::responseAssertion($response);
 
         $this->mock->append($respondor);
@@ -201,14 +232,28 @@ class DownloadTest extends TestCase
 
         $this->mock->append($respondor);
         /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `getAsync` method signature */
+        $response = $apiv3Client->getAsync($fullUri)->then($asyncAssertion)->wait();
+
+        $this->mock->append($respondor);
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `getAsync` method signature */
         $response = $apiv3Client->getAsync($fullUri, ['handler' => $stack])->then($asyncAssertion)->wait();
+
+        $this->mock->append($respondor);
+        /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `getAsync` method signature */
+        $response = $apiv3Client->getAsync($relativeUrl)->then($asyncAssertion)->wait();
 
         $this->mock->append($respondor);
         /** @phpstan-ignore-next-line because of \GuzzleHttp\ClientInterface no `getAsync` method signature */
         $response = $apiv3Client->getAsync($relativeUrl, ['handler' => $stack])->then($asyncAssertion)->wait();
 
         $this->mock->append($respondor);
+        $response = $apiv3Client->requestAsync('GET', $relativeUrl)->then($asyncAssertion)->wait();
+
+        $this->mock->append($respondor);
         $response = $apiv3Client->requestAsync('GET', $relativeUrl, ['handler' => $stack])->then($asyncAssertion)->wait();
+
+        $this->mock->append($respondor);
+        $response = $apiv3Client->requestAsync('GET', $fullUri)->then($asyncAssertion)->wait();
 
         $this->mock->append($respondor);
         $response = $apiv3Client->requestAsync('GET', $fullUri, ['handler' => $stack])->then($asyncAssertion)->wait();

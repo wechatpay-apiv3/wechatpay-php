@@ -13,6 +13,9 @@ use function count;
 use function sprintf;
 use function array_key_exists;
 use function array_keys;
+use function strcasecmp;
+use function strncasecmp;
+use function stripos;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Middleware;
@@ -30,6 +33,7 @@ const WechatpayNonce = 'Wechatpay-Nonce';
 const WechatpaySerial = 'Wechatpay-Serial';
 const WechatpaySignature = 'Wechatpay-Signature';
 const WechatpayTimestamp = 'Wechatpay-Timestamp';
+const WechatpayStatementSha1 = 'Wechatpay-Statement-Sha1';
 
 /**
  * JSON based Client interface for sending HTTP requests.
@@ -88,6 +92,13 @@ trait ClientJsonTrait
     protected static function assertSuccessfulResponse(array &$certs): callable
     {
         return static function (ResponseInterface $response, RequestInterface $request) use(&$certs): ResponseInterface {
+            if (
+                0 === strcasecmp($url = $request->getUri()->getPath(), '/v3/billdownload/file')
+                || (0 === strncasecmp($url, '/v3/merchant-service/images/', 28) && false === stripos($url, 'upload', 28))
+            ) {
+                return $response;
+            }
+
             if (!($response->hasHeader(WechatpayNonce) && $response->hasHeader(WechatpaySerial)
                 && $response->hasHeader(WechatpaySignature) && $response->hasHeader(WechatpayTimestamp))) {
                 throw new RequestException(sprintf(
@@ -117,10 +128,18 @@ trait ClientJsonTrait
                 ), $request, $response);
             }
 
+            $isOverseas = 0 === strcasecmp($url, '/hk/v3/statements') && $response->hasHeader(WechatpayStatementSha1);
+
             $verified = false;
             try {
                 $verified = Crypto\Rsa::verify(
-                    Formatter::response($timestamp, $nonce, static::body($response)),
+                    Formatter::response(
+                        $timestamp,
+                        $nonce,
+                        $isOverseas
+                            ? static::digestBody($response->getHeader(WechatpayStatementSha1)[0])
+                            : static::body($response)
+                    ),
                     $signature, $certs[$serial]
                 );
             } catch (\Exception $exception) {}
@@ -133,6 +152,26 @@ trait ClientJsonTrait
 
             return $response;
         };
+    }
+
+    /**
+     * Downloading the reconciliation was required the client to format the `WechatpayStatementSha1` digest string as `JSON`.
+     *
+     * There was also sugguestion that to validate the response streaming's `SHA1` digest whether or nor equals to `WechatpayStatementSha1`.
+     * Here may contains with or without `gzip` parameter. Both of them are validating the plain `CSV` stream.
+     * Keep the same logic with the mainland's one(without `SHA1` validation).
+     * If someone needs this feature built-in, contrubiting is welcome.
+     *
+     * @see https://pay.weixin.qq.com/wiki/doc/api/wxpay/ch/fusion_wallet_ch/QuickPay/chapter8_5.shtml
+     * @see https://pay.weixin.qq.com/wiki/doc/api/wxpay/en/fusion_wallet/QuickPay/chapter8_5.shtml
+     *
+     * @param string $thing - The digest value
+     *
+     * @return string - The JSON string
+     */
+    protected static function digestBody(string $thing): string
+    {
+        return sprintf('{"sha1":"%s"}', $thing);
     }
 
     /**
