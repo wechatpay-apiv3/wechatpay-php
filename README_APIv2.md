@@ -103,16 +103,8 @@ $res = $instance
     // 特殊接入点，仅对本次请求有效
     'base_uri' => 'https://fraud.mch.weixin.qq.com/',
 ])
-// 返回无sign字典，默认只能从异常通道获取返回值
-->otherwise(static function($e) {
-    // 更多`$e`异常类型判断是必须的，这里仅列出可能的两种情况，请根据实际对接过程调整并增加
-    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
-        return Transformer::toArray((string)$e->getReason()->getBody());
-    }
-    if ($e instanceof \Psr\Http\Message\MessageInterface) {
-        return Transformer::toArray((string)$e->getBody());
-    }
-    return [];
+->then(static function($response) {
+    return Transformer::toArray((string)$response->getBody());
 })
 ->wait();
 print_r($res);
@@ -147,13 +139,6 @@ $res = $instance
 ->then(static function($response) {
     return Transformer::toArray((string)$response->getBody());
 })
-->otherwise(static function($e) {
-    // 更多`$e`异常类型判断是必须的，这里仅列出一种可能情况，请根据实际对接过程调整并增加
-    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
-        return Transformer::toArray((string)$e->getReason()->getBody());
-    }
-    return [];
-})
 ->wait();
 print_r($res);
 ```
@@ -186,13 +171,6 @@ $res = $instance
 ->then(static function($response) {
     return Transformer::toArray((string)$response->getBody());
 })
-->otherwise(static function($e) {
-    // 更多`$e`异常类型判断是必须的，这里仅列出一种可能情况，请根据实际对接过程调整并增加
-    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
-        return Transformer::toArray((string)$e->getReason()->getBody());
-    }
-    return [];
-})
 ->wait();
 print_r($res);
 ```
@@ -212,16 +190,8 @@ $res = $instance
     // 通知SDK不接受沙箱环境重定向，仅对本次请求有效
     'allow_redirects' => false,
 ])
-// 返回无sign字典，只能从异常通道获取返回值
-->otherwise(static function($e) {
-    // 更多`$e`异常类型判断是必须的，这里仅列出可能的两种情况，请根据实际对接过程调整并增加
-    if ($e instanceof \GuzzleHttp\Promise\RejectionException) {
-        return Transformer::toArray((string)$e->getReason()->getBody());
-    }
-    if ($e instanceof \Psr\Http\Message\MessageInterface) {
-        return Transformer::toArray((string)$e->getBody());
-    }
-    return [];
+->then(static function($response) {
+    return Transformer::toArray((string)$response->getBody());
 })
 ->wait();
 print_r($res);
