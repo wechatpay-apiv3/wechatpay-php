@@ -135,9 +135,7 @@ trait ClientJsonTrait
                     Formatter::response(
                         $timestamp,
                         $nonce,
-                        $isOverseas
-                            ? static::digestBody($response->getHeader(WechatpayStatementSha1)[0])
-                            : static::body($response)
+                        $isOverseas ? static::digestBody($response) : static::body($response)
                     ),
                     $signature, $certs[$serial]
                 );
@@ -164,13 +162,13 @@ trait ClientJsonTrait
      * @see https://pay.weixin.qq.com/wiki/doc/api/wxpay/ch/fusion_wallet_ch/QuickPay/chapter8_5.shtml
      * @see https://pay.weixin.qq.com/wiki/doc/api/wxpay/en/fusion_wallet/QuickPay/chapter8_5.shtml
      *
-     * @param string $thing - The digest value
+     * @param ResponseInterface $response - The response instance
      *
      * @return string - The JSON string
      */
-    protected static function digestBody(string $thing): string
+    protected static function digestBody(ResponseInterface $response): string
     {
-        return sprintf('{"sha1":"%s"}', $thing);
+        return sprintf('{"sha1":"%s"}', $response->getHeader(WechatpayStatementSha1)[0]);
     }
 
     /**
