@@ -1,10 +1,15 @@
 # 变更历史
 
+## [1.4.5](../../compare/v1.4.4...v1.4.5) - 2022-05-21
+
+- 新增`APIv3`请求/响应特殊验签逻辑，国内两个下载接口自动忽略验签，海外商户账单下载仅验RSA签名，详见 [#94](https://github.com/wechatpay-apiv3/wechatpay-php/issues/94)；
+- 新增`APIv3`[海外商户账单下载](https://pay.weixin.qq.com/wiki/doc/api/wxpay/ch/fusion_wallet_ch/QuickPay/chapter8_5.shtml)测试用例，示例说明如何验证流`SHA1`摘要;
+
 ## [1.4.4](../../compare/v1.4.3...v1.4.4) - 2022-05-19
 
-- 新增`APIv3`[客诉图片下载](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter10_2_18.shtml)测试用例，示例说明如何避免[double-pctencoded](https://github.com/guzzle/uri-template/issues/18)问题;
+- 新增`APIv3`[客诉图片下载](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter10_2_18.shtml)测试用例，示例说明如何避免[double pct-encoded](https://github.com/guzzle/uri-template/issues/18)问题;
 - PHP内置函数`hash`方法在`PHP8`变更了返回值逻辑，代之为抛送`ValueError`异常，优化`MediaUtilTest`测试用例，以兼容`PHP7`;
-- 新增`APIv2`请求/响应白名单`URL`及调整验签逻辑，对于白名单内的请求，已知无`sign`返回，应用侧自动忽略验签；
+- 新增`APIv2`请求/响应白名单`URL`及调整验签逻辑，对于白名单内的请求，已知无`sign`返回，应用侧自动忽略验签，详见 [#92](https://github.com/wechatpay-apiv3/wechatpay-php/issues/92)；
 
 ## [1.4.3](../../compare/v1.4.2...v1.4.3) - 2022-01-04
 
