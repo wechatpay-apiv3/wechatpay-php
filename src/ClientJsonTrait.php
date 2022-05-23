@@ -15,7 +15,6 @@ use function array_key_exists;
 use function array_keys;
 use function strcasecmp;
 use function strncasecmp;
-use function stripos;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Middleware;
@@ -94,7 +93,7 @@ trait ClientJsonTrait
         return static function (ResponseInterface $response, RequestInterface $request) use(&$certs): ResponseInterface {
             if (
                 0 === strcasecmp($url = $request->getUri()->getPath(), '/v3/billdownload/file')
-                || (0 === strncasecmp($url, '/v3/merchant-service/images/', 28) && false === stripos($url, 'upload', 28))
+                || (0 === strncasecmp($url, '/v3/merchant-service/images/', 28) && 0 !== strcasecmp($url, '/v3/merchant-service/images/upload'))
             ) {
                 return $response;
             }
