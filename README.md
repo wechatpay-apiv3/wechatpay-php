@@ -184,7 +184,7 @@ $promise = $instance
     echo $e->getTraceAsString(), PHP_EOL;
 });
 // 同步等待
-promise->wait();
+$promise->wait();
 
 ```
 
