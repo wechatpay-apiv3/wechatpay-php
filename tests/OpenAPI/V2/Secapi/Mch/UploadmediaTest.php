@@ -104,8 +104,7 @@ class UploadmediaTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        $res = @$endpoint->post([
+        $res = $endpoint->post([
             'body' => $body,
             'handler' => $stack,
             // 'ssl_key' => 'file:///path/to/apiclient_key.pem',
@@ -141,8 +140,7 @@ class UploadmediaTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        @$endpoint->postAsync([
+        $endpoint->postAsync([
             'body' => $body,
             'handler' => $stack,
             // 'ssl_key' => 'file:///path/to/apiclient_key.pem',

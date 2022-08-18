@@ -3,11 +3,8 @@
 namespace WeChatPay;
 
 use function strlen;
-use function trigger_error;
 use function sprintf;
 use function in_array;
-
-use const E_USER_DEPRECATED;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
@@ -80,8 +77,6 @@ trait ClientXmlTrait
     public static function transformRequest(?string $mchid = null, string $secret = '', ?array $merchant = null): callable
     {
         return static function (callable $handler) use ($mchid, $secret, $merchant): callable {
-            @trigger_error(Exception\WeChatPayException::DEP_XML_PROTOCOL_IS_REACHABLE_EOL, E_USER_DEPRECATED);
-
             return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): PromiseInterface {
                 $data = $options['xml'] ?? [];
 
@@ -121,7 +116,7 @@ trait ClientXmlTrait
     {
         return static function (callable $handler) use ($secret): callable {
             return static function (RequestInterface $request, array $options = []) use ($secret, $handler): PromiseInterface {
-                if (in_array($request->getRequestTarget(), static::$noneSignatureRespond)) {
+                if (in_array($request->getUri()->getPath(), static::$noneSignatureRespond)) {
                     return $handler($request, $options);
                 }
 
