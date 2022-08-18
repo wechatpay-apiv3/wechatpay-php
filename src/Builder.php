@@ -81,8 +81,8 @@ final class Builder
 
             /**
              * Normalize the `$thing` by the rules: `PascalCase` -> `camelCase`
-             *                                    & `camelCase` -> `camel-case`
-             *                                    & `_dynamic_` -> `{dynamic}`
+             *                                    & `camelCase` -> `kebab-case`
+             *                                    & `_placeholder_` -> `{placeholder}`
              *
              * @param string $thing - The string waiting for normalization
              *
