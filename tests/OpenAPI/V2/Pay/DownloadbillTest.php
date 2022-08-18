@@ -99,8 +99,7 @@ class DownloadbillTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        $res = @$endpoint->post([
+        $res = $endpoint->post([
             'handler' => $stack,
             'xml'     => $data,
         ]);
@@ -109,8 +108,7 @@ class DownloadbillTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        $res = @$endpoint->post(['xml' => $data]);
+        $res = $endpoint->post(['xml' => $data]);
         self::responseAssertion($res);
     }
 
@@ -166,8 +164,7 @@ class DownloadbillTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        @$endpoint->postAsync([
+        $endpoint->postAsync([
             'xml' => $data,
         ])->then(static function(ResponseInterface $response) {
             self::responseAssertion($response);
@@ -176,8 +173,7 @@ class DownloadbillTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        @$endpoint->postAsync([
+        $endpoint->postAsync([
             'handler' => $stack,
             'xml'     => $data,
         ])->then(static function(ResponseInterface $response) {

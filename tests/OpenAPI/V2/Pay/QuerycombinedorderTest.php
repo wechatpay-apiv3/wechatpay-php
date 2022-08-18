@@ -85,8 +85,7 @@ class QuerycombinedorderTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        $res = @$endpoint->post(['xml' => $data]);
+        $res = $endpoint->post(['xml' => $data]);
         self::responseAssertion($res);
     }
 
@@ -116,8 +115,7 @@ class QuerycombinedorderTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        // yes, start with `@` to prevent the internal `E_USER_DEPRECATED`
-        @$endpoint->postAsync([
+        $endpoint->postAsync([
             'xml' => $data,
         ])->then(static function(ResponseInterface $res) {
             self::responseAssertion($res);
