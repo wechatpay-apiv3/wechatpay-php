@@ -5,7 +5,7 @@ body:
   id: input-runtime
   attributes:
     label: 运行环境
-    render: markdown
+    render: Markdown
     description: |
       examples:
         - **OS**: Ubuntu 20.04
