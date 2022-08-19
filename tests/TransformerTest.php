@@ -170,6 +170,21 @@ class TransformerTest extends TestCase
                 ],
                 false, true, 'qqpay', 'item',
             ],
+            'transform the Stringable values' => [
+                [
+                    'appid' => 'wx2421b1c4370ec43b',
+                    'body' => 'dummybot',
+                    'mch_id' => '10000100',
+                    'finished' => true,
+                    'amount' => 100,
+                    'recevier' => new class {
+                        public function __toString(): string {
+                            return json_encode(['type' => 'MERCHANT_ID', 'account' => '190001001']) ?: '';
+                        }
+                    },
+                ],
+                true, false, 'xml', 'item',
+            ]
         ];
     }
 
