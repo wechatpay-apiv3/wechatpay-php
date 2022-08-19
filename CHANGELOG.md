@@ -1,5 +1,10 @@
 # 变更历史
 
+## [1.4.6](../../compare/v1.4.5...v1.4.6) - 2022-08-19
+
+- 取消 `APIv2` 上的`trigger_error`提醒，以消除不必要的恐慌;
+- 优化 `Transformer::walk` 方法，以支持 [Stringable](https://www.php.net/manual/zh/class.stringable.php) 对象的值转换；
+
 ## [1.4.5](../../compare/v1.4.4...v1.4.5) - 2022-05-21
 
 - 新增`APIv3`请求/响应特殊验签逻辑，国内两个下载接口自动忽略验签，海外商户账单下载仅验RSA签名，详见 [#94](https://github.com/wechatpay-apiv3/wechatpay-php/issues/94)；
