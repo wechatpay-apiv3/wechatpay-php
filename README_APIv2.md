@@ -143,6 +143,8 @@ $res = $instance
 print_r($res);
 ```
 
+SDK自v1.4.6调整了XML转换函数，支持了[Stringable](https://www.php.net/manual/zh/class.stringable.php) 值的转换，对于 [Scalar](https://www.php.net/manual/zh/function.is-scalar.php) 标量值及实现了 [__toString](https://www.php.net/manual/zh/language.types.string.php#language.types.string.casting) 方法的对象，均支持直接转换，详细可参考 [TransformerTest.php](tests/TransformerTest.php) 的用例用法示例。
+
 ## 刷脸支付-人脸识别-获取调用凭证
 
 [官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/wxfacepay/develop/android/faceuser.html)
@@ -182,7 +184,7 @@ print_r($res);
 ```php
 use WeChatPay\Transformer;
 $res = $instance
-->v2->sandboxnew->pay->getsignkey
+->v2->xdc->apiv2getsignkey->sign->getsignkey
 ->postAsync([
     'xml' => [
         'mch_id' => '1900000109',
