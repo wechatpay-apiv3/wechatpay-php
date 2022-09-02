@@ -5,7 +5,7 @@ namespace WeChatPay\Tests\Util;
 use const DIRECTORY_SEPARATOR;
 
 use function dirname;
-use function hash;
+use function openssl_digest;
 use function hash_file;
 use function base64_encode;
 use function base64_decode;
@@ -47,7 +47,7 @@ class MediaUtilTest extends TestCase
                     self::FOPEN_MODE_BINARYREAD
                 ),
                 'transparent.gif',
-                hash(self::ALGO_SHA256, base64_decode($data)) ?: '', /** @phpstan-ignore-line compatible for PHP7 */
+                openssl_digest(base64_decode($data), self::ALGO_SHA256) ?: '',
             ],
             'data://text/csv;base64 string' => [//RFC2397
                 'active_user_batch_tasks_001.csv',
@@ -59,7 +59,7 @@ class MediaUtilTest extends TestCase
                     self::FOPEN_MODE_BINARYREAD
                 ),
                 'active_user_batch_tasks_001.csv',
-                hash(self::ALGO_SHA256, $data) ?: '', /** @phpstan-ignore-line compatible for PHP7 */
+                openssl_digest($data, self::ALGO_SHA256) ?: '',
             ],
         ];
     }
