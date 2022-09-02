@@ -90,6 +90,6 @@ class PemUtil
             throw new UnexpectedValueException('Read the $certificate failed, please check it whether or nor correct');
         }
 
-        return strtoupper($info['serialNumberHex'] ?? '');
+        return strtoupper($info['serialNumberHex']);
     }
 }
