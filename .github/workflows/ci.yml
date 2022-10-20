@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1']
+        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2']
         os: [ubuntu-latest, macOS-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -68,12 +68,4 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
-      - run: vendor/bin/phpstan analyse --no-progress
-
-      - run: |
-          make keygen
-          make x509crt
-
-      - run: vendor/bin/phpunit
-
-      - run: make clean
+      - run: make
