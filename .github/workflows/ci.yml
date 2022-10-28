@@ -68,4 +68,12 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
-      - run: make
+      - run: vendor/bin/phpstan analyse --no-progress
+
+      - run: |
+          make keygen
+          make x509crt
+
+      - run: vendor/bin/phpunit
+
+      - run: make clean
