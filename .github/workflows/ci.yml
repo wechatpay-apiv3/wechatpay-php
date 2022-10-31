@@ -69,6 +69,12 @@ jobs:
         run: composer install --no-interaction --no-progress
 
       - run: vendor/bin/phpstan analyse --no-progress
+        if: matrix.php-version < 8.2
+        id: phpstan@php-7.1-8.1
+
+      - run: vendor/bin/phpstan analyse --no-progress -c phpstan.v8.2.neon
+        if: matrix.php-version == '8.2'
+        id: phpstan@php-8.2
 
       - run: |
           make keygen
