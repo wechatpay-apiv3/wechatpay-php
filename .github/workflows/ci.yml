@@ -70,11 +70,11 @@ jobs:
 
       - run: vendor/bin/phpstan analyse --no-progress
         if: matrix.php-version < 8.2
-        id: phpstan-php-7.1-8.1
+        id: phpstan-php-7_1-8_1
 
       - run: vendor/bin/phpstan analyse --no-progress -c phpstan.v8.2.neon
         if: matrix.php-version == '8.2'
-        id: phpstan-php-8.2
+        id: phpstan-php-8_2
 
       - run: |
           make keygen
