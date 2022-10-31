@@ -5,7 +5,6 @@ namespace WeChatPay\Tests\Crypto;
 use const PHP_MAJOR_VERSION;
 use const OPENSSL_PKCS1_OAEP_PADDING;
 use const OPENSSL_PKCS1_PADDING;
-use const OPENSSL_SSLV23_PADDING;
 
 use function file_get_contents;
 use function method_exists;
@@ -286,23 +285,8 @@ class RsaTest extends TestCase
             'encrypted as OPENSSL_PKCS1_OAEP_PADDING, and decrpted as OPENSSL_PKCS1_PADDING'  => [
                 random_bytes(32), [$publicKey, OPENSSL_PKCS1_OAEP_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], UnexpectedValueException::class
             ],
-            'encrypted as OPENSSL_PKCS1_OAEP_PADDING, and decrpted as OPENSSL_SSLV23_PADDING' => [
-                random_bytes(32), [$publicKey, OPENSSL_PKCS1_OAEP_PADDING], [$privateKey, OPENSSL_SSLV23_PADDING], UnexpectedValueException::class
-            ],
             'encrypted as OPENSSL_PKCS1_PADDING, and decrpted as OPENSSL_PKCS1_OAEP_PADDING'  => [
                 random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], UnexpectedValueException::class
-            ],
-            'encrypted as OPENSSL_PKCS1_PADDING, and decrpted as OPENSSL_SSLV23_PADDING'      => [
-                random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_SSLV23_PADDING], UnexpectedValueException::class
-            ],
-            'encrypted as OPENSSL_SSLV23_PADDING, and decrpted as OPENSSL_PKCS1_PADDING'      => [
-                random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], UnexpectedValueException::class
-            ],
-            'encrypted as OPENSSL_SSLV23_PADDING, and decrpted as OPENSSL_PKCS1_OAEP_PADDING' => [
-                random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], UnexpectedValueException::class
-            ],
-            'encrypted as OPENSSL_SSLV23_PADDING, and decrpted as OPENSSL_SSLV23_PADDING'  => [
-                random_bytes(32), [$publicKey, OPENSSL_SSLV23_PADDING], [$privateKey, OPENSSL_SSLV23_PADDING], UnexpectedValueException::class
             ],
             'encrypted as OPENSSL_PKCS1_OAEP_PADDING, and decrpted as OPENSSL_PKCS1_OAEP_PADDING'  => [
                 random_bytes(32), [$publicKey, OPENSSL_PKCS1_OAEP_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], null
