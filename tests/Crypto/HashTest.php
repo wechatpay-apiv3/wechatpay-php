@@ -213,12 +213,12 @@ class HashTest extends TestCase
             self::assertIsString($digest);
             self::assertNotEmpty($digest);
             self::assertNotEquals($thing, $digest);
-            self::assertEquals(is_null($digest) ? 0 : strlen($digest), $length);
+            self::assertEquals(strlen($digest), $length);
             self::{$action}($digest, $excepted);
             if (method_exists($this, 'assertMatchesRegularExpression')) {
-                $this->assertMatchesRegularExpression('#[A-Z]+#', is_null($digest) ? '' : $digest);
+                $this->assertMatchesRegularExpression('#[A-Z]+#', $digest);
             } else {
-                self::assertRegExp('#[A-Z]+#', is_null($digest) ? '' : $digest);
+                self::assertRegExp('#[A-Z]+#', $digest);
             }
         }
     }
