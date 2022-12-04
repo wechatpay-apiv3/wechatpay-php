@@ -15,7 +15,7 @@
 
 ### 功能介绍
 
-1. 微信支付 APIv2 和 APIv3 的 Guzzle HTTP 客户端，支持 [同步](#同步请求) 或[异步](#异步请求) 发送请求，并自动进行请求签名和应答验签
+1. 微信支付 APIv2 和 APIv3 的 Guzzle HTTP 客户端，支持 [同步](#同步请求) 或 [异步](#异步请求) 发送请求，并自动进行请求签名和应答验签
 
 1. [链式实现的 URI Template](#链式-uri-template)
 
@@ -25,7 +25,7 @@
 
 ## 项目状态
 
-当前版本为 `1.4.6` 测试版本。
+当前版本为 `1.4.7` 测试版本。
 项目版本遵循 [语义化版本号](https://semver.org/lang/zh-CN/)。
 如果你使用的版本 `<=v1.3.2`，升级前请参考 [升级指南](UPGRADING.md)。
 
@@ -36,7 +36,7 @@
 + Guzzle 7.0，PHP >= 7.2.5
 + Guzzle 6.5，PHP >= 7.1.2
 
-项目已支持 PHP 8。我们推荐使用目前处于 [Active Support](https://www.php.net/supported-versions.php) 阶段的 PHP 8.0 和 Guzzle 7。
+我们推荐使用目前处于 [Active Support](https://www.php.net/supported-versions.php) 阶段的 PHP 8 和 Guzzle 7。
 
 ## 安装
 

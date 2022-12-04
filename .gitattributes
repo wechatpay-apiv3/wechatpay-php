@@ -4,6 +4,8 @@
 .gitignore             export-ignore
 /docs/                 export-ignore
 /phpstan.neon.dist     export-ignore
+/phpstan.v7.1.neon     export-ignore
+/phpstan.v8.2.neon     export-ignore
 /phpunit.xml.dist      export-ignore
 /tests/                export-ignore
 /Makefile              export-ignore
