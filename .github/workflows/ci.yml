@@ -70,9 +70,13 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
+      - run: vendor/bin/phpstan analyse --no-progress -c phpstan.v7.1.neon
+        if: matrix.php-version == '7.1'
+        id: phpstan-php-7_1
+
       - run: vendor/bin/phpstan analyse --no-progress
-        if: matrix.php-version < 8.2
-        id: phpstan-php-7_1-8_1
+        if: 7.1 < matrix.php-version && matrix.php-version < 8.2
+        id: phpstan-php-7_2-8_1
 
       - run: vendor/bin/phpstan analyse --no-progress -c phpstan.v8.2.neon
         if: matrix.php-version == '8.2'

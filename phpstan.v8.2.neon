@@ -3,6 +3,6 @@ includes:
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Access to an undefined property WeChatPay\\\\BuilderChainable\\:\\:\\$v3\\.$#"
+			message: "#^Access to an undefined property.*WeChatPay\\\\BuilderChainable\\:\\:\\$v3\\.$#"
 			count: 1
 			path: tests/BuilderTest.php

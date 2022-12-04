@@ -1,0 +1,39 @@
+includes:
+	- phpstan.neon.dist
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Cannot access offset 'v2/pay/micropay' on WeChatPay\\\\BuilderChainable\\.$#"
+			count: 1
+			path: tests/BuilderTest.php
+
+		-
+			message: "#^Cannot access offset 'v2/pay/refundquery' on WeChatPay\\\\BuilderChainable\\.$#"
+			count: 1
+			path: tests/BuilderTest.php
+
+		-
+			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, array\\<string, string\\>\\|false given\\.$#"
+			count: 1
+			path: tests/BuilderTest.php
+
+		-
+			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, array\\<string, string\\>\\|false given\\.$#"
+			count: 1
+			path: tests/ClientDecoratorTest.php
+
+		-
+			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, array\\<string, string\\>\\|false given\\.$#"
+			count: 1
+			path: tests/Crypto/AesEcbTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function strlen expects string, string\\|null given\\.$#"
+			count: 1
+			path: tests/Crypto/HashTest.php
+
+		-
+			message: "#^Parameter \\#2 \\$string of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertRegExp\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: tests/Crypto/HashTest.php
+
