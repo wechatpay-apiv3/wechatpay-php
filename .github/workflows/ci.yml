@@ -74,7 +74,7 @@ jobs:
         run: |
           openssl version
           php --ri openssl
-          php --ri xml
+          php --ri libxml
           php --ri curl
 
       - run: vendor/bin/phpstan analyse --no-progress --memory-limit=-1 -c phpstan.v7.1.neon
