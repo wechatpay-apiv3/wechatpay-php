@@ -4,22 +4,24 @@ on: [push, pull_request]
 
 jobs:
   ci:
+    defaults:
+      run:
+        shell: bash
     name: CI
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1']
+        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2']
         os: [ubuntu-latest, macOS-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set git config
-        shell: bash
         run: |
           git config --global core.autocrlf false
           git config --global core.symlinks true
         if: runner.os == 'Windows'
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup PHP${{ matrix.php-version }}@${{ matrix.os }}
         uses: shivammathur/setup-php@v2
@@ -33,12 +35,12 @@ jobs:
 
       - name: Get composer cache directory
         id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies on PHP(=7.1)@${{ matrix.os }}
         if: matrix.php-version == '7.1'
         id: dependencies-cache-71
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-php${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
@@ -48,7 +50,7 @@ jobs:
       - name: Cache dependencies on PHP(=7.2)@${{ matrix.os }}
         if: matrix.php-version == '7.2'
         id: dependencies-cache-72
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-php${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
@@ -58,7 +60,7 @@ jobs:
       - name: Cache dependencies on PHP(>7.2)@${{ matrix.os }}
         if: matrix.php-version > 7.2
         id: dependencies-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -68,7 +70,24 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
-      - run: vendor/bin/phpstan analyse --no-progress
+      - name: Environments
+        run: |
+          openssl version
+          php --ri openssl
+          php --ri libxml
+          php --ri curl
+
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=-1 -c phpstan.v7.1.neon
+        if: matrix.php-version == '7.1'
+        id: phpstan-php-7_1
+
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=-1
+        if: 7.1 < matrix.php-version && matrix.php-version < 8.2
+        id: phpstan-php-7_2-8_1
+
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=-1 -c phpstan.v8.2.neon
+        if: matrix.php-version == '8.2'
+        id: phpstan-php-8_2
 
       - run: |
           make keygen

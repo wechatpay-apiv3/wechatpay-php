@@ -50,9 +50,9 @@ class ClientDecoratorTest extends TestCase
 
         self::assertIsArray($map);
         self::assertNotEmpty($map);
-        self::assertArrayHasKey(ClientDecoratorInterface::class, is_array($map) ? $map : []);
+        self::assertArrayHasKey(ClientDecoratorInterface::class, $map);
         if (method_exists($this, 'assertContainsEquals')) {
-            $this->assertContainsEquals(ClientDecoratorInterface::class, is_array($map) ? $map : []);
+            $this->assertContainsEquals(ClientDecoratorInterface::class, $map);
         }
     }
 
@@ -62,8 +62,8 @@ class ClientDecoratorTest extends TestCase
 
         self::assertIsArray($traits);
         self::assertNotEmpty($traits);
-        self::assertContains(\WeChatPay\ClientJsonTrait::class, is_array($traits) ? $traits : []);
-        self::assertContains(\WeChatPay\ClientXmlTrait::class, is_array($traits) ? $traits : []);
+        self::assertContains(\WeChatPay\ClientJsonTrait::class, $traits);
+        self::assertContains(\WeChatPay\ClientXmlTrait::class, $traits);
     }
 
     public function testClassConstants(): void

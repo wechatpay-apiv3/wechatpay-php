@@ -78,9 +78,9 @@ class BuilderTest extends TestCase
         self::assertIsArray($map);
         self::assertNotEmpty($map);
 
-        self::assertArrayHasKey(BuilderChainable::class, is_array($map) ? $map : []);
+        self::assertArrayHasKey(BuilderChainable::class, $map);
         if (method_exists($this, 'assertContainsEquals')) {
-            $this->assertContainsEquals(BuilderChainable::class, is_array($map) ? $map : []);
+            $this->assertContainsEquals(BuilderChainable::class, $map);
         }
 
         self::assertInstanceOf(ArrayAccess::class, $instance);
@@ -90,7 +90,7 @@ class BuilderTest extends TestCase
 
         self::assertIsArray($traits);
         self::assertNotEmpty($traits);
-        self::assertContains(\WeChatPay\BuilderTrait::class, is_array($traits) ? $traits : []);
+        self::assertContains(\WeChatPay\BuilderTrait::class, $traits);
 
         self::assertInstanceOf(BuilderChainable::class, $instance->v3);
         /** @phpstan-ignore-next-line */
@@ -100,9 +100,7 @@ class BuilderTest extends TestCase
         /** @phpstan-ignore-next-line */
         self::assertInstanceOf(BuilderChainable::class, $instance->v3->marketing->busifavor->users['{openid}/coupons/{coupon_code}']->appids['{appid}']);
 
-        /** @phpstan-ignore-next-line */
         self::assertInstanceOf(BuilderChainable::class, $instance['v2/pay/micropay']);
-        /** @phpstan-ignore-next-line */
         self::assertInstanceOf(BuilderChainable::class, $instance['v2/pay/refundquery']);
 
         self::assertInstanceOf(BuilderChainable::class, $instance->chain('what_ever_endpoints/with-anyDepths_segments/also/contains/{uri_template}/{blah}/blah/'));

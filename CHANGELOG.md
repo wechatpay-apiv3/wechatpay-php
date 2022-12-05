@@ -1,5 +1,11 @@
 # 变更历史
 
+## [1.4.7](../../compare/v1.4.6...v1.4.7) - 2022-12-05
+
+- 对PHP8.2的官方支持，如下PHP8.2的特性需要被提及：
+  - ext-openssl 有若干调整，已知在 `OpenSSL3.0` 上，常量 `RSA_SSLV23_PADDING` 被删除(详细可阅读 openssl/openssl#14216, openssl/openssl#14283)，PHP做了兼容处理，如果扩展依赖的是`OpenSSL3.0`，则对应的`OPENSSL_SSLV23_PADDING`常量将不存在，进而影响到了「非对称加解密混合填充模式的测试用例」的覆盖(详情可阅读 shivammathur/setup-php#658)。本类库并不支持此填充模式，删除对`OPENSSL_SSLV23_PADDING`的测试断言，向前兼容；
+  - 对象动态属性的废弃提示([Deprecate dynamic properties](https://wiki.php.net/rfc/deprecate_dynamic_properties))，本类库实例构造的是`ArrayIterator`的一个“伪”动态属性结构体，对象属性访问实则访问的是`ArrayObject`内置`__storage`属性，形似动态属性实则不是；此废弃提示对本类库本身无影响；
+
 ## [1.4.6](../../compare/v1.4.5...v1.4.6) - 2022-08-19
 
 - 取消 `APIv2` 上的`trigger_error`提醒，以消除不必要的恐慌;
