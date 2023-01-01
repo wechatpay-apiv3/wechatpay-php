@@ -127,7 +127,7 @@ trait ClientJsonTrait
                 ), $request, $response);
             }
 
-            $isOverseas = 0 === strcasecmp($url, '/hk/v3/statements') && $response->hasHeader(WechatpayStatementSha1);
+            $isOverseas = (0 === strcasecmp($url, '/hk/v3/statements') || 0 === strcasecmp($url, '/v3/global/statements')) && $response->hasHeader(WechatpayStatementSha1);
 
             $verified = false;
             try {
@@ -161,6 +161,8 @@ trait ClientJsonTrait
      *
      * @see https://pay.weixin.qq.com/wiki/doc/api/wxpay/ch/fusion_wallet_ch/QuickPay/chapter8_5.shtml
      * @see https://pay.weixin.qq.com/wiki/doc/api/wxpay/en/fusion_wallet/QuickPay/chapter8_5.shtml
+     * @see https://pay.weixin.qq.com/wiki/doc/api_external/ch/apis/chapter3_1_6.shtml
+     * @see https://pay.weixin.qq.com/wiki/doc/api_external/en/apis/chapter3_1_6.shtml
      *
      * @param ResponseInterface $response - The response instance
      *

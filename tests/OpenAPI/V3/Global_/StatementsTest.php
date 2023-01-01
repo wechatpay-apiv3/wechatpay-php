@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeChatPay\Tests\OpenAPI\V3;
+namespace WeChatPay\Tests\OpenAPI\V3\Global_;
 
 use function rtrim;
 use function file_get_contents;
@@ -19,12 +19,12 @@ use Psr\Http\Message\ResponseInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @see https://pay.weixin.qq.com/wiki/doc/api/wxpay/ch/fusion_wallet_ch/QuickPay/chapter8_5.shtml
- * @see https://pay.weixin.qq.com/wiki/doc/api/wxpay/en/fusion_wallet/QuickPay/chapter8_5.shtml
+ * @see https://pay.weixin.qq.com/wiki/doc/api_external/en/apis/chapter3_1_6.shtml
+ * @see https://pay.weixin.qq.com/wiki/doc/api_external/ch/apis/chapter3_1_6.shtml
  */
 class StatementsTest extends TestCase
 {
-    private const FIXTURES = 'file://' . __DIR__ . '/../../fixtures/%s';
+    private const FIXTURES = 'file://' . __DIR__ . '/../../../fixtures/%s';
 
     /** @var MockHandler $mock */
     private $mock;
@@ -70,7 +70,7 @@ class StatementsTest extends TestCase
         return [
             'configuration with base_uri' => [
                 [
-                    'base_uri' => 'https://api.mch.weixin.qq.com/hk/',
+                    'base_uri' => 'https://apihk.mch.weixin.qq.com/',
                     'mchid' => $mchid,
                     'serial' => $mchSerial,
                     'privateKey' => $mchPrivateKey,
@@ -100,7 +100,7 @@ class StatementsTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        $response = $endpoint->chain('v3/statements')->get([
+        $response = $endpoint->chain('v3/global/statements')->get([
             'date' => '20180103',
         ]);
         self::responseAssertion($response);
@@ -131,7 +131,7 @@ class StatementsTest extends TestCase
         $this->mock->reset();
         $this->mock->append($respondor);
 
-        $endpoint->chain('v3/statements')->getAsync([
+        $endpoint->chain('v3/global/statements')->getAsync([
             'date' => '20180103',
         ])->then(static function (ResponseInterface $response) {
             self::responseAssertion($response);
