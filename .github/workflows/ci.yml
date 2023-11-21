@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2']
+        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
         os: [ubuntu-latest, macOS-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -86,8 +86,8 @@ jobs:
         id: phpstan-php-7_2-8_1
 
       - run: vendor/bin/phpstan analyse --no-progress --memory-limit=-1 -c phpstan.v8.2.neon
-        if: matrix.php-version == '8.2'
-        id: phpstan-php-8_2
+        if: 8.1 < matrix.php-version && matrix.php-version < '8.4'
+        id: phpstan-php-8_2-8_3
 
       - run: |
           make keygen
