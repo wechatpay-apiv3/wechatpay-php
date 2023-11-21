@@ -24,9 +24,6 @@ class BuilderTest extends TestCase
 
     public function testConstractor(): void
     {
-        if (method_exists($this, 'expectError')) {
-            $this->expectError();
-        }
         // for PHPUnit8+
         if (method_exists($this, 'expectExceptionMessageMatches')) {
             $this->expectExceptionMessageMatches('#^Call to private#');
