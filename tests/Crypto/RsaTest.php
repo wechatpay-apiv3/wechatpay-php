@@ -49,7 +49,7 @@ class RsaTest extends TestCase
 
         preg_match(self::EVELOPE, $pkey ?: '', $matches);
 
-        return str_replace(["\r", "\n"], '', $matches['base64'] ?: '');
+        return str_replace(["\r", "\n"], '', $matches['base64'] ?? '');
     }
 
     public function testFromPkcs8(): void
@@ -292,7 +292,7 @@ class RsaTest extends TestCase
                 random_bytes(32), [$publicKey, OPENSSL_PKCS1_OAEP_PADDING], [$privateKey, OPENSSL_PKCS1_OAEP_PADDING], null
             ],
             'encrypted as OPENSSL_PKCS1_PADDING, and decrpted as OPENSSL_PKCS1_PADDING'  => [
-                random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], null
+                random_bytes(32), [$publicKey, OPENSSL_PKCS1_PADDING], [$privateKey, OPENSSL_PKCS1_PADDING], UnexpectedValueException::class
             ],
         ];
     }
