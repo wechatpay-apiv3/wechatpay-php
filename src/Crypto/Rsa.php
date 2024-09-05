@@ -4,7 +4,6 @@ namespace WeChatPay\Crypto;
 
 use const OPENSSL_ALGO_SHA256;
 use const OPENSSL_PKCS1_OAEP_PADDING;
-use const OPENSSL_PKCS1_PADDING;
 use const PHP_URL_SCHEME;
 
 use function array_column;
@@ -237,34 +236,25 @@ class Rsa
     }
 
     /**
-     * Check the RSA padding mode either `OPENSSL_PKCS1_PADDING` or `OPENSSL_PKCS1_OAEP_PADDING`.
+     * Check the padding mode whether or nor supported.
      *
-     * **Warning:**
-     *
-     * Decryption failures in the `RSA_PKCS1_PADDING` mode leak information which can potentially be used to mount a Bleichenbacher padding oracle attack.
-     * This is an inherent weakness in the PKCS #1 v1.5 padding design. Prefer `RSA_PKCS1_OAEP_PADDING`.
-     *
-     * @link https://www.openssl.org/docs/man1.1.1/man3/RSA_public_encrypt.html
-     *
-     * @param int $padding - The padding mode, only support `OPENSSL_PKCS1_PADDING` or `OPENSSL_PKCS1_OAEP_PADDING`, otherwise thrown `\UnexpectedValueException`.
+     * @param int $padding - The padding mode, only support `OPENSSL_PKCS1_PADDING`, otherwise thrown `\UnexpectedValueException`.
      *
      * @throws UnexpectedValueException
      */
     private static function paddingModeLimitedCheck(int $padding): void
     {
-        if (!($padding === OPENSSL_PKCS1_OAEP_PADDING || $padding === OPENSSL_PKCS1_PADDING)) {
-            throw new UnexpectedValueException(sprintf("Doesn't supported padding mode(%d), here only support OPENSSL_PKCS1_OAEP_PADDING or OPENSSL_PKCS1_PADDING.", $padding));
+        if ($padding !== OPENSSL_PKCS1_OAEP_PADDING) {
+            throw new UnexpectedValueException(sprintf('Here\'s only support the OPENSSL_PKCS1_OAEP_PADDING(4) mode, yours(%d).', $padding));
         }
     }
 
     /**
      * Encrypts text by the given `$publicKey` in the `$padding`(default is `OPENSSL_PKCS1_OAEP_PADDING`) mode.
      *
-     * Some of APIs were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
-     *
      * @param string $plaintext - Cleartext to encode.
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $publicKey - The public key.
-     * @param int $padding - One of OPENSSL_PKCS1_PADDING, OPENSSL_PKCS1_OAEP_PADDING, default is `OPENSSL_PKCS1_OAEP_PADDING`.
+     * @param int $padding - default is `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @return string - The base64-encoded ciphertext.
      * @throws UnexpectedValueException
@@ -320,11 +310,9 @@ class Rsa
     /**
      * Decrypts base64 encoded string with `$privateKey` in the `$padding`(default is `OPENSSL_PKCS1_OAEP_PADDING`) mode.
      *
-     * Some of APIs were required the `$padding` mode as of `RSAES-PKCS1-v1_5` which is equal to the `OPENSSL_PKCS1_PADDING` constant, exposed it for this case.
-     *
      * @param string $ciphertext - Was previously encrypted string using the corresponding public key.
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|array{string,string}|mixed $privateKey - The private key.
-     * @param int $padding - One of OPENSSL_PKCS1_PADDING, OPENSSL_PKCS1_OAEP_PADDING, default is `OPENSSL_PKCS1_OAEP_PADDING`.
+     * @param int $padding - default is `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @return string - The utf-8 plaintext.
      * @throws UnexpectedValueException
