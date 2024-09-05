@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
+        php-version: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
         os: [ubuntu-latest, macOS-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -21,7 +21,7 @@ jobs:
           git config --global core.symlinks true
         if: runner.os == 'Windows'
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup PHP${{ matrix.php-version }}@${{ matrix.os }}
         uses: shivammathur/setup-php@v2
@@ -40,7 +40,7 @@ jobs:
       - name: Cache dependencies on PHP(=7.1)@${{ matrix.os }}
         if: matrix.php-version == '7.1'
         id: dependencies-cache-71
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-php${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
@@ -50,7 +50,7 @@ jobs:
       - name: Cache dependencies on PHP(=7.2)@${{ matrix.os }}
         if: matrix.php-version == '7.2'
         id: dependencies-cache-72
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-php${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
@@ -60,7 +60,7 @@ jobs:
       - name: Cache dependencies on PHP(>7.2)@${{ matrix.os }}
         if: matrix.php-version > 7.2
         id: dependencies-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -88,6 +88,10 @@ jobs:
       - run: vendor/bin/phpstan analyse --no-progress --memory-limit=-1 -c phpstan.v8.2.neon
         if: 8.1 < matrix.php-version && matrix.php-version < '8.4'
         id: phpstan-php-8_2-8_3
+
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=-1 -c phpstan.v8.4.neon
+        if: matrix.php-version == '8.4'
+        id: phpstan-php-8_4
 
       - run: |
           make keygen

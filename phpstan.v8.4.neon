@@ -1,0 +1,7 @@
+includes:
+	- phpstan.v8.2.neon
+parameters:
+	ignoreErrors:
+		-
+			message: "#^(?:Left|Right) side of && is always true#"
+			path: src/Crypto/Hash.php
