@@ -63,7 +63,12 @@ trait ClientJsonTrait
      *
      * @return callable(RequestInterface)
      */
-    public static function signer(string $mchid, string $serial, $privateKey): callable
+    public static function signer(
+        string $mchid,
+        string $serial,
+        #[\SensitiveParameter]
+        $privateKey
+    ): callable
     {
         return static function (RequestInterface $request) use ($mchid, $serial, $privateKey): RequestInterface {
             $nonce = Formatter::nonce();

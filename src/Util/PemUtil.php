@@ -27,7 +27,10 @@ class PemUtil
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
      */
-    public static function loadPrivateKey(string $filepath)
+    public static function loadPrivateKey(
+        #[\SensitiveParameter]
+        string $filepath
+    )
     {
         return Rsa::from((false === strpos($filepath, self::LOCAL_FILE_PROTOCOL) ? self::LOCAL_FILE_PROTOCOL : '') . $filepath);
     }
@@ -40,7 +43,10 @@ class PemUtil
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
      */
-    public static function loadPrivateKeyFromString($content)
+    public static function loadPrivateKeyFromString(
+        #[\SensitiveParameter]
+        $content
+    )
     {
         return Rsa::from($content);
     }

@@ -43,7 +43,13 @@ interface AesInterface
      *
      * @return string - The base64-encoded ciphertext.
      */
-    public static function encrypt(string $plaintext, string $key, string $iv = ''): string;
+    public static function encrypt(
+        #[\SensitiveParameter]
+        string $plaintext,
+        #[\SensitiveParameter]
+        string $key,
+        string $iv = ''
+    ): string;
 
     /**
      * Takes a base64 encoded string and decrypts it using a given key and iv.
@@ -54,5 +60,11 @@ interface AesInterface
      *
      * @return string - The utf-8 plaintext.
      */
-    public static function decrypt(string $ciphertext, string $key, string $iv = ''): string;
+    public static function decrypt(
+        #[\SensitiveParameter]
+        string $ciphertext,
+        #[\SensitiveParameter]
+        string $key,
+        string $iv = ''
+    ): string;
 }

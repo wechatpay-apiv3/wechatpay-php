@@ -43,7 +43,14 @@ class AesGcm implements AesInterface
      *
      * @return string - The base64-encoded ciphertext.
      */
-    public static function encrypt(string $plaintext, string $key, string $iv = '', string $aad = ''): string
+    public static function encrypt(
+        #[\SensitiveParameter]
+        string $plaintext,
+        #[\SensitiveParameter]
+        string $key,
+        string $iv = '',
+        string $aad = ''
+    ): string
     {
         self::preCondition();
 
@@ -66,7 +73,14 @@ class AesGcm implements AesInterface
      *
      * @return string - The utf-8 plaintext.
      */
-    public static function decrypt(string $ciphertext, string $key, string $iv = '', string $aad = ''): string
+    public static function decrypt(
+        #[\SensitiveParameter]
+        string $ciphertext,
+        #[\SensitiveParameter]
+        string $key,
+        string $iv = '',
+        string $aad = ''
+    ): string
     {
         self::preCondition();
 

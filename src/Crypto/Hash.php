@@ -40,7 +40,12 @@ class Hash
      *
      * @return string - The data signature
      */
-    public static function md5(string $thing, string $key = '', $agency = false): string
+    public static function md5(
+        string $thing,
+        #[\SensitiveParameter]
+        string $key = '',
+        $agency = false
+    ): string
     {
         $ctx = hash_init(ALGO_MD5);
 
@@ -58,7 +63,12 @@ class Hash
      *
      * @return string - The data signature
      */
-    public static function hmac(string $thing, string $key, string $algorithm = 'sha256'): string
+    public static function hmac(
+        string $thing,
+        #[\SensitiveParameter]
+        string $key,
+        string $algorithm = 'sha256'
+    ): string
     {
         $ctx = hash_init($algorithm, HASH_HMAC, $key);
 
@@ -75,7 +85,12 @@ class Hash
      *
      * @return bool - Returns true when the two are equal, false otherwise.
      */
-    public static function equals(string $known_string, ?string $user_string = null): bool
+    public static function equals(
+        #[\SensitiveParameter]
+        string $known_string,
+        #[\SensitiveParameter]
+        ?string $user_string = null
+    ): bool
     {
         return is_null($user_string) ? false : hash_equals($known_string, $user_string);
     }
@@ -89,7 +104,12 @@ class Hash
      *
      * @return ?string - The data signature in UPPERCASE.
      */
-    public static function sign(string $type, string $data, string $key): ?string
+    public static function sign(
+        string $type,
+        string $data,
+        #[\SensitiveParameter]
+        string $key
+    ): ?string
     {
         return array_key_exists($type, ALGO_DICTONARIES) ? strtoupper(static::{ALGO_DICTONARIES[$type]}($data, $key)) : null;
     }
