@@ -1,5 +1,11 @@
 # 变更历史
 
+## [1.4.10](../../compare/v1.4.9...v1.4.10) - 2024-09-11
+
+- 客户端在`RSA`非对称加解密方案上，不再支持`OPENSSL_PKCS1_PADDING`填充模式，相关记录见[这里](https://github.com/wechatpay-apiv3/wechatpay-php/issues/133)；
+- 增加[`#[\SensitiveParameter]`](https://www.php.net/manual/zh/class.sensitiveparameter.php)参数注解，加强信息安全；
+- 支持PHP8.4运行时；
+
 ## [1.4.9](../../compare/v1.4.8...v1.4.9) - 2023-11-21
 
 - 支持PHP8.3运行时
