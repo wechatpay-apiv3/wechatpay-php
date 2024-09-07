@@ -25,7 +25,7 @@
 
 ## 项目状态
 
-当前版本为 `1.4.9` 测试版本。
+当前版本为 `1.4.10` 版。
 项目版本遵循 [语义化版本号](https://semver.org/lang/zh-CN/)。
 如果你使用的版本 `<=v1.3.2`，升级前请参考 [升级指南](UPGRADING.md)。
 
@@ -48,7 +48,7 @@ composer require wechatpay/wechatpay
 
 ## 开始
 
-ℹ️ 以下是 [微信支付 API v3](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay-1.shtml) 的指引。如果你是 API v2 的使用者，请看 [README_APIv2](README_APIv2.md)。
+:information_source: 以下是 [微信支付 API v3](https://pay.weixin.qq.com/docs/merchant/development/interface-rules/introduction.html) 的指引。如果你是 API v2 的使用者，请看 [README_APIv2](README_APIv2.md)。
 
 ### 概念
 
@@ -56,11 +56,11 @@ composer require wechatpay/wechatpay
 
 + **商户 API 私钥**。你申请商户 API 证书时，会生成商户私钥，并保存在本地证书文件夹的文件 apiclient_key.pem 中。为了证明 API 请求是由你发送的，你应使用商户 API 私钥对请求进行签名。
 
-> :warning: 不要把私钥文件暴露在公共场合，如上传到 Github，写在 App 代码中等。
+  > :key: 不要把私钥文件暴露在公共场合，如上传到 Github，写在 App 代码中等。
 
 + **微信支付平台证书**。微信支付平台证书是指：由微信支付负责申请，包含微信支付平台标识、公钥信息的证书。你需使用微信支付平台证书中的公钥验证 API 应答和回调通知的签名。
 
-> ℹ️ 你需要先手工 [下载平台证书](#如何下载平台证书) 才能使用 SDK 发起请求。
+  > :bookmark: 通用的 composer 命令，像安装依赖包一样 [下载平台证书](#如何下载平台证书) 文件，供SDK初始化使用。
 
 + **证书序列号**。每个证书都有一个由 CA 颁发的唯一编号，即证书序列号。
 
@@ -106,16 +106,17 @@ $instance = Builder::factory([
 
 // 发送请求
 $resp = $instance->chain('v3/certificates')->get(
-    ['debug' => true] // 调试模式，https://docs.guzzlephp.org/en/stable/request-options.html#debug
+    /** @see https://docs.guzzlephp.org/en/stable/request-options.html#debug */
+    // ['debug' => true] // 调试模式
 );
-echo $resp->getBody(), PHP_EOL;
+echo (string) $resp->getBody(), PHP_EOL;
 ```
 
 ## 文档
 
 ### 同步请求
 
-使用客户端提供的 `get`、`put`、`post`、`patch` 或 `delete` 方法发送同步请求。以 [Native支付下单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_1.shtml) 为例。
+使用客户端提供的 `get`、`put`、`post`、`patch` 或 `delete` 方法发送同步请求。以 [Native支付下单](https://pay.weixin.qq.com/docs/merchant/apis/native-payment/direct-jsons/native-prepay.html) 为例。
 
 ```php
 try {
@@ -134,14 +135,14 @@ try {
     ]]);
 
     echo $resp->getStatusCode(), PHP_EOL;
-    echo $resp->getBody(), PHP_EOL;
+    echo (string) $resp->getBody(), PHP_EOL;
 } catch (\Exception $e) {
     // 进行错误处理
     echo $e->getMessage(), PHP_EOL;
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo (string) $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 }
@@ -152,7 +153,7 @@ try {
 
 ### 异步请求
 
-使用客户端提供的 `getAsync`、`putAsync`、`postAsync`、`patchAsync` 或 `deleteAsync` 方法发送异步请求。以 [退款](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_9.shtml) 为例。
+使用客户端提供的 `getAsync`、`putAsync`、`postAsync`、`patchAsync` 或 `deleteAsync` 方法发送异步请求。以 [退款申请](https://pay.weixin.qq.com/docs/merchant/apis/native-payment/create.html) 为例。
 
 ```php
 $promise = $instance
@@ -170,7 +171,7 @@ $promise = $instance
 ])
 ->then(static function($response) {
     // 正常逻辑回调处理
-    echo $response->getBody(), PHP_EOL;
+    echo (string) $response->getBody(), PHP_EOL;
     return $response;
 })
 ->otherwise(static function($e) {
@@ -179,7 +180,7 @@ $promise = $instance
     if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
         $r = $e->getResponse();
         echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
-        echo $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
+        echo (string) $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
     }
     echo $e->getTraceAsString(), PHP_EOL;
 });
@@ -199,7 +200,7 @@ $promise->wait();
 
 对于大部分开发者，我们建议使用同步的模式，因为它更加易于理解。
 
-如果你是具有异步编程基础的开发者，在某些连续调用 API 的场景，将多个操作通过 `then()` 流式串联起来会是一种优雅的实现方式。例如， [以函数链的形式流式下载交易帐单](https://developers.weixin.qq.com/community/pay/article/doc/000ec4521086b85fb81d6472a51013)。
+如果你是具有异步编程基础的开发者，在某些连续调用 API 的场景，将多个操作通过 `then()` 流式串联起来会是一种优雅的实现方式。例如 [以函数链的形式流式下载交易帐单](https://developers.weixin.qq.com/community/pay/article/doc/000ec4521086b85fb81d6472a51013)。
 
 ## 链式 URI Template
 
@@ -230,7 +231,7 @@ GET /v3/pay/transactions/out-trade-no/{out_trade_no}
 + Path 变量的值，以同名参数传入执行方法
 + Query 参数，以名为 `query` 的参数传入执行方法
 
-以[查询订单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_2.shtml) `GET` 方法为例：
+以 [查询订单](https://pay.weixin.qq.com/docs/merchant/apis/native-payment/query-by-wx-trade-no.html) `GET` 方法为例：
 
 ```php
 $promise = $instance
@@ -243,7 +244,7 @@ $promise = $instance
 ]);
 ```
 
-以 [关闭订单](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_3.shtml) `POST` 方法为例：
+以 [关闭订单](https://pay.weixin.qq.com/docs/merchant/apis/native-payment/close-order.html) `POST` 方法为例：
 
 ```php
 $promise = $instance
@@ -258,9 +259,7 @@ $promise = $instance
 
 ## 更多例子
 
-### 视频文件上传
-
-[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
+### [视频文件上传](https://pay.weixin.qq.com/docs/partner/apis/contracted-merchant-application/video-upload.html)
 
 ```php
 // 参考上述指引说明，并引入 `MediaUtil` 正常初始化，无额外条件
@@ -278,9 +277,7 @@ $resp = $instance-
 ]);
 ```
 
-### 营销图片上传
-
-[官方开发文档地址](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter9_0_1.shtml)
+### [营销图片上传](https://pay.weixin.qq.com/docs/partner/apis/cash-coupons/upload-image.html)
 
 ```php
 use WeChatPay\Util\MediaUtil;
@@ -302,7 +299,7 @@ $resp = $instance
 + 微信支付要求加密上送的敏感信息
 + 微信支付会加密下行的敏感信息
 
-下面以 [特约商户进件](https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter11_1_1.shtml) 为例，演示如何进行 [敏感信息加解密](https://wechatpay-api.gitbook.io/wechatpay-api-v3/qian-ming-zhi-nan-1/min-gan-xin-xi-jia-mi)。
+下面以 [特约商户进件](https://pay.weixin.qq.com/docs/partner/apis/contracted-merchant-application/applyment/submit.html) 为例，演示如何进行 [敏感信息加解密](https://pay.weixin.qq.com/docs/partner/development/interface-rules/sensitive-data-encryption.html)。
 
 ```php
 use WeChatPay\Crypto\Rsa;
@@ -333,7 +330,7 @@ $resp = $instance
 
 ## 签名
 
-你可以使用 `Rsa::sign()` 计算调起支付时所需参数签名。以 [JSAPI支付](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_4.shtml) 为例。
+你可以使用 `Rsa::sign()` 计算调起支付时所需参数签名。以 [JSAPI支付](https://pay.weixin.qq.com/docs/merchant/apis/jsapi-payment/jsapi-transfer-payment.html) 为例。
 
 ```php
 use WeChatPay\Formatter;
@@ -363,7 +360,7 @@ echo json_encode($params);
 1. 从请求头部`Headers`，拿到`Wechatpay-Signature`、`Wechatpay-Nonce`、`Wechatpay-Timestamp`、`Wechatpay-Serial`及`Request-ID`，商户侧`Web`解决方案可能有差异，请求头可能大小写不敏感，请根据自身应用来定；
 2. 获取请求`body`体的`JSON`纯文本；
 3. 检查通知消息头标记的`Wechatpay-Timestamp`偏移量是否在5分钟之内；
-4. 调用`SDK`内置方法，[构造验签名串](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_1.shtml)然后经`Rsa::verfify`验签；
+4. 调用`SDK`内置方法，[构造验签名串](https://pay.weixin.qq.com/docs/merchant/development/verify-signature-overview/overview-signature-and-verification.html) 然后经`Rsa::verfify`验签；
 5. 消息体需要解密的，调用`SDK`内置方法解密；
 6. 如遇到问题，请拿`Request-ID`点击[这里](https://support.pay.weixin.qq.com/online-service?utm_source=github&utm_medium=wechatpay-php&utm_content=apiv3)，联系官方在线技术支持；
 
@@ -430,6 +427,9 @@ if ($timeOffsetStatus && $verifiedStatus) {
 
 当默认的本地签名和验签方式不适合你的系统时，你可以通过实现`signer`或者`verifier`中间件来定制签名和验签，比如，你的系统把商户私钥集中存储，业务系统需通过远程调用进行签名。
 以下示例用来演示如何替换SDK内置中间件，来实现远程`请求签名`及`结果验签`，供商户参考实现。
+
+<details>
+<summary>例：内网集中签名/验签解决方案</summary>
 
 ```php
 use GuzzleHttp\Client;
@@ -501,6 +501,8 @@ $stack->before('http_errors', static function (callable $handler) use ($remoteVe
 // 链式/同步/异步请求APIv3即可，例如:
 $instance->v3->certificates->getAsync()->then(static function($res) { return $res->getBody(); })->wait();
 ```
+
+</details>
 
 ## 常见问题
 
