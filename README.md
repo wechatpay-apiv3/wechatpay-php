@@ -64,6 +64,10 @@ composer require wechatpay/wechatpay
 
 + **证书序列号**。每个证书都有一个由 CA 颁发的唯一编号，即证书序列号。
 
++ **微信支付平台公钥**，是微信支付平台的公钥，用于应答及回调通知的数据签名，可在 [微信支付商户平台](https://pay.weixin.qq.com) -> 账户中心 -> API安全 直接下载。
+
++ **微信支付平台公钥ID**，是微信支付平台公钥的唯一标识，可在 [微信支付商户平台](https://pay.weixin.qq.com) -> 账户中心 -> API安全 直接查看。
+
 ### 示例程序：微信支付平台证书下载
 
 ```php
@@ -73,7 +77,6 @@ require_once('vendor/autoload.php');
 
 use WeChatPay\Builder;
 use WeChatPay\Crypto\Rsa;
-use WeChatPay\Util\PemUtil;
 
 // 设置参数
 
@@ -87,12 +90,13 @@ $merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath, Rsa::KEY_TY
 // 「商户API证书」的「证书序列号」
 $merchantCertificateSerial = '3775B6A45ACD588826D15E583A95F5DD********';
 
-// 从本地文件中加载「微信支付平台证书」，用来验证微信支付应答的签名
-$platformCertificateFilePath = 'file:///path/to/wechatpay/cert.pem';
-$platformPublicKeyInstance = Rsa::from($platformCertificateFilePath, Rsa::KEY_TYPE_PUBLIC);
+// 从本地文件中加载「微信支付平台证书」或者「微信支付平台公钥」，用来验证微信支付应答的签名
+$platformCertificateOrPublicKeyFilePath = 'file:///path/to/wechatpay/certificate_or_publickey.pem';
+$platformPublicKeyInstance = Rsa::from($platformCertificateOrPublicKeyFilePath, Rsa::KEY_TYPE_PUBLIC);
 
-// 从「微信支付平台证书」中获取「证书序列号」
-$platformCertificateSerial = PemUtil::parseCertificateSerialNo($platformCertificateFilePath);
+// 「微信支付平台证书」的「证书序列号」或者是「微信支付平台公钥ID」
+// 「平台证书序列号」及/或「平台公钥ID」可以从 商户平台 -> 账户中心 -> API安全 直接查询到
+$platformCertificateSerialOrPublicKeyId = '7132D72A03E93CDDF8C03BBD1F37EEDF********';
 
 // 构造一个 APIv3 客户端实例
 $instance = Builder::factory([
@@ -100,7 +104,7 @@ $instance = Builder::factory([
     'serial'     => $merchantCertificateSerial,
     'privateKey' => $merchantPrivateKeyInstance,
     'certs'      => [
-        $platformCertificateSerial => $platformPublicKeyInstance,
+        $platformCertificateSerialOrPublicKeyId => $platformPublicKeyInstance,
     ],
 ]);
 
@@ -322,8 +326,8 @@ $resp = $instance
         //...
     ],
     'headers' => [
-        // $platformCertificateSerial 见初始化章节
-        'Wechatpay-Serial' => $platformCertificateSerial,
+        // $platformCertificateSerialOrPublicKeyId 见初始化章节
+        'Wechatpay-Serial' => $platformCertificateSerialOrPublicKeyId,
     ],
 ]);
 ```
