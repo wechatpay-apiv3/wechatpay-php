@@ -52,7 +52,7 @@ class AuthcodetoopenidTest extends TestCase
     }
 
     /**
-     * @return array<string,array{array<string,?string>,string,?string}>
+     * @return array<string,array{array<string,?string>,string,?class-string}>
      */
     public function mockDataProvider(): array
     {
@@ -107,7 +107,7 @@ class AuthcodetoopenidTest extends TestCase
      * @dataProvider mockDataProvider
      * @param array<string,string> $data
      * @param string $secret
-     * @param ?string $expected
+     * @param ?class-string $expected
      */
     public function testResponseState(array $data, string $secret, ?string $expected = null): void
     {
@@ -123,7 +123,7 @@ class AuthcodetoopenidTest extends TestCase
             try {
                 $endpoint->post(['xml' => ['appid' => '123', 'mch_id' => '123', 'auth_code' => '123']]);
             } catch (\Throwable $e) {
-                self::assertEquals($expected, $e::class);
+                self::assertInstanceOf($expected, $e);
                 if ($e instanceof RejectionException && ($response = $e->getReason()) instanceof ResponseInterface) {
                     $err = Transformer::toArray((string)$response->getBody());
                     //three cases, maybe return_code and/or result_code 'FAIL'
