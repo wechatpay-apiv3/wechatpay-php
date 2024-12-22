@@ -1,6 +1,6 @@
 {
     "name": "wechatpay/wechatpay",
-    "version": "1.4.10",
+    "version": "1.4.11",
     "description": "[A]Sync Chainable WeChatPay v2&v3's OpenAPI SDK for PHP",
     "type": "library",
     "keywords": [

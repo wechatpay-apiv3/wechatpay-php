@@ -25,7 +25,7 @@
 
 ## 项目状态
 
-当前版本为 `1.4.10` 版。
+当前版本为 `1.4.11` 版。
 项目版本遵循 [语义化版本号](https://semver.org/lang/zh-CN/)。
 如果你使用的版本 `<=v1.3.2`，升级前请参考 [升级指南](UPGRADING.md)。
 
@@ -68,7 +68,7 @@ composer require wechatpay/wechatpay
 
 + **微信支付平台公钥ID**，是微信支付平台公钥的唯一标识，可在 [微信支付商户平台](https://pay.weixin.qq.com) -> 账户中心 -> API安全 直接查看。
 
-### 示例程序：微信支付平台证书下载
+### 初始化一个APIv3客户端
 
 ```php
 <?php
@@ -90,13 +90,21 @@ $merchantPrivateKeyInstance = Rsa::from($merchantPrivateKeyFilePath, Rsa::KEY_TY
 // 「商户API证书」的「证书序列号」
 $merchantCertificateSerial = '3775B6A45ACD588826D15E583A95F5DD********';
 
-// 从本地文件中加载「微信支付平台证书」或者「微信支付平台公钥」，用来验证微信支付应答的签名
-$platformCertificateOrPublicKeyFilePath = 'file:///path/to/wechatpay/certificate_or_publickey.pem';
-$platformPublicKeyInstance = Rsa::from($platformCertificateOrPublicKeyFilePath, Rsa::KEY_TYPE_PUBLIC);
+// 从本地文件中加载「微信支付平台证书」，可由内置CLI工具下载到，用来验证微信支付应答的签名
+$platformCertificateFilePath  = 'file:///path/to/wechatpay/certificate.pem';
+$onePlatformPublicKeyInstance = Rsa::from($platformCertificateFilePath, Rsa::KEY_TYPE_PUBLIC);
 
-// 「微信支付平台证书」的「证书序列号」或者是「微信支付平台公钥ID」
-// 「平台证书序列号」及/或「平台公钥ID」可以从 商户平台 -> 账户中心 -> API安全 直接查询到
-$platformCertificateSerialOrPublicKeyId = '7132D72A03E93CDDF8C03BBD1F37EEDF********';
+// 「微信支付平台证书」的「平台证书序列号」
+// 可以从「微信支付平台证书」文件解析，也可以在 商户平台 -> 账户中心 -> API安全 查询到
+$platformCertificateSerial = '7132D72A03E93CDDF8C03BBD1F37EEDF********';
+
+// 从本地文件中加载「微信支付平台公钥」，用来验证微信支付应答的签名
+$platformPublicKeyFilePath    = 'file:///path/to/wechatpay/publickey.pem';
+$twoPlatformPublicKeyInstance = Rsa::from($platformPublicKeyFilePath, Rsa::KEY_TYPE_PUBLIC);
+
+// 「微信支付平台公钥」的「平台公钥ID」
+// 需要在 商户平台 -> 账户中心 -> API安全 查询
+$platformPublicKeyId = 'PUB_KEY_ID_01142321349124100000000000********';
 
 // 构造一个 APIv3 客户端实例
 $instance = Builder::factory([
@@ -104,17 +112,44 @@ $instance = Builder::factory([
     'serial'     => $merchantCertificateSerial,
     'privateKey' => $merchantPrivateKeyInstance,
     'certs'      => [
-        $platformCertificateSerialOrPublicKeyId => $platformPublicKeyInstance,
+        $platformCertificateSerial => $onePlatformPublicKeyInstance,
+        $platformPublicKeyId       => $twoPlatformPublicKeyInstance,
     ],
 ]);
-
-// 发送请求
-$resp = $instance->chain('v3/certificates')->get(
-    /** @see https://docs.guzzlephp.org/en/stable/request-options.html#debug */
-    // ['debug' => true] // 调试模式
-);
-echo (string) $resp->getBody(), PHP_EOL;
 ```
+
+### 示例，第一个请求：查询「微信支付平台证书」
+
+```php
+// 发送请求
+try {
+    $resp = $instance->chain('v3/certificates')->get(
+        /** @see https://docs.guzzlephp.org/en/stable/request-options.html#debug */
+        // ['debug' => true] // 调试模式
+    );
+    echo (string) $resp->getBody(), PHP_EOL;
+} catch(\Exception $e) {
+    // 进行异常捕获并进行错误判断处理
+    echo $e->getMessage(), PHP_EOL;
+    if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+        $r = $e->getResponse();
+        echo $r->getStatusCode() . ' ' . $r->getReasonPhrase(), PHP_EOL;
+        echo (string) $r->getBody(), PHP_EOL, PHP_EOL, PHP_EOL;
+    }
+    echo $e->getTraceAsString(), PHP_EOL;
+}
+```
+
+当程序进入「异常捕获」逻辑，输出形如：
+
+```json
+{
+    "code": "RESOURCE_NOT_EXISTS",
+    "message": "无可用的平台证书，请在商户平台-API安全申请使用微信支付公钥。可查看指引https://pay.weixin.qq.com/docs/merchant/products/platform-certificate/wxp-pub-key-guide.html"
+}
+```
+
+即表示商户仅能运行在「微信支付平台公钥」模式，初始化即无需读取及配置`$platformCertificateSerial`及`$onePlatformPublicKeyInstance`等信息。
 
 ## 文档
 
