@@ -64,9 +64,9 @@ composer require wechatpay/wechatpay
 
 + **证书序列号**。每个证书都有一个由 CA 颁发的唯一编号，即证书序列号。
 
-+ **微信支付平台公钥**，是微信支付平台的公钥，用于应答及回调通知的数据签名，可在 [微信支付商户平台](https://pay.weixin.qq.com) -> 账户中心 -> API安全 直接下载。
++ **微信支付公钥**，用于应答及回调通知的数据签名，可在 [微信支付商户平台](https://pay.weixin.qq.com) -> 账户中心 -> API安全 直接下载。
 
-+ **微信支付平台公钥ID**，是微信支付平台公钥的唯一标识，可在 [微信支付商户平台](https://pay.weixin.qq.com) -> 账户中心 -> API安全 直接查看。
++ **微信支付公钥ID**，是微信支付公钥的唯一标识，可在 [微信支付商户平台](https://pay.weixin.qq.com) -> 账户中心 -> API安全 直接查看。
 
 ### 初始化一个APIv3客户端
 
@@ -98,11 +98,11 @@ $onePlatformPublicKeyInstance = Rsa::from($platformCertificateFilePath, Rsa::KEY
 // 可以从「微信支付平台证书」文件解析，也可以在 商户平台 -> 账户中心 -> API安全 查询到
 $platformCertificateSerial = '7132D72A03E93CDDF8C03BBD1F37EEDF********';
 
-// 从本地文件中加载「微信支付平台公钥」，用来验证微信支付应答的签名
+// 从本地文件中加载「微信支付公钥」，用来验证微信支付应答的签名
 $platformPublicKeyFilePath    = 'file:///path/to/wechatpay/publickey.pem';
 $twoPlatformPublicKeyInstance = Rsa::from($platformPublicKeyFilePath, Rsa::KEY_TYPE_PUBLIC);
 
-// 「微信支付平台公钥」的「平台公钥ID」
+// 「微信支付公钥」的「微信支付公钥ID」
 // 需要在 商户平台 -> 账户中心 -> API安全 查询
 $platformPublicKeyId = 'PUB_KEY_ID_01142321349124100000000000********';
 
@@ -149,7 +149,7 @@ try {
 }
 ```
 
-即表示商户仅能运行在「微信支付平台公钥」模式，初始化即无需读取及配置`$platformCertificateSerial`及`$onePlatformPublicKeyInstance`等信息。
+即表示商户仅能运行在「微信支付公钥」模式，初始化即无需读取及配置`$platformCertificateSerial`及`$onePlatformPublicKeyInstance`等信息。
 
 ## 文档
 
