@@ -5,6 +5,7 @@ namespace WeChatPay;
 use function strlen;
 use function sprintf;
 use function in_array;
+use function array_key_exists;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
@@ -128,6 +129,14 @@ trait ClientXmlTrait
 
                 return $handler($request, $options)->then(static function(ResponseInterface $response) use ($secret) {
                     $result = Transformer::toArray(static::body($response));
+
+                    if (!(array_key_exists('return_code', $result) && Crypto\Hash::equals('SUCCESS', $result['return_code']))) {
+                        return Create::rejectionFor($response);
+                    }
+
+                    if (array_key_exists('result_code', $result) && !Crypto\Hash::equals('SUCCESS', $result['result_code'])) {
+                        return Create::rejectionFor($response);
+                    }
 
                     /** @var ?string $sign */
                     $sign = $result['sign'] ?? null;
