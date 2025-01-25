@@ -82,10 +82,18 @@ trait ClientXmlTrait
     {
         return static function (callable $handler) use ($mchid, $secret, $merchant): callable {
             return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): PromiseInterface {
-                $data = $options['xml'] ?? [];
+                $methodIsGet = $request->getMethod() === 'GET';
+
+                $methodIsGet && parse_str($request->getUri()->getQuery(), $queryParams);
+
+                $data = $options['xml'] ?? (!empty($queryParams) ? $queryParams : []);
 
                 if ($mchid && $mchid !== ($inputMchId = $data['mch_id'] ?? $data['mchid'] ?? $data['combine_mch_id'] ?? null)) {
                     throw new Exception\InvalidArgumentException(sprintf(Exception\EV2_REQ_XML_NOTMATCHED_MCHID, $inputMchId ?? '', $mchid));
+                }
+
+                if ($methodIsGet) {
+                    return $handler($request, $options);
                 }
 
                 $type = $data['sign_type'] ?? Crypto\Hash::ALGO_MD5;
