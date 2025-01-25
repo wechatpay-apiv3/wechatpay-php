@@ -84,9 +84,11 @@ trait ClientXmlTrait
             return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): PromiseInterface {
                 $methodIsGet = $request->getMethod() === 'GET';
 
-                $methodIsGet && parse_str($request->getUri()->getQuery(), $queryParams);
+                if ($methodIsGet) {
+                    parse_str($request->getUri()->getQuery(), $queryParams);
+                }
 
-                $data = $options['xml'] ?? (!empty($queryParams) ? $queryParams : []);
+                $data = $options['xml'] ?? ($queryParams ?? []);
 
                 if ($mchid && $mchid !== ($inputMchId = $data['mch_id'] ?? $data['mchid'] ?? $data['combine_mch_id'] ?? null)) {
                     throw new Exception\InvalidArgumentException(sprintf(Exception\EV2_REQ_XML_NOTMATCHED_MCHID, $inputMchId ?? '', $mchid));
