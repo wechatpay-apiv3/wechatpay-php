@@ -1,6 +1,10 @@
 # 变更历史
 
-## [1.4.11](../../compare/v1.4.9...v1.4.10) - 2024-12-23
+## [1.4.12](../../compare/v1.4.11...v1.4.12) - 2025-01-27
+
+- 修正`APIv2`特殊`GET`请求抛异常问题，相关记录见[这里](https://github.com/wechatpay-apiv3/wechatpay-php/issues/146)。
+
+## [1.4.11](../../compare/v1.4.10...v1.4.11) - 2024-12-27
 
 - 对`APIv2`服务端返回值做精细判断，对于`return_code`(返回状态码)及/或`result_code`(业务结果)有key且值不为`SUCCESS`的情形，抛出客户端`RejectionException`异常，并加入[AuthcodetoopenidTest.php](./tests/OpenAPI/V2/Tools/AuthcodetoopenidTest.php)异常处理示例。
 
