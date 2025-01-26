@@ -9,6 +9,7 @@ use function array_key_exists;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Query;
 use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
@@ -82,7 +83,13 @@ trait ClientXmlTrait
     {
         return static function (callable $handler) use ($mchid, $secret, $merchant): callable {
             return static function (RequestInterface $request, array $options = []) use ($handler, $mchid, $secret, $merchant): PromiseInterface {
-                $data = $options['xml'] ?? [];
+                $methodIsGet = $request->getMethod() === 'GET';
+
+                if ($methodIsGet) {
+                    $queryParams = Query::parse($request->getUri()->getQuery());
+                }
+
+                $data = $options['xml'] ?? ($queryParams ?? []);
 
                 if ($mchid && $mchid !== ($inputMchId = $data['mch_id'] ?? $data['mchid'] ?? $data['combine_mch_id'] ?? null)) {
                     throw new Exception\InvalidArgumentException(sprintf(Exception\EV2_REQ_XML_NOTMATCHED_MCHID, $inputMchId ?? '', $mchid));
@@ -94,7 +101,7 @@ trait ClientXmlTrait
 
                 $data['sign'] = Crypto\Hash::sign($type, Formatter::queryStringLike(Formatter::ksort($data)), $secret);
 
-                $modify = ['body' => Transformer::toXml($data)];
+                $modify = $methodIsGet ? ['query' => Query::build($data)] : ['body' => Transformer::toXml($data)];
 
                 // for security request, it was required the merchant's private_key and certificate
                 if (isset($options['security']) && true === $options['security']) {
