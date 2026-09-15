@@ -43,7 +43,9 @@ class CertificateDownloader
             self::prompt(ClientDecoratorInterface::VERSION);
             return;
         }
-        $this->job($opts);
+        if (!$this->job($opts)) {
+            exit(1);
+        }
     }
 
     /**
@@ -71,13 +73,16 @@ class CertificateDownloader
     /**
      * @param array<string,string|true> $opts
      *
-     * @return void
+     * @return bool - `true` while all of the certificate(s) were saved onto disk
      */
-    private function job(array $opts): void
+    private function job(array $opts): bool
     {
         static $certs = ['any' => null];
 
-        $outputDir = $opts['output'] ?? \sys_get_temp_dir();
+        $outputDir = isset($opts['output']) ? (string) $opts['output'] : self::createPrivateDir();
+        if (null === $outputDir) {
+            return false;
+        }
         $apiv3Key = (string) $opts['key'];
 
         $instance = Builder::factory([
@@ -88,15 +93,18 @@ class CertificateDownloader
             'base_uri'   => (string)($opts['baseuri'] ?? self::DEFAULT_BASE_URI),
         ]);
 
+        $failed = false;
+
         /** @var \GuzzleHttp\HandlerStack $stack */
         $stack = $instance->getDriver()->select(ClientDecoratorInterface::JSON_BASED)->getConfig('handler');
         // The response middle stacks were executed one by one on `FILO` order.
         $stack->after('verifier', Middleware::mapResponse(self::certsInjector($apiv3Key, $certs)), 'injector');
-        $stack->before('verifier', Middleware::mapResponse(self::certsRecorder((string) $outputDir, $certs)), 'recorder');
+        $stack->before('verifier', Middleware::mapResponse(self::certsRecorder($outputDir, $certs, $failed)), 'recorder');
 
         $instance->chain('v3/certificates')->getAsync(
             ['debug' => true]
-        )->otherwise(static function($exception) {
+        )->otherwise(static function($exception) use (&$failed) {
+            $failed = true;
             self::prompt($exception->getMessage());
             if ($exception instanceof RequestException && $exception->hasResponse()) {
                 /** @var ResponseInterface $response */
@@ -105,6 +113,44 @@ class CertificateDownloader
             }
             self::prompt($exception->getTraceAsString());
         })->wait();
+
+        return !$failed;
+    }
+
+    /**
+     * Create, or reuse, the private(`0700`) directory underneath the system's temporary directory.
+     *
+     * @return ?string - The directory holding the certificate(s), or `null` while it is unavailable
+     */
+    private static function createPrivateDir(): ?string
+    {
+        $uid = \function_exists('posix_geteuid') ? \posix_geteuid() : null;
+        $dir = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'wechatpay-' . ($uid ?? 'shared');
+
+        if (!@\mkdir($dir, 0700)) {
+            $stat = @\lstat($dir);
+            if (false === $stat) {
+                self::prompt(\sprintf('Failed to create the private directory `%s`, please assign the `-o` option.', $dir));
+                return null;
+            }
+
+            $mode = (int) $stat['mode'];
+            $posix = '\\' !== \DIRECTORY_SEPARATOR;
+
+            if (0040000 !== ($mode & 0170000)
+                || ($posix && (0700 !== ($mode & 0777) || (null !== $uid && $uid !== $stat['uid'])))
+            ) {
+                self::prompt(\sprintf(
+                    'Refused to reuse `%s`, it shall be a directory owned by the current user with the `0700` permission, please assign the `-o` option.',
+                    $dir
+                ));
+                return null;
+            }
+        }
+
+        self::prompt('The certificate(s) will be saved into the private directory: ' . self::highlight($dir));
+
+        return $dir;
     }
 
     /**
@@ -112,35 +158,89 @@ class CertificateDownloader
      *
      * @param string $outputDir
      * @param array<string,?string> $certs
+     * @param bool $failed - Flipped to `true` while any of the certificate(s) cannot be saved
      *
      * @return callable(ResponseInterface)
      */
-    private static function certsRecorder(string $outputDir, array &$certs): callable {
-        return static function(ResponseInterface $response) use ($outputDir, &$certs): ResponseInterface {
+    private static function certsRecorder(string $outputDir, array &$certs, bool &$failed): callable {
+        return static function(ResponseInterface $response) use ($outputDir, &$certs, &$failed): ResponseInterface {
             $body = (string) $response->getBody();
             $json = \json_decode($body);
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
-            \array_walk($data, static function($row, $index, $certs) use ($outputDir) {
-                $serialNo = $row->serial_no;
+
+            if (!$data) {
+                $failed = true;
+                self::prompt('There\'s no certificate onto the response, nothing was saved.');
+
+                return $response;
+            }
+
+            \array_walk($data, static function($row, $index, $certs) use ($outputDir, &$failed) {
+                $serialNo = (string) $row->serial_no;
+                $content = (string) ($certs[$serialNo] ?? '');
+
+                if (!\preg_match('#^[0-9A-Fa-f]{1,64}$#', $serialNo) || '' === $content) {
+                    $failed = true;
+                    self::prompt(\sprintf('Skipped the certificate #%s: unexpected serial number or empty content.', $index));
+
+                    return;
+                }
+
                 $outpath = $outputDir . \DIRECTORY_SEPARATOR . 'wechatpay_' . $serialNo . '.pem';
+                $saved = self::atomicDump($outpath, $content);
+                $failed = $failed || !$saved;
 
                 self::prompt(
                     'Certificate #' . $index . ' {',
                     '    Serial Number: ' . self::highlight($serialNo),
                     '    Not Before: ' . (new \DateTime($row->effective_time))->format(\DateTime::W3C),
                     '    Not After: ' . (new \DateTime($row->expire_time))->format(\DateTime::W3C),
-                    '    Saved to: ' . self::highlight($outpath),
+                    '    Saved to: ' . ($saved ? self::highlight($outpath) : 'FAILED, see the message(s) above'),
                     '    You may confirm the above infos again even if this library already did(by Crypto\Rsa::verify):',
                     '      ' . self::highlight(\sprintf('openssl x509 -in %s -noout -serial -dates', $outpath)),
-                    '    Content: ', '', $certs[$serialNo] ?? '', '',
+                    '    Content: ', '', $content, '',
                     '}'
                 );
-
-                \file_put_contents($outpath, $certs[$serialNo]);
             }, $certs);
 
             return $response;
         };
+    }
+
+    /**
+     * Atomically persist the `$content` onto `$path` without ever following a symbolic link.
+     *
+     * @param string $path - The destination file path
+     * @param string $content - The content to write
+     *
+     * @return bool - `true` on success, `false` when the write was refused or failed
+     */
+    private static function atomicDump(string $path, string $content): bool
+    {
+        $temp = $path . '.' . \bin2hex(\random_bytes(8)) . '.tmp';
+
+        $handle = @\fopen($temp, 'xb');
+        if (false === $handle) {
+            self::prompt(\sprintf('Failed to exclusively create the temporary file `%s`.', $temp));
+            return false;
+        }
+
+        $written = @\fwrite($handle, $content);
+        $flushed = \fclose($handle);
+
+        if (!$flushed || $written !== \strlen($content)) {
+            @\unlink($temp);
+            self::prompt(\sprintf('Failed to write the whole content onto `%s`.', $temp));
+            return false;
+        }
+
+        if (!@\rename($temp, $path)) {
+            @\unlink($temp);
+            self::prompt(\sprintf('Failed to place the certificate onto `%s`.', $path));
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -221,7 +321,7 @@ class CertificateDownloader
             '                             商户的私钥文件',
             '  -k, --key=<apiv3Key>       APIv3密钥',
             '  -o, --output=[outputFilePath]',
-            '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹',
+            '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹下新建的私有(0700)目录',
             '  -u, --baseuri=[baseUri]    接入点，可选，默认为 ' . self::DEFAULT_BASE_URI,
             '  -V, --version              Print version information and exit.',
             '  -h, --help                 Show this help message and exit.', ''
