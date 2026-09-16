@@ -352,6 +352,4 @@ class CertificateDownloader
 }
 
 // main
-if (!\defined('WECHATPAY_CERTIFICATE_DOWNLOADER_NO_MAIN')) {
-    (new CertificateDownloader())->run();
-}
+(new CertificateDownloader())->run();
