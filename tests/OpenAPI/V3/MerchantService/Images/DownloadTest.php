@@ -2,10 +2,13 @@
 
 namespace WeChatPay\Tests\OpenAPI\V3\MerchantService\Images;
 
+use function ltrim;
 use function rtrim;
 use function file_get_contents;
 use function sprintf;
+use function version_compare;
 
+use Composer\InstalledVersions;
 use WeChatPay\Builder;
 use WeChatPay\Crypto\Rsa;
 use GuzzleHttp\Handler\MockHandler;
@@ -14,7 +17,6 @@ use GuzzleHttp\Middleware;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\LazyOpenStream;
-use GuzzleHttp\UriTemplate\UriTemplate;
 use Psr\Http\Message\ResponseInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
@@ -36,23 +38,33 @@ class DownloadTest extends TestCase
     /** @var string The media_slot_url by a community reporting */
     private const MEDIA_ID = 'ChsyMDAyMDgwMjAyMjAyMTgxMTA0NDEzMTEwMzASGzMwMDIwMDAyMDIyMDIxODE1MDQ0MTcwOTI5NhgAIO%2FFR1pAGKAMwAjgB';
 
+    /** @var string The `self::MEDIA_ID` whose pct-encoded triplet was encoded once more, aka the double pct-encoded */
+    private const MEDIA_ID_DOUBLE_ENCODED = 'ChsyMDAyMDgwMjAyMjAyMTgxMTA0NDEzMTEwMzASGzMwMDIwMDAyMDIyMDIxODE1MDQ0MTcwOTI5NhgAIO%252FFR1pAGKAMwAjgB';
+
+    /** @var string The request target prefix of the images downloading API */
+    private const TARGET_PREFIX = '/v3/merchant-service/images/';
+
     /**
-     * Skip whenever the installed `guzzlehttp/uri-template` still double-encodes the pct-encoded
-     * triplets on the `{+var}` reserved expansion, which was fixed since `v1.0.6`(PHP>=7.2.5).
+     * The `{+var}` reserved expansion preserves the pct-encoded triplets since
+     * `guzzlehttp/uri-template@v1.0.6`(PHP>=7.2.5), the elder ones double-encode them.
+     *
+     * Determined by the installed version rather than by expanding the template, because the
+     * expander is exact the one under testing, ref guzzle/uri-template#18.
      */
-    private static function skipUnlessReservedExpansionFixed(): void
+    private static function reservedExpansionTarget(): string
     {
-        if (self::MEDIA_ID !== UriTemplate::expand('{+media_slot_url}', ['media_slot_url' => self::MEDIA_ID])) {
-            self::markTestSkipped('The installed `guzzlehttp/uri-template` double-encodes the `{+var}` expansion, ref guzzle/uri-template#18');
-        }
+        $version = ltrim((string) InstalledVersions::getPrettyVersion('guzzlehttp/uri-template'), 'v');
+
+        return self::TARGET_PREFIX . (version_compare($version, '1.0.6', '>=')
+            ? self::MEDIA_ID : self::MEDIA_ID_DOUBLE_ENCODED);
     }
 
     /**
      * @param array<string,mixed> $config
-     * @param string $assertMethod
+     * @param string $expectedTarget
      * @return array{\WeChatPay\BuilderChainable,HandlerStack}
      */
-    private function newInstance(array $config, string $assertMethod): array
+    private function newInstance(array $config, string $expectedTarget): array
     {
         $instance = Builder::factory($config + ['handler' => $this->guzzleMockStack(),]);
 
@@ -61,18 +73,16 @@ class DownloadTest extends TestCase
         $stack = clone $stack;
         $stack->remove('verifier');
 
-        $stack->push(Middleware::tap(/* before */static function (RequestInterface $request) use ($assertMethod) {
+        $stack->push(Middleware::tap(/* before */static function (RequestInterface $request) use ($expectedTarget) {
             self::assertTrue($request->hasHeader('Authorization'));
             self::assertStringStartsWith('WECHATPAY2-SHA256-RSA2048', $request->getHeaderLine('Authorization'));
 
-            $target = $request->getRequestTarget();
-            self::{$assertMethod}('/v3/merchant-service/images/' . self::MEDIA_ID, $target);
-        }, /* after */static function (RequestInterface $request) use ($assertMethod) {
+            self::assertEquals($expectedTarget, $request->getRequestTarget());
+        }, /* after */static function (RequestInterface $request) use ($expectedTarget) {
             self::assertTrue($request->hasHeader('Authorization'));
             self::assertStringStartsWith('WECHATPAY2-SHA256-RSA2048', $request->getHeaderLine('Authorization'));
 
-            $target = $request->getRequestTarget();
-            self::{$assertMethod}('/v3/merchant-service/images/' . self::MEDIA_ID, $target);
+            self::assertEquals($expectedTarget, $request->getRequestTarget());
         }));
 
         return [$instance, $stack];
@@ -106,11 +116,11 @@ class DownloadTest extends TestCase
      */
     public function testGet(array $config, string $slot, ResponseInterface $respondor): void
     {
-        // Note here: using the `UriTemplate` may be caused that, **IT IS NOT SAME TO** the original URI,
-        // because the `$slot` is used onto the `signature` algorithm.
+        // Note here: the `{var}` simple expansion pct-encodes the `%` of the `$slot`, which means the
+        // request target is **NOT SAME TO** the original URI, while the `$slot` is used onto the `signature` algorithm.
         // More @see https://github.com/guzzle/uri-template/issues/18
         // And **NO IDEA** about the platform HOW TO VERIFY the `$slot` while there contains the double pct-encoded characters.
-        [$endpoint, $stack] = $this->newInstance($config, 'assertNotEquals');
+        [$endpoint, $stack] = $this->newInstance($config, self::TARGET_PREFIX . self::MEDIA_ID_DOUBLE_ENCODED);
 
         $this->mock->reset();
         $this->mock->append($respondor);
@@ -139,9 +149,7 @@ class DownloadTest extends TestCase
      */
     public function testGetWithReservedExpansion(array $config, string $slot, ResponseInterface $respondor): void
     {
-        self::skipUnlessReservedExpansionFixed();
-
-        [$endpoint, $stack] = $this->newInstance($config, 'assertEquals');
+        [$endpoint, $stack] = $this->newInstance($config, self::reservedExpansionTarget());
 
         $this->mock->reset();
         $this->mock->append($respondor);
@@ -170,11 +178,11 @@ class DownloadTest extends TestCase
      */
     public function testGetAsync(array $config, string $slot, ResponseInterface $respondor): void
     {
-        // Note here: using the `UriTemplate` may be caused that, **IT IS NOT SAME TO** the original URI,
-        // because the `$slot` is used onto the `signature` algorithm.
+        // Note here: the `{var}` simple expansion pct-encodes the `%` of the `$slot`, which means the
+        // request target is **NOT SAME TO** the original URI, while the `$slot` is used onto the `signature` algorithm.
         // More @see https://github.com/guzzle/uri-template/issues/18
         // And **NO IDEA** about the platform HOW TO VERIFY the `$slot` while there contains the double pct-encoded characters.
-        [$endpoint, $stack] = $this->newInstance($config, 'assertNotEquals');
+        [$endpoint, $stack] = $this->newInstance($config, self::TARGET_PREFIX . self::MEDIA_ID_DOUBLE_ENCODED);
 
         $this->mock->reset();
         $this->mock->append($respondor);
@@ -202,9 +210,7 @@ class DownloadTest extends TestCase
      */
     public function testGetAsyncWithReservedExpansion(array $config, string $slot, ResponseInterface $respondor): void
     {
-        self::skipUnlessReservedExpansionFixed();
-
-        [$endpoint, $stack] = $this->newInstance($config, 'assertEquals');
+        [$endpoint, $stack] = $this->newInstance($config, self::reservedExpansionTarget());
 
         $this->mock->reset();
         $this->mock->append($respondor);
@@ -225,7 +231,7 @@ class DownloadTest extends TestCase
      */
     public function testUseStandardGuzzleHttpClient(array $config, string $slot, ResponseInterface $respondor): void
     {
-        [$endpoint, $stack] = $this->newInstance($config, 'assertEquals');
+        [$endpoint, $stack] = $this->newInstance($config, self::TARGET_PREFIX . self::MEDIA_ID);
 
         $relativeUrl = 'v3/merchant-service/images/' . $slot;
         $fullUri = 'https://api.mch.weixin.qq.com/' . $relativeUrl;
