@@ -2,10 +2,11 @@
 
 ## [1.5.0](../../compare/v1.4.12...v1.5.0) - 2026-09-15
 
-- **不兼容变更**：`bin/CertificateDownloader.php` 省略`-o`参数时的默认保存路径有调整。此前证书直接落在系统临时目录下，即`<临时目录>/wechatpay_<序列号>.pem`；现改为在系统临时目录下新建私有(`0700`)目录`wechatpay-<当前用户uid>`，证书保存在该目录内，即`<临时目录>/wechatpay-<uid>/wechatpay_<序列号>.pem`。该目录已存在时，仅在其为当前用户所有、权限为`0700`的真实目录时复用，否则打印提示并以退出码`1`结束。运行时会打印出该目录及每个证书的完整路径，若此前有脚本或部署流程依赖旧路径，请相应调整或显式传入`-o`指定保存目录；显式指定`-o`时行为与此前一致；
-- 优化`bin/CertificateDownloader.php`落盘逻辑，由`file_put_contents`改为「独占创建临时文件 + `rename`原子替换」，同一路径上的已有文件、符号链接等均不会被跟随写入；并对应答中的`serial_no`增加`^[0-9A-Fa-f]{1,64}$`格式校验，确保写入位置落在输出目录内；
-- 优化`bin/CertificateDownloader.php`落盘结果的反馈，校验实际写入字节数与证书内容长度一致并检查`fclose`返回值，避免磁盘空间不足等情形下写入未完成，却生成了内容残缺的证书文件；`Saved to:`提示移至写入成功之后，写入失败、应答无证书或请求异常时进程以退出码`1`结束，不再静默返回`0`；
-- 修正[DownloadTest.php](./tests/OpenAPI/V3/MerchantService/Images/DownloadTest.php)对`{+var}`保留展开的断言。上游`guzzlehttp/uri-template`已于`v1.0.11`修复该展开的双重百分号编码问题(详见[guzzle/uri-template#18](https://github.com/guzzle/uri-template/issues/18))，测试改为运行时探测实际展开行为来选取断言方法，以兼容本项目所声明的`^0.2 || ^1.0`两个大版本；
+- **不兼容变更**：`bin/CertificateDownloader.php` 省略`-o`时的默认保存路径，由`<临时目录>/wechatpay_<序列号>.pem`改为其下他人不可写的专属目录，即`<临时目录>/wechatpay-<uid>/wechatpay_<序列号>.pem`，运行时会打印出完整路径，依赖旧路径的脚本请相应调整或显式传入`-o`；
+- 证书落盘由`file_put_contents`改为「独占创建临时文件 + `rename`原子替换」，不再跟随同路径上的符号链接，写入中断时也不会损坏已有证书；证书权限一律由`umask`决定，因更换了`inode`，此前手工设置的权限、属主/属组、ACL等不再保留，有相关依赖请在下载后重新设置；
+- 优化`bin/CertificateDownloader.php`落盘的完整性校验及失败反馈，写入失败、应答无证书或请求异常时以退出码`1`结束，不再静默返回`0`；
+- 新增[CertificateDownloaderTest.php](./tests/CertificateDownloaderTest.php)，覆盖私有目录的新建/复用/拒绝复用、证书原子落盘、符号链接拒绝跟随及写入失败等行为；
+- 修正[DownloadTest.php](./tests/OpenAPI/V3/MerchantService/Images/DownloadTest.php)对`{+var}`保留展开的断言，以兼容`guzzlehttp/uri-template`的`^0.2 || ^1.0`两个大版本，相关修复见[guzzle/uri-template#18](https://github.com/guzzle/uri-template/issues/18)；
 
 ## [1.4.12](../../compare/v1.4.11...v1.4.12) - 2025-01-27
 

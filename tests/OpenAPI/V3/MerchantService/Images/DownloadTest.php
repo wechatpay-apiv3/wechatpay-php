@@ -37,22 +37,22 @@ class DownloadTest extends TestCase
     private const MEDIA_ID = 'ChsyMDAyMDgwMjAyMjAyMTgxMTA0NDEzMTEwMzASGzMwMDIwMDAyMDIyMDIxODE1MDQ0MTcwOTI5NhgAIO%2FFR1pAGKAMwAjgB';
 
     /**
-     * The assertion of the `{+var}` reserved expansion, which is depends on the `guzzlehttp/uri-template` behavior.
-     *
-     * @return string - `assertEquals` while the pct-encoded triplets were preserved, otherwise `assertNotEquals`
+     * Skip whenever the installed `guzzlehttp/uri-template` still double-encodes the pct-encoded
+     * triplets on the `{+var}` reserved expansion, which was fixed since `v1.0.6`(PHP>=7.2.5).
      */
-    private static function reservedExpansionAssertion(): string
+    private static function skipUnlessReservedExpansionFixed(): void
     {
-        return self::MEDIA_ID === UriTemplate::expand('{+media_slot_url}', ['media_slot_url' => self::MEDIA_ID])
-            ? 'assertEquals' : 'assertNotEquals';
+        if (self::MEDIA_ID !== UriTemplate::expand('{+media_slot_url}', ['media_slot_url' => self::MEDIA_ID])) {
+            self::markTestSkipped('The installed `guzzlehttp/uri-template` double-encodes the `{+var}` expansion, ref guzzle/uri-template#18');
+        }
     }
 
     /**
      * @param array<string,mixed> $config
-     * @param string $assertMethod - Switchable by the caller onto the following requests
+     * @param string $assertMethod
      * @return array{\WeChatPay\BuilderChainable,HandlerStack}
      */
-    private function newInstance(array $config, string &$assertMethod): array
+    private function newInstance(array $config, string $assertMethod): array
     {
         $instance = Builder::factory($config + ['handler' => $this->guzzleMockStack(),]);
 
@@ -61,13 +61,13 @@ class DownloadTest extends TestCase
         $stack = clone $stack;
         $stack->remove('verifier');
 
-        $stack->push(Middleware::tap(/* before */static function (RequestInterface $request) use (&$assertMethod) {
+        $stack->push(Middleware::tap(/* before */static function (RequestInterface $request) use ($assertMethod) {
             self::assertTrue($request->hasHeader('Authorization'));
             self::assertStringStartsWith('WECHATPAY2-SHA256-RSA2048', $request->getHeaderLine('Authorization'));
 
             $target = $request->getRequestTarget();
             self::{$assertMethod}('/v3/merchant-service/images/' . self::MEDIA_ID, $target);
-        }, /* after */static function (RequestInterface $request) use (&$assertMethod) {
+        }, /* after */static function (RequestInterface $request) use ($assertMethod) {
             self::assertTrue($request->hasHeader('Authorization'));
             self::assertStringStartsWith('WECHATPAY2-SHA256-RSA2048', $request->getHeaderLine('Authorization'));
 
@@ -110,11 +110,9 @@ class DownloadTest extends TestCase
         // because the `$slot` is used onto the `signature` algorithm.
         // More @see https://github.com/guzzle/uri-template/issues/18
         // And **NO IDEA** about the platform HOW TO VERIFY the `$slot` while there contains the double pct-encoded characters.
-        $assertMethod = 'assertNotEquals';
-        [$endpoint, $stack] = $this->newInstance($config, $assertMethod);
+        [$endpoint, $stack] = $this->newInstance($config, 'assertNotEquals');
 
         $this->mock->reset();
-        $this->mock->append($respondor);
         $this->mock->append($respondor);
         $this->mock->append($respondor);
 
@@ -128,8 +126,26 @@ class DownloadTest extends TestCase
             'media_slot_url' => $slot,
         ]);
         self::responseAssertion($response);
+    }
 
-        $assertMethod = self::reservedExpansionAssertion();
+    /**
+     * The `{+var}` reserved expansion shall keep the `$slot` as is, so that the request target is
+     * identical to the original one, which is essential to the `signature` algorithm.
+     *
+     * @dataProvider mockDataProvider
+     * @param array<string,mixed> $config
+     * @param string $slot
+     * @param ResponseInterface $respondor
+     */
+    public function testGetWithReservedExpansion(array $config, string $slot, ResponseInterface $respondor): void
+    {
+        self::skipUnlessReservedExpansionFixed();
+
+        [$endpoint, $stack] = $this->newInstance($config, 'assertEquals');
+
+        $this->mock->reset();
+        $this->mock->append($respondor);
+
         $response = $endpoint->chain('v3/merchant-service/images/{+media_slot_url}')->get([
             'handler' => $stack,
             'media_slot_url' => $slot,
@@ -158,11 +174,9 @@ class DownloadTest extends TestCase
         // because the `$slot` is used onto the `signature` algorithm.
         // More @see https://github.com/guzzle/uri-template/issues/18
         // And **NO IDEA** about the platform HOW TO VERIFY the `$slot` while there contains the double pct-encoded characters.
-        $assertMethod = 'assertNotEquals';
-        [$endpoint, $stack] = $this->newInstance($config, $assertMethod);
+        [$endpoint, $stack] = $this->newInstance($config, 'assertNotEquals');
 
         $this->mock->reset();
-        $this->mock->append($respondor);
         $this->mock->append($respondor);
         $this->mock->append($respondor);
 
@@ -178,8 +192,23 @@ class DownloadTest extends TestCase
         ])->then(static function(ResponseInterface $response) {
             self::responseAssertion($response);
         })->wait();
+    }
 
-        $assertMethod = self::reservedExpansionAssertion();
+    /**
+     * @dataProvider mockDataProvider
+     * @param array<string,mixed> $config
+     * @param string $slot
+     * @param ResponseInterface $respondor
+     */
+    public function testGetAsyncWithReservedExpansion(array $config, string $slot, ResponseInterface $respondor): void
+    {
+        self::skipUnlessReservedExpansionFixed();
+
+        [$endpoint, $stack] = $this->newInstance($config, 'assertEquals');
+
+        $this->mock->reset();
+        $this->mock->append($respondor);
+
         $endpoint->chain('v3/merchant-service/images/{+media_slot_url}')->getAsync([
             'handler' => $stack,
             'media_slot_url' => $slot,
@@ -196,8 +225,7 @@ class DownloadTest extends TestCase
      */
     public function testUseStandardGuzzleHttpClient(array $config, string $slot, ResponseInterface $respondor): void
     {
-        $assertMethod = 'assertEquals';
-        [$endpoint, $stack] = $this->newInstance($config, $assertMethod);
+        [$endpoint, $stack] = $this->newInstance($config, 'assertEquals');
 
         $relativeUrl = 'v3/merchant-service/images/' . $slot;
         $fullUri = 'https://api.mch.weixin.qq.com/' . $relativeUrl;

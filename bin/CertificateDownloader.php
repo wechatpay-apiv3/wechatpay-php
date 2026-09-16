@@ -118,16 +118,21 @@ class CertificateDownloader
     }
 
     /**
-     * Create, or reuse, the private(`0700`) directory underneath the system's temporary directory.
+     * Create, or reuse, the directory which is not writable by the others, underneath the system's temporary directory.
      *
      * @return ?string - The directory holding the certificate(s), or `null` while it is unavailable
      */
     private static function createPrivateDir(): ?string
     {
         $uid = \function_exists('posix_geteuid') ? \posix_geteuid() : null;
-        $dir = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'wechatpay-' . ($uid ?? 'shared');
+        $dir = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'wechatpay-' . ($uid ?? \bin2hex(\random_bytes(8)));
 
-        if (!@\mkdir($dir, 0700)) {
+        if (!@\mkdir($dir, 0755)) {
+            if (null === $uid) {
+                self::prompt(\sprintf('Failed to create the private directory `%s`, please assign the `-o` option.', $dir));
+                return null;
+            }
+
             $stat = @\lstat($dir);
             if (false === $stat) {
                 self::prompt(\sprintf('Failed to create the private directory `%s`, please assign the `-o` option.', $dir));
@@ -135,13 +140,10 @@ class CertificateDownloader
             }
 
             $mode = (int) $stat['mode'];
-            $posix = '\\' !== \DIRECTORY_SEPARATOR;
 
-            if (0040000 !== ($mode & 0170000)
-                || ($posix && (0700 !== ($mode & 0777) || (null !== $uid && $uid !== $stat['uid'])))
-            ) {
+            if (0040000 !== ($mode & 0170000) || 0 !== ($mode & 0022) || $uid !== (int) $stat['uid']) {
                 self::prompt(\sprintf(
-                    'Refused to reuse `%s`, it shall be a directory owned by the current user with the `0700` permission, please assign the `-o` option.',
+                    'Refused to reuse `%s`, it shall be a directory owned by the current user and not writable by the others, please assign the `-o` option.',
                     $dir
                 ));
                 return null;
@@ -225,10 +227,15 @@ class CertificateDownloader
             return false;
         }
 
+        $length  = \strlen($content);
         $written = @\fwrite($handle, $content);
-        $flushed = \fclose($handle);
+        $flushed = @\fflush($handle);
+        if (\function_exists('fsync')) {
+            @\fsync($handle);
+        }
+        $closed = \fclose($handle);
 
-        if (!$flushed || $written !== \strlen($content)) {
+        if (!$flushed || !$closed || $written !== $length || $length !== self::sizeOf($temp)) {
             @\unlink($temp);
             self::prompt(\sprintf('Failed to write the whole content onto `%s`.', $temp));
             return false;
@@ -241,6 +248,21 @@ class CertificateDownloader
         }
 
         return true;
+    }
+
+    /**
+     * The byte size of the `$path`, without ever following a symbolic link.
+     *
+     * @param string $path - The file path to measure
+     *
+     * @return int - The size in bytes, or `-1` while the `$path` is unavailable
+     */
+    private static function sizeOf(string $path): int
+    {
+        \clearstatcache(true, $path);
+        $stat = @\lstat($path);
+
+        return false === $stat ? -1 : (int) $stat['size'];
     }
 
     /**
@@ -321,7 +343,7 @@ class CertificateDownloader
             '                             商户的私钥文件',
             '  -k, --key=<apiv3Key>       APIv3密钥',
             '  -o, --output=[outputFilePath]',
-            '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹下新建的私有(0700)目录',
+            '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹下新建的当前用户专属目录',
             '  -u, --baseuri=[baseUri]    接入点，可选，默认为 ' . self::DEFAULT_BASE_URI,
             '  -V, --version              Print version information and exit.',
             '  -h, --help                 Show this help message and exit.', ''
@@ -330,4 +352,6 @@ class CertificateDownloader
 }
 
 // main
-(new CertificateDownloader())->run();
+if (!\defined('WECHATPAY_CERTIFICATE_DOWNLOADER_NO_MAIN')) {
+    (new CertificateDownloader())->run();
+}
