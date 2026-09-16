@@ -8,7 +8,23 @@ use ReflectionMethod;
 if (!\defined('WECHATPAY_CERTIFICATE_DOWNLOADER_NO_MAIN')) {
     \define('WECHATPAY_CERTIFICATE_DOWNLOADER_NO_MAIN', true);
 }
-require_once __DIR__ . '/../bin/CertificateDownloader.php';
+
+/**
+ * The `bin/CertificateDownloader.php` leads by a shebang, which is only stripped off for the primary
+ * script until PHP8.0, ie. `include`ing it on PHP7.x conflicts with its `declare(strict_types=1)`,
+ * @see https://bugs.php.net/bug.php?id=77561
+ *
+ * Load a shebang stripped copy instead, keeping it underneath this directory so that the
+ * `__DIR__/../vendor/autoload.php` lookup of that script still resolves.
+ */
+\define('WECHATPAY_CERTIFICATE_DOWNLOADER_SOURCE', __DIR__ . \DIRECTORY_SEPARATOR . '.CertificateDownloader.php');
+\file_put_contents(WECHATPAY_CERTIFICATE_DOWNLOADER_SOURCE, \preg_replace(
+    '/\A#![^\r\n]*+\R/', '', (string) \file_get_contents(__DIR__ . '/../bin/CertificateDownloader.php'), 1
+));
+\register_shutdown_function(static function (): void {
+    @\unlink(WECHATPAY_CERTIFICATE_DOWNLOADER_SOURCE);
+});
+require_once WECHATPAY_CERTIFICATE_DOWNLOADER_SOURCE;
 
 class CertificateDownloaderTest extends TestCase
 {
@@ -190,7 +206,7 @@ PHP;
             $env['TEST_UMASK'] = $umask;
         }
         $command = \escapeshellarg(\PHP_BINARY) . ' ' . \escapeshellarg($runner)
-            . ' ' . \escapeshellarg(\dirname(__DIR__) . \DIRECTORY_SEPARATOR . 'bin' . \DIRECTORY_SEPARATOR . 'CertificateDownloader.php');
+            . ' ' . \escapeshellarg(WECHATPAY_CERTIFICATE_DOWNLOADER_SOURCE);
 
         $process = \proc_open($command, $descriptors, $pipes, $tmpdir, $env);
         if (!\is_resource($process)) {
