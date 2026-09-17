@@ -23,6 +23,7 @@ use Psr\Http\Message\ResponseInterface;
 use WeChatPay\Builder;
 use WeChatPay\ClientDecoratorInterface;
 use WeChatPay\Crypto\AesGcm;
+use WeChatPay\Formatter;
 
  /**
   * CertificateDownloader class
@@ -129,7 +130,7 @@ class CertificateDownloader
     private static function createPrivateDir(): ?string
     {
         $uid = \function_exists('posix_geteuid') ? \posix_geteuid() : null;
-        $dir = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'wechatpay-' . ($uid ?? \bin2hex(\random_bytes(8)));
+        $dir = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'wechatpay-' . ($uid ?? Formatter::nonce(16));
 
         \error_clear_last();
         if (!@\mkdir($dir, 0755)) {
@@ -184,7 +185,7 @@ class CertificateDownloader
             $json = \json_decode($body);
             $data = \is_object($json) && isset($json->data) && \is_array($json->data) ? $json->data : [];
 
-            if (!$data) {
+            if (0 === \count($data)) {
                 $failed = true;
                 self::prompt('There\'s no certificate onto the response, nothing was saved.');
 
@@ -233,7 +234,7 @@ class CertificateDownloader
      */
     private static function atomicDump(string $path, string $content): bool
     {
-        $temp = $path . '.' . \bin2hex(\random_bytes(8)) . '.tmp';
+        $temp = $path . '.' . Formatter::nonce(16) . '.tmp';
 
         \error_clear_last();
         $handle = @\fopen($temp, 'xb');
