@@ -131,15 +131,25 @@ class CertificateDownloader
         $uid = \function_exists('posix_geteuid') ? \posix_geteuid() : null;
         $dir = \sys_get_temp_dir() . \DIRECTORY_SEPARATOR . 'wechatpay-' . ($uid ?? \bin2hex(\random_bytes(8)));
 
+        \error_clear_last();
         if (!@\mkdir($dir, 0755)) {
             if (null === $uid) {
-                self::prompt(\sprintf('Failed to create the private directory `%s`, please assign the `-o` option.', $dir));
+                self::prompt(\sprintf(
+                    'Failed to create the private directory `%s`: %s, please assign the `-o` option.',
+                    $dir,
+                    self::lastErrorMessage()
+                ));
                 return null;
             }
 
+            \error_clear_last();
             $stat = @\lstat($dir);
             if (false === $stat) {
-                self::prompt(\sprintf('Failed to create the private directory `%s`, please assign the `-o` option.', $dir));
+                self::prompt(\sprintf(
+                    'Failed to stat the existing `%s`: %s, please assign the `-o` option.',
+                    $dir,
+                    self::lastErrorMessage()
+                ));
                 return null;
             }
 
@@ -225,29 +235,45 @@ class CertificateDownloader
     {
         $temp = $path . '.' . \bin2hex(\random_bytes(8)) . '.tmp';
 
+        \error_clear_last();
         $handle = @\fopen($temp, 'xb');
         if (false === $handle) {
-            self::prompt(\sprintf('Failed to exclusively create the temporary file `%s`.', $temp));
+            self::prompt(\sprintf(
+                'Failed to exclusively create the temporary file `%s`: %s.',
+                $temp,
+                self::lastErrorMessage()
+            ));
             return false;
         }
 
         $length  = \strlen($content);
+        \error_clear_last();
         $written = @\fwrite($handle, $content);
         $flushed = @\fflush($handle);
         if (\function_exists('fsync')) {
             @\fsync($handle);
         }
         $closed = @\fclose($handle);
+        // Grab it before the `sizeOf` and `unlink` below, either of them may overwrite the last error.
+        $reason = self::lastErrorMessage();
 
         if (!$flushed || !$closed || $written !== $length || $length !== self::sizeOf($temp)) {
             @\unlink($temp);
-            self::prompt(\sprintf('Failed to write the whole content onto `%s`.', $temp));
+            self::prompt(\sprintf(
+                'Failed to write the whole content onto `%s`: %d of %d bytes were written, %s.',
+                $temp,
+                (int) $written,
+                $length,
+                $reason
+            ));
             return false;
         }
 
+        \error_clear_last();
         if (!@\rename($temp, $path)) {
+            $reason = self::lastErrorMessage();
             @\unlink($temp);
-            self::prompt(\sprintf('Failed to place the certificate onto `%s`.', $path));
+            self::prompt(\sprintf('Failed to place the certificate onto `%s`: %s.', $path, $reason));
             return false;
         }
 
@@ -267,6 +293,18 @@ class CertificateDownloader
         $stat = @\lstat($path);
 
         return false === $stat ? -1 : (int) $stat['size'];
+    }
+
+    /**
+     * The message of the last error, which was suppressed by the `@` operator.
+     *
+     * Pair it with a preceding `error_clear_last()` call, otherwise a stale message may be returned.
+     *
+     * @return string - The message, or `unknown error` while there's none
+     */
+    private static function lastErrorMessage(): string
+    {
+        return \error_get_last()['message'] ?? 'unknown error';
     }
 
     /**
