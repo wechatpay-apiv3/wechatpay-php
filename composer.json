@@ -34,6 +34,7 @@
         "guzzlehttp/guzzle": "^6.5 || ^7.0"
     },
     "require-dev": {
+        "composer-runtime-api": "^2.0",
         "phpunit/phpunit": "^7.5 || ^8.5.16 || ^9.3.5",
         "phpstan/phpstan": "^0.12.89 || ^1.0"
     },

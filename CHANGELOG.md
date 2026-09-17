@@ -4,8 +4,8 @@
 
 - **不兼容变更**：`bin/CertificateDownloader.php` 省略`-o`时的默认保存路径，由`<临时目录>/wechatpay_<序列号>.pem`改为其下他人不可写的专属目录，即`<临时目录>/wechatpay-<uid>/wechatpay_<序列号>.pem`；`<uid>`段在无`ext-posix`的环境(如`Windows`)上取每次运行随机生成的串，此时目录逐次新建而不复用，运行时均会打印出完整路径，依赖旧路径的脚本请相应调整或显式传入`-o`；
 - 证书写入由`file_put_contents`改为「独占创建临时文件 + `rename`原子替换」，不再跟随同路径上的符号链接，写入中断时也不会损坏已有证书；证书权限由`umask`决定，此前手工设置的权限、属主/属组等不再保留，如有依赖请在每次下载后重设；
-- 优化`bin/CertificateDownloader.php`证书写入的完整性校验及失败反馈，写入失败、应答无证书或请求异常时以退出码`1`结束，不再静默返回`0`；
-- 修正[DownloadTest.php](./tests/OpenAPI/V3/MerchantService/Images/DownloadTest.php)对请求目标的断言，改为逐一比对预期串：`{var}`在各版本下恒为双重编码；`{+var}`的结果视`guzzlehttp/uri-template`版本而定，`v1.0.6`及以上保持原串，更早版本为双重编码，相关修复见[guzzle/uri-template#18](https://github.com/guzzle/uri-template/issues/18)；
+- 优化`bin/CertificateDownloader.php`证书写入的完整性校验及失败反馈，写入失败、应答无证书、请求异常或必填参数缺失时以退出码`1`结束，不再静默返回`0`；`-h`/`--help`与`-V`/`--version`仍返回`0`；
+- 修正[DownloadTest.php](./tests/OpenAPI/V3/MerchantService/Images/DownloadTest.php)对请求目标的断言，改为逐一比对预期串：`{+var}`的结果视`guzzlehttp/uri-template`版本而定，`v1.0.6`及以上保持原串，更早版本为双重编码，相关修复见[guzzle/uri-template#18](https://github.com/guzzle/uri-template/issues/18)；
 
 ## [1.4.12](../../compare/v1.4.11...v1.4.12) - 2025-01-27
 

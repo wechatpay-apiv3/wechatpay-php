@@ -35,13 +35,17 @@ class CertificateDownloader
     {
         $opts = $this->parseOpts();
 
-        if (!$opts || isset($opts['help'])) {
+        if (isset($opts['help'])) {
             $this->printHelp();
             return;
         }
         if (isset($opts['version'])) {
             self::prompt(ClientDecoratorInterface::VERSION);
             return;
+        }
+        if (!$opts) {
+            $this->printHelp();
+            exit(1);
         }
         if (!$this->job($opts)) {
             exit(1);
@@ -181,7 +185,7 @@ class CertificateDownloader
                 $serialNo = (string) $row->serial_no;
                 $content = (string) ($certs[$serialNo] ?? '');
 
-                if (!\preg_match('#^[0-9A-Fa-f]{1,64}$#', $serialNo) || '' === $content) {
+                if (!\preg_match('#^[0-9A-Fa-f]{1,64}$#D', $serialNo) || '' === $content) {
                     $failed = true;
                     self::prompt(\sprintf('Skipped the certificate #%s: unexpected serial number or empty content.', $index));
 
@@ -233,7 +237,7 @@ class CertificateDownloader
         if (\function_exists('fsync')) {
             @\fsync($handle);
         }
-        $closed = \fclose($handle);
+        $closed = @\fclose($handle);
 
         if (!$flushed || !$closed || $written !== $length || $length !== self::sizeOf($temp)) {
             @\unlink($temp);
@@ -309,6 +313,14 @@ class CertificateDownloader
             return null;
         }
 
+        // Both of the `help` and `version` are prior to the mandatory option(s) checking below.
+        if (isset($parsed['h']) || isset($parsed['help'])) {
+            return ['help' => true];
+        }
+        if (isset($parsed['V']) || isset($parsed['version'])) {
+            return ['version' => true];
+        }
+
         $args = [];
         foreach ($opts as $opt) {
             [$key, $alias, $mandatory] = $opt;
@@ -321,12 +333,6 @@ class CertificateDownloader
             }
         }
 
-        if (isset($parsed['h']) || isset($parsed['help'])) {
-            $args['help'] = true;
-        }
-        if (isset($parsed['V']) || isset($parsed['version'])) {
-            $args['version'] = true;
-        }
         return $args;
     }
 
@@ -343,7 +349,7 @@ class CertificateDownloader
             '                             商户的私钥文件',
             '  -k, --key=<apiv3Key>       APIv3密钥',
             '  -o, --output=[outputFilePath]',
-            '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹下新建的当前用户专属目录',
+            '                             下载成功后保存证书的路径，可选，默认为临时文件目录夹下新建的专属目录，运行时打印其完整路径',
             '  -u, --baseuri=[baseUri]    接入点，可选，默认为 ' . self::DEFAULT_BASE_URI,
             '  -V, --version              Print version information and exit.',
             '  -h, --help                 Show this help message and exit.', ''
